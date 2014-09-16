@@ -538,6 +538,9 @@ static u8 setup_mext(void) {
 
   mdesc.vari = 1;
 
+  rxBytes = 0;
+
+  while(rxBytes != 6) {
   // FIXME: fuck these delays
   delay_ms(1);
   ftdi_write(&w, 1);	// query  
@@ -563,7 +566,16 @@ static u8 setup_mext(void) {
   // print_dbg_ulong(rxBytes);
 
   if(rxBytes != 6 ){
-    print_dbg("\r\n got unexpected byte count in response to mext setup request; ");
+    print_dbg("\r\n got unexpected byte count in response to mext setup request;\r\n");
+    print_dbg_ulong(*prx);
+    
+    for(;rxBytes != 0; rxBytes--) {
+      print_dbg_ulong(*(++prx));
+      print_dbg(" ");
+    }
+
+    // return 0;
+    }
   }
   
   prx = ftdi_rx_buf();
@@ -602,8 +614,35 @@ static u8 setup_mext(void) {
     print_dbg_hex(*(++prx));
     return 0; // bail
   }
-  set_funcs();
 
+  // get id
+  w = 1;
+  delay_ms(1);
+  ftdi_write(&w, 1);
+  delay_ms(1);
+  ftdi_read();
+  delay_ms(1);
+  busy = 1;
+  while(busy) {
+    busy = ftdi_rx_busy();
+  }
+  rxBytes = ftdi_rx_bytes();
+  prx = ftdi_rx_buf();
+  if(*(prx+2) == 'k')
+      mdesc.vari = 0;
+  // print_dbg("\r\ndone waiting. bytes read: ");
+  // print_dbg_ulong(rxBytes);
+  // print_dbg("\r\ndata: ");
+  // print_dbg_char(*prx);
+  //   for(;rxBytes != 0; rxBytes--) {
+  //     print_dbg_char(*(++prx));
+  //   }
+
+
+
+
+
+  set_funcs();
   monome_connect_write_event();
   //  monomeConnect = 1;
   // print_dbg("\r\n connected monome device, mext protocol");
@@ -696,35 +735,35 @@ static void read_serial_mext(void) {
     nbp = 0;
     prx = ftdi_rx_buf();
     while(nbp < rxBytes) {
-      com = (u8)(*(prx++));    
+      com = (u8)(*(prx++));
       nbp++;
       switch(com) {
       case 0x20: // grid key up
-	monome_grid_key_write_event( *prx, *(prx+1), 0);
-	nbp += 2;
-	prx += 2;
-	break;
+      	monome_grid_key_write_event( *prx, *(prx+1), 0);
+      	nbp += 2;
+      	prx += 2;
+      	break;
       case 0x21: // grid key down
-	monome_grid_key_write_event( *prx, *(prx+1), 1);
-	nbp += 2;
-	prx += 2;
-	break;
-	case 0x50: // ring delta
-	monome_ring_enc_write_event( *prx, *(prx+1));
-	nbp += 2;
-	prx += 2;
-	break;
+      	monome_grid_key_write_event( *prx, *(prx+1), 1);
+      	nbp += 2;
+      	prx += 2;
+      	break;
+    	case 0x50: // ring delta
+      	monome_ring_enc_write_event( *prx, *(prx+1));
+      	nbp += 2;
+      	prx += 2;
+      	break;
       case 0x51 : // ring key up
-	monome_ring_key_write_event( *prx++, 0);
-	prx++;
-	break;
+      	monome_ring_key_write_event( *prx++, 0);
+      	prx++;
+      	break;
       case 0x52 : // ring key down
-	monome_ring_key_write_event( *prx++, 1);
-	nbp++;
-	break;
-	/// TODO: more commands... 
-      default:
-	return;
+      	monome_ring_key_write_event( *prx++, 1);
+      	nbp++;
+      	break;
+      	/// TODO: more commands... 
+            default:
+      	return;
       }
     }	
   }
