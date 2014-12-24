@@ -28,3 +28,9 @@
 *.i*86
 *.x86_64
 *.hex
+
+# Atmel binary artifacts
+*.bin
+*.lss
+*.sym
+*.map
