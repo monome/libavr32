@@ -37,7 +37,7 @@
 // a frame is one knob, max is arc4
 #define MONOME_RING_MAX_FRAMES 4
 
-// map is varibright, 4 bytes per led, 64 leds
+// map is varibright, 4 bits per led, 64 leds
 #define MONOME_RING_MAP_SIZE  32
 
 // device enumeration
@@ -192,5 +192,6 @@ extern u32 monome_xy_idx(u8 x, u8 y);
 extern u8 monome_size_x(void);
 extern u8 monome_size_y(void);
 extern u8 monome_is_vari(void);
+extern u8 monome_encs(void);
 
 #endif // h guard

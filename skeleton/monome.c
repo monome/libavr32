@@ -320,7 +320,7 @@ void monome_arc_refresh(void) {
 
   for(i=0;i<mdesc.encs;i++) {
     if(monomeFrameDirty & (1<<i)) {
-      if(i==1) print_dbg("\r\nsecond");
+      // if(i==1) print_dbg("\r\nsecond");
       while(busy) { busy = ftdi_tx_busy(); }
       (*monome_ring_map)(i, monomeLedBuffer + (i<<6));
       monomeFrameDirty &= ~(1<<i);
@@ -476,6 +476,7 @@ void monome_led_toggle(u8 x, u8 y) {
 u8 monome_size_x(void) { return mdesc.cols; }
 u8 monome_size_y(void) {  return mdesc.rows; }
 u8 monome_is_vari(void) {  return mdesc.vari; }
+u8 monome_encs(void) {  return mdesc.encs; }
 
 //=============================================
 //------ static function definitions
