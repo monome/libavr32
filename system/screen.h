@@ -36,6 +36,9 @@
 // bytes in graphics RAM
 #define GRAM_BYTES  4096 // 2 pixels per byte
 #define GRAM_BYTES_1  4095
+
+
+static u8 screenBuf[GRAM_BYTES];
 //-----------------------------
 //----  functions
 

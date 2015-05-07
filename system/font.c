@@ -269,6 +269,19 @@ extern u8* font_glyph_bigbig(char ch, u8* buf, u8 w, u8 a, u8 b) {
 }
 
 
+u8 font_string_position(const char* str, u8 pos) {
+  u8 i = 0,n = 0;
+
+  while(i<pos) {
+    n+= FONT_CHARW - font_data[str[i] - FONT_ASCII_OFFSET].first - font_data[str[i] - FONT_ASCII_OFFSET].last;
+
+    n++;
+    i++;
+  }
+
+  return n;
+}
+
 // render a string of packed glyphs to a buffer
 u8* font_string(const char* str, u8* buf, u32 size, u8 w, u8 a, u8 b) {
   u8* max = buf + size - 8; // pad 1 character width on right edge

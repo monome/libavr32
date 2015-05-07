@@ -55,6 +55,8 @@ extern u8* font_string_big(const char* str, u8* buf, u32 size, u8 w, u8 a, u8 b)
 extern u8* font_string_bigbig(const char* str, u8* buf, u32 size, u8 w, u8 a, u8 b);
 
 
+u8 font_string_position(const char* str, u8 pos);
+
 // render a font string to a region.
 // this allows for smarter bounds handling
 extern void font_string_region_wrap(region* reg, const char* str, u8 x, u8 y, u8 fg, u8 bg);
