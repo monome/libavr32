@@ -189,6 +189,7 @@ extern void monome_idx_xy(u32 idx, u8* x, u8* y);
 // convert x,y to framebuffer idx
 extern u32 monome_xy_idx(u8 x, u8 y);
 
+extern eMonomeDevice monome_device(void);
 extern u8 monome_size_x(void);
 extern u8 monome_size_y(void);
 extern u8 monome_is_vari(void);

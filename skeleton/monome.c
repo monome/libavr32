@@ -473,6 +473,7 @@ void monome_led_toggle(u8 x, u8 y) {
 }
 
 
+eMonomeDevice monome_device(void) { return mdesc.device; }
 u8 monome_size_x(void) { return mdesc.cols; }
 u8 monome_size_y(void) {  return mdesc.rows; }
 u8 monome_is_vari(void) {  return mdesc.vari; }
