@@ -38,7 +38,6 @@
 #define GRAM_BYTES_1  4095
 
 
-static u8 screenBuf[GRAM_BYTES];
 //-----------------------------
 //----  functions
 
