@@ -350,6 +350,31 @@ void font_string_region_clip(region* reg, const char* str, u8 xoff, u8 yoff, u8 
   } 
 }
 
+// clipping variant with hilight
+void font_string_region_clip_hi(region* reg, const char* str, u8 xoff, u8 yoff, u8 fg, u8 bg, u8 hi) {
+  u8* buf = reg->data + xoff + (u32)(reg->w) * (u32)yoff;
+  u8* max = reg->data + reg->len;
+  u32 xmax = reg->w - 7; // padding
+  u8 dx = 0;
+  u8 i = 0;
+  while(buf < max) {
+    // break on end of string
+    if(*str == 0) { break; } 
+    if(i == hi) bg++;   
+    dx = font_glyph(*str, buf, reg->w, fg, bg) + 1;
+    if(i == hi) bg--;   
+    buf += dx;
+    xoff += dx;
+    ++str;
+    // wrap lines
+    if(xoff > xmax) { 
+      return; 
+    }
+
+    i++;
+  } 
+}
+
 
 // same as font_string, double size
 u8* font_string_big(const char* str, u8* buf, u32 size, u8 w, u8 a, u8 b) {

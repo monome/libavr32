@@ -61,6 +61,7 @@ u8 font_string_position(const char* str, u8 pos);
 // this allows for smarter bounds handling
 extern void font_string_region_wrap(region* reg, const char* str, u8 x, u8 y, u8 fg, u8 bg);
 extern void font_string_region_clip(region* reg, const char* str, u8 x, u8 y, u8 fg, u8 bg);
+extern void font_string_region_clip_hi(region* reg, const char* str, u8 x, u8 y, u8 fg, u8 bg, u8 hi);
 
 ///--- anti-aliased
 
