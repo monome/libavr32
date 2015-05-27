@@ -10,13 +10,13 @@
 #include "spi.h"
 #include "tc.h"
 #include "twi.h"
-#include "i2c.h"
 #include "uhc.h"
 
 #include "conf_board.h"
 #include "conf_tc_irq.h"
 #include "init.h"
 #include "types.h"
+#include "i2c.h"
 
 
 extern void init_gpio(void) {
@@ -171,12 +171,10 @@ void init_usb_host (void) {
 
 
 // initialize i2c
-void init_i2c(void) {
+void init_i2c_master(void) {
 	twi_options_t opt;
-	twi_package_t packet;
-	twi_package_t packet_received;
 
-	int status, i;
+	int status;
 
 	static const gpio_map_t TWI_GPIO_MAP = {
 		{AVR32_TWI_SDA_0_0_PIN, AVR32_TWI_SDA_0_0_FUNCTION},
@@ -192,104 +190,46 @@ void init_i2c(void) {
 	opt.chip = 0x50;
 
 	// initialize TWI driver with options
-	status = twi_master_init(&AVR32_TWI, &opt);
+	// status = twi_master_init(&AVR32_TWI, &opt);
+	status = twi_master_init(TWI, &opt);
+/*	// check init result
+	if (status == TWI_SUCCESS)
+		print_dbg("\r\ni2c init");
+	else
+		print_dbg("\r\ni2c init FAIL");
+*/
+}
+
+void init_i2c_slave(void) {
+	twi_options_t opt;
+	twi_slave_fct_t twi_slave_fct;
+
+	int status;
+
+	static const gpio_map_t TWI_GPIO_MAP = {
+		{AVR32_TWI_SDA_0_0_PIN, AVR32_TWI_SDA_0_0_FUNCTION},
+		{AVR32_TWI_SCL_0_0_PIN, AVR32_TWI_SCL_0_0_FUNCTION}
+	};
+
+	gpio_enable_module(TWI_GPIO_MAP, sizeof(TWI_GPIO_MAP) / sizeof(TWI_GPIO_MAP[0]));
+
+
+	// options settings
+	opt.pba_hz = FOSC0;
+	opt.speed = TWI_SPEED;
+	opt.chip = 0x50;
+
+	// initialize TWI driver with options
+	twi_slave_fct.rx = &twi_slave_rx;
+	twi_slave_fct.tx = &twi_slave_tx;
+	twi_slave_fct.stop = &twi_slave_stop;
+	status = twi_slave_init(&AVR32_TWI, &opt, &twi_slave_fct );
+/*
 	// check init result
 	if (status == TWI_SUCCESS)
-	{
-	// display test result to user
-	print_dbg("Probe test:\tPASS\r\n");
-	}
+		print_dbg("\r\ni2c init");
 	else
-	{
-	// display test result to user
-	print_dbg("Probe test:\tFAIL\r\n");
-	}
-
-#define EEPROM_ADDRESS        0x50        // EEPROM's TWI address
-#define EEPROM_ADDR_LGT       3           // Address length of the EEPROM memory
-#define VIRTUALMEM_ADDR_START 0x123456    // Address of the virtual mem in the EEPROM
-
-	#define  PATTERN_TEST_LENGTH        (sizeof(test_pattern)/sizeof(U8))
-const U8 test_pattern[] =  {
-   0xAA,
-   0x55,
-   0xA5,
-   0x5A,
-   0x77,
-   0x99};
-
-     U8 data_received[PATTERN_TEST_LENGTH] = {0};
-
-
-	  // TWI chip address to communicate with
-  packet.chip = EEPROM_ADDRESS;
-  // TWI address/commands to issue to the other chip (node)
-  packet.addr[0] = VIRTUALMEM_ADDR_START >> 16;
-  packet.addr[1] = VIRTUALMEM_ADDR_START >> 8;
-  packet.addr[2] = VIRTUALMEM_ADDR_START;
-  // Length of the TWI data address segment (1-3 bytes)
-  packet.addr_length = EEPROM_ADDR_LGT;
-  // Where to find the data to be written
-  packet.buffer = (void*) test_pattern;
-  // How many bytes do we want to write
-  packet.length = PATTERN_TEST_LENGTH;
-
-  // perform a write access
-  status = twi_master_write(&AVR32_TWI, &packet);
-
-  // check write result
-  if (status == TWI_SUCCESS)
-  {
-    // display test result to user
-    print_dbg("Write test:\tPASS\r\n");
-  }
-  else
-  {
-    // display test result to user
-    print_dbg("Write test:\tFAIL\r\n");
-  }
-
-
-
-  // TWI chip address to communicate with
-  packet_received.chip = EEPROM_ADDRESS ;
-  // Length of the TWI data address segment (1-3 bytes)
-  packet_received.addr_length = EEPROM_ADDR_LGT;
-  // How many bytes do we want to write
-  packet_received.length = PATTERN_TEST_LENGTH;
-  // TWI address/commands to issue to the other chip (node)
-  packet_received.addr[0] = VIRTUALMEM_ADDR_START >> 16;
-  packet_received.addr[1] = VIRTUALMEM_ADDR_START >> 8;
-  packet_received.addr[2] = VIRTUALMEM_ADDR_START;
-  // Where to find the data to be written
-  packet_received.buffer = data_received;
-
-  // perform a read access
-  status = twi_master_read(&AVR32_TWI, &packet_received);
-
-  // check read result
-  if (status == TWI_SUCCESS)
-  {
-    // display test result to user
-    print_dbg("Read Test:\tPASS\r\n");
-  }
-  else
-  {
-    // display test result to user
-    print_dbg("Read test:\tFAIL\r\n");
-  }
-
-  // check received data against sent data
-  for (i = 0 ; i < PATTERN_TEST_LENGTH; i++)
-  {
-    if (data_received[i] != test_pattern[i])
-    {
-      // a char isn't consistent
-      print_dbg("Check Read:\tFAIL\r\n");
-    }
-  }
-
-  // everything was OK
-  // print_dbg("Check Read:\tPASS\r\n");
-
+		print_dbg("\r\ni2c init FAIL");
+*/
 }
+

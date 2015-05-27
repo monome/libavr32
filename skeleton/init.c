@@ -9,12 +9,14 @@
 #include "print_funcs.h"
 #include "spi.h"
 #include "tc.h"
+#include "twi.h"
 #include "uhc.h"
 
 #include "conf_board.h"
 #include "conf_tc_irq.h"
 #include "init.h"
 #include "types.h"
+#include "i2c.h"
 
 //===================================
 //==== external functions
@@ -159,5 +161,73 @@ void init_twi(void) {
 // initialize USB host stack
 void init_usb_host (void) {
   uhc_start();
+}
+
+
+
+
+// initialize i2c
+void init_i2c_master(void) {
+  twi_options_t opt;
+
+  int status;
+
+  static const gpio_map_t TWI_GPIO_MAP = {
+    {AVR32_TWI_SDA_0_0_PIN, AVR32_TWI_SDA_0_0_FUNCTION},
+    {AVR32_TWI_SCL_0_0_PIN, AVR32_TWI_SCL_0_0_FUNCTION}
+  };
+
+  gpio_enable_module(TWI_GPIO_MAP, sizeof(TWI_GPIO_MAP) / sizeof(TWI_GPIO_MAP[0]));
+
+
+  // options settings
+  opt.pba_hz = FOSC0;
+  opt.speed = TWI_SPEED;
+  opt.chip = 0x50;
+
+  // initialize TWI driver with options
+  // status = twi_master_init(&AVR32_TWI, &opt);
+  status = twi_master_init(TWI, &opt);
+  // check init result
+  // if (status == TWI_SUCCESS)
+  //   print_dbg("\r\ni2c init");
+  // else
+  //   print_dbg("\r\ni2c init FAIL");
+}
+
+void init_i2c_slave(uint8_t addr) {
+  static const gpio_map_t TWI_GPIO_MAP =
+  {
+    {AVR32_TWI_SDA_0_0_PIN, AVR32_TWI_SDA_0_0_FUNCTION},
+    {AVR32_TWI_SCL_0_0_PIN, AVR32_TWI_SCL_0_0_FUNCTION}
+  };
+  twi_options_t opt;
+  twi_slave_fct_t twi_slave_fct;
+  int status;
+
+  // TWI gpio pins configuration
+  gpio_enable_module(TWI_GPIO_MAP, sizeof(TWI_GPIO_MAP) / sizeof(TWI_GPIO_MAP[0]));
+
+  // options settings
+  opt.pba_hz = FOSC0;
+  opt.speed = TWI_SPEED;
+  opt.chip = addr;
+
+  // initialize TWI driver with options
+  twi_slave_fct.rx = &twi_slave_rx;
+  twi_slave_fct.tx = &twi_slave_tx;
+  twi_slave_fct.stop = &twi_slave_stop;
+  status = twi_slave_init(&AVR32_TWI, &opt, &twi_slave_fct );
+/*  // check init result
+  if (status == TWI_SUCCESS)
+  {
+    // display test result to user
+    print_dbg("Slave start:\tPASS\r\n");
+  }
+  else
+  {
+    // display test result to user
+    print_dbg("slave start:\tFAIL\r\n");
+  }*/
 }
 
