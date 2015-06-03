@@ -282,6 +282,19 @@ u8 font_string_position(const char* str, u8 pos) {
   return n;
 }
 
+u8 font_string_pixels(const char* str) {
+  u8 i = 0,n = 0;
+
+  while(str[i]) {
+    n+= FONT_CHARW - font_data[str[i] - FONT_ASCII_OFFSET].first - font_data[str[i] - FONT_ASCII_OFFSET].last;
+
+    n++;
+    i++;
+  }
+
+  return n;
+}
+
 // render a string of packed glyphs to a buffer
 u8* font_string(const char* str, u8* buf, u32 size, u8 w, u8 a, u8 b) {
   u8* max = buf + size - 8; // pad 1 character width on right edge
@@ -350,11 +363,32 @@ void font_string_region_clip(region* reg, const char* str, u8 xoff, u8 yoff, u8 
   } 
 }
 
+void font_string_region_clip_right(region* reg, const char* str, u8 xoff, u8 yoff, u8 fg, u8 bg) {
+  int8_t x = xoff - font_string_pixels(str);
+  if(x < 0) x = 0;
+  u8* buf = reg->data + x + (u32)(reg->w) * (u32)yoff;
+  u8* max = reg->data + reg->len;
+  u32 xmax = reg->w - 6; // padding changed from 7 to 6 (only using 4 wide nums anyway)
+  u8 dx = 0;
+  while(buf < max) {
+    // break on end of string
+    if(*str == 0) { break; }    
+    dx = font_glyph(*str, buf, reg->w, fg, bg) + 1;
+    buf += dx;
+    x += dx;
+    ++str;
+    // wrap lines
+    if(x > xmax) { 
+      return; 
+    }
+  } 
+}
+
 // clipping variant with hilight
 void font_string_region_clip_hi(region* reg, const char* str, u8 xoff, u8 yoff, u8 fg, u8 bg, u8 hi) {
   u8* buf = reg->data + xoff + (u32)(reg->w) * (u32)yoff;
   u8* max = reg->data + reg->len;
-  u32 xmax = reg->w - 7; // padding
+  u32 xmax = reg->w - 7; 
   u8 dx = 0;
   u8 i = 0;
   while(buf < max) {

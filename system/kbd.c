@@ -20,6 +20,22 @@ extern void set_old_frame(const s8 *data) {
 }
 
 
+u8 hid_to_ascii_raw(u8 data) {
+	if( data >= 0x1e && data <= 0x27 ) {
+		if( data == 0x27 ) {  //zero
+	      	return( 0x30 );
+	    }
+	    else {
+      		return( data + 0x13 );
+	    }
+	}
+	else if( data >= 0x04 && data <= 0x1d ) {
+		return( data + 0x3d );
+	}
+
+	return 0;
+}
+
 u8 hid_to_ascii(u8 data, u8 mod) {
   	/* upper row of the keyboard, numbers and special symbols */
 	if( data >= 0x1e && data <= 0x27 ) {
