@@ -363,6 +363,32 @@ void font_string_region_clip(region* reg, const char* str, u8 xoff, u8 yoff, u8 
   } 
 }
 
+// clipping variant
+#define TAB_POSITION 48
+void font_string_region_clip_tab(region* reg, const char* str, u8 xoff, u8 yoff, u8 fg, u8 bg) {
+  u8* buf = reg->data + xoff + (u32)(reg->w) * (u32)yoff;
+  u8* max = reg->data + reg->len;
+  u32 xmax = reg->w - 7; // padding
+  u8 dx = 0;
+  while(buf < max) {
+    // break on end of string
+    if(*str == 0) { break; }
+    if(*str == '|') {
+      buf = reg->data + TAB_POSITION + (u32)(reg->w) * (u32)yoff;
+    }    
+    else {
+      dx = font_glyph(*str, buf, reg->w, fg, bg) + 1;
+      buf += dx;
+      xoff += dx;
+    }
+    ++str;
+    // wrap lines
+    if(xoff > xmax) { 
+      return; 
+    }
+  } 
+}
+
 void font_string_region_clip_right(region* reg, const char* str, u8 xoff, u8 yoff, u8 fg, u8 bg) {
   int8_t x = xoff - font_string_pixels(str);
   if(x < 0) x = 0;
