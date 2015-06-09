@@ -36,7 +36,7 @@
 #define SHIFT       0x22
 #define CTRL        0x11
 #define ALT         0x44
-#define GUI         0x88
+#define META         0x88
 /**/
 /* "Sticky keys */
 #define CAPSLOCK    (0x39)
