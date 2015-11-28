@@ -40,13 +40,15 @@ u8 midiConnect = 0;
 
 //------------------------------------
 //------ static variables
-static u8 rxBuf[MIDI_RX_BUF_SIZE];
+// 
+// buffers must be word aligned per docs on uhd_ep_run()
+COMPILER_WORD_ALIGNED static u8 rxBuf[MIDI_RX_BUF_SIZE];
 static u32 rxBytes = 0;
-static u8 rxBusy = 0;
-static u8 txBusy = 0;
+static volatile u8 rxBusy = 0;
+static volatile u8 txBusy = 0;
 
 // try using an output buffer and adding the extra nib we saw on input ... 
-static u8 txBuf[MIDI_TX_BUF_SIZE];
+COMPILER_WORD_ALIGNED static u8 txBuf[MIDI_TX_BUF_SIZE];
 
 // current packet data
 //union { u8 buf[MIDI_MAX_PACKET_SIZE]; s32 data; } packet;
@@ -96,11 +98,11 @@ static void midi_parse(void) {
       //      print_dbg(" )");
 
       if(stat) {
-	// if we already had a status byte, send the previous packet
-	ev.data = packet.sdata;
-	//	print_dbg("\r\n sending MIDI packet: "); 
-	//	print_dbg_hex(packet.data);
-	event_post(&ev);
+        // if we already had a status byte, send the previous packet
+	      ev.data = packet.sdata;
+		    // print_dbg("\r\n sending MIDI packet: ");
+		    // print_dbg_hex(packet.data);
+	      event_post(&ev);
       }
       *dst = b;
       stat = 1;  
@@ -108,18 +110,18 @@ static void midi_parse(void) {
       // this is a data byte or whatever
       ++dst;
       if(dst > packetEnd) {
-	// exceeded packet size (sysex?), so give up on this packet
-	stat = 0;
+        // exceeded packet size (sysex?), so give up on this packet
+        stat = 0;
       } else {
-	*dst = b;
+        *dst = b;
       }
     }
   }
   // at the end of a buffer, send a packet if we have a pending status
   if(stat) {
-    //    print_dbg("\r\n sending MIDI packet: "); 
+      //  print_dbg("\r\n sending MIDI packet: ");
     ev.data = packet.sdata;
-    //    print_dbg_hex(packet.data);
+      //  print_dbg_hex(packet.data);
     event_post(&ev);
   }
 }
@@ -129,21 +131,23 @@ static void midi_rx_done( usb_add_t add,
 			  usb_ep_t ep,
 			  uhd_trans_status_t stat,
 			  iram_size_t nb) {
-  int i;
+  // int i;
   rxBusy = 0;
   if(nb > 0) {
-    print_dbg("\r\n midi rx; status: 0x");
-    print_dbg_hex((u32)stat);
-    print_dbg(" ; nb: ");
-    print_dbg_ulong(nb);
-    print_dbg(" ; data: ");
-    for(i=0; i<nb; i++) {
-      print_dbg_char_hex(rxBuf[i]);
-      print_dbg(" ");
+    // print_dbg("\r\n midi rx; uhd status: 0x");
+    // print_dbg_hex((u32)stat);
+    // print_dbg(" ; nb: ");
+    // print_dbg_ulong(nb);
+    // print_dbg(" ; data: ");
+    // for(i=0; i<nb; i++) {
+    //   print_dbg_char_hex(rxBuf[i]);
+    //   print_dbg(" ");
+    // }
+    if (stat == UHD_TRANS_NOERROR) {
+      // ignoring 1st byte, virtual cable select
+      rxBytes = nb - 1;
+      midi_parse();
     }
-    // ignoring 1st byte, virtual cable select
-    rxBytes = nb - 1;
-    midi_parse();
   } 
 }
 
@@ -165,12 +169,17 @@ static void midi_tx_done( usb_add_t add,
 //----- extern functions
 // read and spawn events (non-blocking)
 extern void midi_read(void) {
-  rxBytes = 0;
-  rxBusy = true;
-  if (!uhi_midi_in_run((u8*)rxBuf,
-		       MIDI_RX_BUF_SIZE, &midi_rx_done)) {
-    // hm, every uhd enpoint run always returns error...
-    //    print_dbg("\r\n midi rx endpoint error");
+  if (rxBusy == 0) {
+    rxBytes = 0;
+    rxBusy = 1;
+    if (!uhi_midi_in_run((u8*)rxBuf,
+		        MIDI_RX_BUF_SIZE, &midi_rx_done)) {
+      // hm, every uhd enpoint run always returns error...
+      // ...becasue most of the time a rx job is already running, by only
+      // running the endpoint read after midi_rx_done has set rxBusy to false
+      // the errors here stop.
+      print_dbg("\r\n midi rx endpoint error");
+    }
   }
   return;
 }
@@ -202,7 +211,7 @@ extern void midi_write(const u8* data, u32 bytes) {
   txBusy = true;
   if (!uhi_midi_out_run(txBuf, bytes+1, &midi_tx_done)) {
     // hm, every uhd enpoint run always returns unspecified error...
-    //    print_dbg("\r\n midi tx endpoint error");
+      //  print_dbg("\r\n midi tx endpoint error");
   }
   return;
 }
