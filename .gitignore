@@ -34,3 +34,6 @@
 *.lss
 *.sym
 *.map
+
+# Debug files
+*.dSYM/
