@@ -27,6 +27,11 @@ typedef enum {
   kEventMonomeRefresh, 	
   kEventMonomeGridKey, 
   kEventMonomeRingEnc,
+  // HID
+  kEventHidConnect,
+  kEventHidDisconnect,
+  kEventHidPacket,
+  kEventHidTimer,
 
   /// dummy/count
   kNumEventTypes,
