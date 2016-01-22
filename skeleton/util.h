@@ -12,5 +12,6 @@ static volatile u32 x2 = 7654321;  // seed
 
 extern u32 rnd(void);
 extern u16 rotl(u16 value, u16 shift);
+char* itoa(int value, char* result, int base);
 
 #endif

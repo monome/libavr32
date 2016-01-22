@@ -1,5 +1,5 @@
-#ifndef _ALEPH_AVR32_USB_UHI_HID_H_
-#define _ALEPH_AVR32_USB_UHI_HID_H_
+#ifndef _USB_UHI_HID_H_
+#define _USB_UHI_HID_H_
 
 #include "conf_usb_host.h"
 #include "usb_protocol.h"
