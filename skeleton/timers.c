@@ -157,8 +157,8 @@ void process_timers( void ) {
   for(i = 0; i<num; ++i) {
     --(t->ticksRemain);
     if(t->ticksRemain == 0) {
-      (*(t->callback))(t->caller);   
       t->ticksRemain = t->ticks;
+      (*(t->callback))(t->caller);   
       //      print_dbg("\r\n triggered timer callback @ 0x");
       //      print_dbg_hex((u32)t);
     }
@@ -173,5 +173,19 @@ void process_timers( void ) {
 void timer_set(softTimer_t* timer, u32 ticks) {
   timer->ticks = ticks;
   if(timer->ticksRemain > ticks) timer->ticksRemain = ticks;
+}
+
+void timer_reset(softTimer_t* timer, u32 ticks) {
+  timer->ticks = ticks;
+  timer->ticksRemain = ticks;
+}
+
+void timer_manual(softTimer_t* timer) {
+  timer->ticksRemain = 1;
+}
+
+
+u32 timer_ticks(softTimer_t* timer) {
+  return timer->ticksRemain;
 }
 
