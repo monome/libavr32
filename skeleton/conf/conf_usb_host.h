@@ -12,12 +12,11 @@
 #define UHD_NO_SLEEP_MGR
 
 //! Array of UHI APIs Define the list of UHI supported by USB host.
-//#define USB_HOST_UHI        UHI_HID_MOUSE , UHI_HID_GAMEPAD , UHI_FTDI , UHI_MIDI , UHI_HID
-#define USB_HOST_UHI        UHI_FTDI, UHI_MSC
-
+// #define USB_HOST_UHI        UHI_FTDI , UHI_HID
+#define USB_HOST_UHI        UHI_HID, UHI_MSC
 
 //! Maximum current allowed on Vbus (mA)
-#define USB_HOST_POWER_MAX  1200
+#define USB_HOST_POWER_MAX  300
 
 /**
  * USB Host callbacks
@@ -67,14 +66,15 @@
 #define UHI_HID_CHANGE(dev,b_plug) hid_change(dev, b_plug)
 
 // ftdi functions
-#define UHI_FTDI_CHANGE(dev, b_plug) ftdi_change(dev, b_plug)
+// #define UHI_FTDI_CHANGE(dev, b_plug) ftdi_change(dev, b_plug)
 
 // midi functions
 // #define UHI_MIDI_CHANGE(dev, b_plug) midi_change(dev, b_plug)
 
 #define UHI_MSC_CHANGE(dev,b_plug)
 
-#include "uhi_ftdi.h"
+
+// #include "uhi_ftdi.h"
 #include "uhi_hid.h"
 // #include "uhi_midi.h"
 //#include "ui.h"
