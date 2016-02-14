@@ -18,7 +18,7 @@ u16 rotl(u16 value, u16 shift) {
 // http://homepage.cs.uiowa.edu/~jones/bcd/divide.html
 /**
 	 * C++ version 0.4 char* style "itoa":
-	 * Written by Lukás Chmela
+	 * Written by LukÃ¡s Chmela
 	 * Released under GPLv3.
 	 */
 char* itoa(int value, char* result, int base) {
@@ -40,8 +40,8 @@ char* itoa(int value, char* result, int base) {
 		tmp_value = value;
 		// opt-hack for base 10 assumed
 		// value = (((uint16_t)value * (uint16_t)0xCD) >> 8) >> 3;
-		// value = (((uint32_t)value * (uint32_t)0xCCCD) >> 16) >> 3;
-		value /= base;
+		value = (((uint32_t)value * (uint32_t)0xCCCD) >> 16) >> 3;
+		// value /= base;
 		*ptr++ = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz" [35 + (tmp_value - value * base)];
 	} while ( value );
 
