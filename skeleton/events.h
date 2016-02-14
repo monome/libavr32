@@ -33,6 +33,11 @@ typedef enum {
   kEventHidPacket,
   kEventHidTimer,
 
+  kEventScreenRefresh,
+  // Trigger EVENT (8 digital inputs)
+  kEventTrigger,
+  kEventII,
+
   /// dummy/count
   kNumEventTypes,
 } etype;
