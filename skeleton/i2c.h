@@ -3,8 +3,7 @@
 
 
 
-extern void i2c_master_tx(void);
-extern void i2c_master_tx(void);
+extern void i2c_master_tx(uint8_t, uint8_t, int);
 
 
 

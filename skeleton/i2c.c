@@ -6,37 +6,46 @@
 static volatile uint8_t rx_buffer[8];
 static uint8_t rx_pos; 
 
-// static twi_package_t packet;
+static twi_package_t packet;
 // static twi_package_t packet_received;
 
 volatile process_ii_t process_ii;
 
-void i2c_master_tx() {
-/*	int status;
+void i2c_master_tx(uint8_t addr, uint8_t idx, int data) {
+  int status;
+  uint8_t d[3];
+
+  d[0] = idx;
+  d[1] = data >> 8;
+  d[2] = data & 0xff;
 
 
 	  // TWI chip address to communicate with
-  packet.chip = EEPROM_ADDRESS;
+  // packet.chip = EEPROM_ADDRESS;
+  packet.chip = addr;
   // TWI address/commands to issue to the other chip (node)
-  packet.addr[0] = VIRTUALMEM_ADDR_START >> 16;
-  packet.addr[1] = VIRTUALMEM_ADDR_START >> 8;
-  packet.addr[2] = VIRTUALMEM_ADDR_START;
+  // packet.addr[0] = VIRTUALMEM_ADDR_START >> 16;
+  // packet.addr[1] = VIRTUALMEM_ADDR_START >> 8;
+  // packet.addr[2] = VIRTUALMEM_ADDR_START;
   // Length of the TWI data address segment (1-3 bytes)
-  packet.addr_length = EEPROM_ADDR_LGT;
+  // packet.addr_length = EEPROM_ADDR_LGT;
+  packet.addr_length = 0;
   // Where to find the data to be written
-  packet.buffer = (void*) test_pattern;
+  packet.buffer = &d;
   // How many bytes do we want to write
-  packet.length = 6;
+  packet.length = 3;
 
   // perform a write access
   status = twi_master_write(TWI, &packet);
 
-  // check write result
-  if (status == TWI_SUCCESS)
-    print_dbg("\r\nWrite test:\tPASS");
-  else
-    print_dbg("\r\nWrite test:\tFAIL");
+  // // check write result
+  // if (status == TWI_SUCCESS)
+  //   print_dbg("\r\nWrite test:\tPASS");
+  // else
+  //   print_dbg("\r\nWrite test:\tFAIL");
 
+
+/*
   // TWI chip address to communicate with
   packet_received.chip = EEPROM_ADDRESS ;
   // Length of the TWI data address segment (1-3 bytes)
