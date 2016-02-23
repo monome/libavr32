@@ -175,6 +175,10 @@ void timer_set(softTimer_t* timer, u32 ticks) {
   if(timer->ticksRemain > ticks) timer->ticksRemain = ticks;
 }
 
+void timer_reset(softTimer_t* timer) {
+  timer->ticksRemain = timer->ticks;
+}
+
 void timer_reset_set(softTimer_t* timer, u32 ticks) {
   timer->ticks = ticks;
   timer->ticksRemain = ticks;
