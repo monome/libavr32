@@ -184,8 +184,3 @@ void timer_manual(softTimer_t* timer) {
   timer->ticksRemain = 1;
 }
 
-
-u32 timer_ticks(softTimer_t* timer) {
-  return timer->ticksRemain;
-}
-
