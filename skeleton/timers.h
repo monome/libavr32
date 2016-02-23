@@ -39,7 +39,7 @@ u8 timer_remove( softTimer_t* timer );
 void process_timers( void );
 
 void timer_set(softTimer_t* timer, u32 ticks);
-void timer_reset(softTimer_t* timer, u32 ticks);
+void timer_reset_set(softTimer_t* timer, u32 ticks);
 void timer_manual(softTimer_t* timer);
 
 // clear the list
