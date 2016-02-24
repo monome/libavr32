@@ -4,7 +4,7 @@
 #include "gpio.h"
 #include "spi.h"
 
-#include "init.h"
+#include "init_teletype.h"
 
 
 extern void init_gpio(void) {
