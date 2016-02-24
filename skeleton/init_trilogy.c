@@ -4,7 +4,7 @@
 #include "gpio.h"
 #include "spi.h"
 
-#include "init.h"
+#include "init_trilogy.h"
 
 //===================================
 //==== external functions
