@@ -22,7 +22,13 @@
 #define AD7923_CTL_CODING (1)
 
 // command word to which we add the desired channel address for conversion
+#ifdef MOD_TRILOGY
 #define AD7923_CMD_BASE ( AD7923_CTL_WRITE | AD7923_CTL_PM0 | AD7923_CTL_PM1 | AD7923_CTL_CODING)
+#endif
+#ifdef MOD_TELETYPE
+#define AD7923_CMD_BASE ( AD7923_CTL_WRITE | AD7923_CTL_PM0 | AD7923_CTL_PM1 | AD7923_CTL_CODING | AD7923_CTL_RANGE)
+#endif
+
 
 // // adc events
 // static const etype adctypes[4] = { 
