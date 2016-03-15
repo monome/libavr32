@@ -10,7 +10,7 @@
 // aleph-avr32
 #include "conf_usb_host.h"
 #include "events.h"
-#include "event_types.h"
+#include "events.h"
 #include "midi.h"
 #include "uhi_midi.h"
 

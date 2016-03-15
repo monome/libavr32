@@ -38,6 +38,10 @@ typedef enum {
   kEventTrigger,
   kEventII,
 
+  kEventMidiConnect,
+  kEventMidiDisconnect,
+  kEventMidiPacket,
+
   /// dummy/count
   kNumEventTypes,
 } etype;
