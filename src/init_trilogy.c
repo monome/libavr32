@@ -186,7 +186,7 @@ extern void init_spi (void) {
 
   spi_options_t spiOptions = {
     .reg = DAC_SPI,
-    .baudrate = 2000000,
+    .baudrate = 4000000,
     .bits = 8,
     .trans_delay = 0,
     .spck_delay = 0,
