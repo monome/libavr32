@@ -114,9 +114,13 @@ static void irq_port1_line1(void) {
     // clock in
     if(gpio_get_pin_interrupt_flag(B08)) {
       // CLOCK BOUNCY WITHOUT THESE PRINTS
-      print_dbg("\rclk: ");
-      print_dbg_ulong(gpio_get_pin_value(B08));
-      (*clock_pulse)(gpio_get_pin_value(B08));
+      // print_dbg("\rclk: ");
+      // print_dbg_ulong(gpio_get_pin_value(B08));
+      // (*clock_pulse)(gpio_get_pin_value(B08));
+      static event_t e;
+      e.type = kEventClockExt;
+      e.data = gpio_get_pin_value(B08);
+      event_post(&e);
       gpio_clear_pin_interrupt_flag(B08);
     }
 }

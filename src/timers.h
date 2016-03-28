@@ -43,6 +43,9 @@ void timer_reset(softTimer_t* timer);
 void timer_reset_set(softTimer_t* timer, u32 ticks);
 void timer_manual(softTimer_t* timer);
 
+u32 time_now(void);
+void time_clear(void);
+
 // clear the list
 extern void timers_clear(void) ;
 
