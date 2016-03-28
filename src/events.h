@@ -17,6 +17,7 @@ typedef enum {
   kEventKeyTimer,
   kEventSaveFlash,
   kEventClockNormal,
+  kEventClockExt,
   /// connect/disconnect FTDI-based devices
   kEventFtdiConnect,
   kEventFtdiDisconnect,

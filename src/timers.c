@@ -12,6 +12,8 @@ static volatile softTimer_t* head = NULL;
 static volatile softTimer_t* tail = NULL;
 static volatile u32 num = 0;
 
+static volatile u32 now = 0;
+
 //------------------------------
 //--- extern functions
 
@@ -145,6 +147,8 @@ void process_timers( void ) {
   u32 i;
   volatile softTimer_t* t = head;
 
+  now++;
+
   //  print_dbg("\r\n processing timers. head: 0x");
   //  print_dbg_hex((u32)head);
 
@@ -187,4 +191,15 @@ void timer_reset_set(softTimer_t* timer, u32 ticks) {
 void timer_manual(softTimer_t* timer) {
   timer->ticksRemain = 1;
 }
+
+
+
+u32 time_now() {
+  return now;
+}
+
+void time_clear() {
+  now = 0;
+}
+
 
