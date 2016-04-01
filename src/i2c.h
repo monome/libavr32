@@ -1,12 +1,12 @@
 #ifndef _I2C_H_
 #define _I2C_H_
 
-
+// PPP framing
 #define STX 12
 #define ETX 13
 #define DLE 27
 
-extern void i2c_master_tx(uint8_t, uint8_t, int);
+extern void i2c_master_tx(uint8_t, uint8_t *, uint8_t);
 extern void i2c_master_rx(uint8_t addr, uint8_t idx);
 
 extern void twi_slave_rx( U8 u8_value );
