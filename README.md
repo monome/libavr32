@@ -1,5 +1,7 @@
 # libavr32
 
+[![Build Status](https://travis-ci.org/monome/libavr32.svg?branch=master)](https://travis-ci.org/monome/libavr32)
+
 Common code shared between Monome Eurorack firmwares:
 
 * [earthsea][]
