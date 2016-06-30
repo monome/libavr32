@@ -93,7 +93,7 @@
 #define USART_IRQ                   AVR32_USART1_IRQ
 #define USART_IRQ_GROUP             AVR32_USART1_IRQ_GROUP
 #define USART_SYSCLK                SYSCLK_USART1
-#define USART_BAUDRATE 				57600
+#define USART_BAUDRATE 				115200
 
 
 /// compatibility with ASF print funcs
@@ -153,7 +153,7 @@
 #define TWI_DATA_FUNCTION   	AVR32_TWI_SDA_0_0_FUNCTION
 #define TWI_CLOCK_PIN           AVR32_TWI_SCL_0_0_PIN
 #define TWI_CLOCK_FUNCTION  	AVR32_TWI_SCL_0_0_FUNCTION
-#define TWI_SPEED				50000
+#define TWI_SPEED				132000
 
 #define MOD_TRILOGY
 

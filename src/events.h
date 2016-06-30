@@ -12,6 +12,8 @@ extern void (*app_event_handlers[])(s32 data);
 typedef enum {
   kEventNone,
   kEventFront,
+  kEventFrontShort,
+  kEventFrontLong,
   kEventTimer,
   kEventPollADC,
   kEventKeyTimer,
@@ -42,6 +44,11 @@ typedef enum {
   kEventMidiConnect,
   kEventMidiDisconnect,
   kEventMidiPacket,
+
+  kEventTr,
+  kEventTrNormal,
+  kEventKey,
+
 
   /// dummy/count
   kNumEventTypes,
