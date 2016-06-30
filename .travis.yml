@@ -36,7 +36,7 @@ matrix:
         - LIBAVR32_DIR=libavr32
     - env:
         - REPO=monome/teletype
-        - SRC_DIR=src
+        - SRC_DIR=module
         - LIBAVR32_DIR=libavr32
     - env:
         - REPO=monome/whitewhale

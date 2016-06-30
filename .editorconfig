@@ -1,0 +1,23 @@
+# EditorConfig: http://EditorConfig.org
+
+# top-most EditorConfig file
+root = true
+
+# utf-8 and Unix-style newlines with a newline ending every file
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+
+# Makefiles always uses tabs
+[{Makefile,config.mk}]
+indent_style = tab
+indent_size = 8
+trim_trailing_whitespace = true
+
+# Uncomment once code is formatted
+# C & Cpp
+#[*.{h,hpp,c,cpp}]
+#indent_style = space
+#indent_size = 4
+#trim_trailing_whitespace = true
