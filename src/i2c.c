@@ -56,7 +56,6 @@ void i2c_master_rx(uint8_t addr, uint8_t *data, uint8_t l) {
 
 
 
-
 void twi_slave_rx( U8 u8_value )
 {
   rx_buffer[rx_pos] = u8_value;
@@ -86,7 +85,9 @@ void twi_slave_stop( void )
 
 
 extern void ii_tx_queue(uint8_t data) {
+  print_dbg("\r\nii_tx_queue ");
   tx_buffer[tx_pos_write] = data;
+  print_dbg_ulong(data);
 
   tx_pos_write = (tx_pos_write + 1) & 7;
   if(tx_pos_write == tx_pos_read)
@@ -95,12 +96,13 @@ extern void ii_tx_queue(uint8_t data) {
 
 uint8_t twi_slave_tx( void )
 {
-   print_dbg("\r\ntwi_tx");
+   print_dbg("\r\nii_tx ");
    if(tx_pos_write == tx_pos_read)
     return 27;
   else {
     uint8_t d = tx_buffer[tx_pos_read];
     tx_pos_read = (tx_pos_read + 1) & 7;
+    print_dbg_ulong(d);
     return d;
   }
 }
