@@ -35,23 +35,13 @@ void i2c_master_rx(uint8_t addr, uint8_t *data, uint8_t l) {
   int status;
 
   packet.chip = addr;
-  // TWI address/commands to issue to the other chip (node)
-  packet.addr[0] = 77;
-  // packet.addr[0] = idx;
-  // packet.addr[1] = VIRTUALMEM_ADDR_START >> 8;
-  // packet.addr[2] = VIRTUALMEM_ADDR_START;
-  // Length of the TWI data address segment (1-3 bytes)
-  // packet.addr_length = EEPROM_ADDR_LGT;
-  packet.addr_length = 1;
+  packet.addr_length = 0;
   // Where to find the data to be written
   packet.buffer = data;
   // How many bytes do we want to write
   packet.length = l;
 
   status = twi_master_read(TWI, &packet);
-
-  // print_dbg("\r\nii receive: ");
-  // print_dbg_ulong(d[0]);
 }
 
 
@@ -64,19 +54,6 @@ void twi_slave_rx( U8 u8_value )
 
 void twi_slave_stop( void )
 {
-  // print_dbg("\r\nrx ");
-
-  // for(int n=0;n<rx_pos;n++) {
-  //   print_dbg("\r\n");
-  //   print_dbg_hex(rx_buffer[n]);
-  // }
-
-  // int i = (rx_buffer[1] << 8) + rx_buffer[2];
-
-  // print_dbg("\r\ntwi: ");
-  // print_dbg_ulong(rx_buffer[0]);
-  // print_dbg(" ");
-  // print_dbg_ulong(i);
   process_ii(&rx_buffer[0], rx_pos);
   rx_pos = 0;
 }
