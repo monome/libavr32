@@ -7,7 +7,7 @@
 // the pool is structured as a linked list ordered from most recent to least
 // recent notes.
 
-#define POOL_SIZE 12
+#define POOL_SIZE 24
 
 struct pool_element {
   held_note_t note;
