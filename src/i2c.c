@@ -54,7 +54,7 @@ void twi_slave_rx( U8 u8_value )
 
 void twi_slave_stop( void )
 {
-  process_ii(&rx_buffer[0], rx_pos);
+  process_ii(rx_buffer, rx_pos);
   rx_pos = 0;
 }
 

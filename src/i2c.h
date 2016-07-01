@@ -6,8 +6,8 @@
 #define ETX 13
 #define DLE 27
 
-#define I2C_TX_BUF_SIZE 32
-#define I2C_RX_BUF_SIZE 32
+#define I2C_TX_BUF_SIZE 8
+#define I2C_RX_BUF_SIZE 8
 
 extern void i2c_master_tx(uint8_t addr, uint8_t *data, uint8_t l);
 extern void i2c_master_rx(uint8_t addr, uint8_t *data, uint8_t l);
