@@ -1,6 +1,8 @@
 #include "notes.h"
 
+#ifndef __TDD__
 #include "print_funcs.h"
+#endif
 
 // maintains a fixed size pool of held notes
 //
