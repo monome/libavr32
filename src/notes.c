@@ -1,6 +1,6 @@
 #include "notes.h"
 
-#ifndef __TDD__
+#ifndef TEST
 #include "print_funcs.h"
 #endif
 
