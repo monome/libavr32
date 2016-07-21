@@ -18,61 +18,63 @@ struct pool_element {
 };
 typedef struct pool_element pool_element_t;
 
+
+struct pool {
+	pool_element_t  elements[POOL_SIZE];
+	u8              count;
+	pool_element_t* head;
+	pool_element_t* last_free;
+};
+typedef struct pool pool_t;
+
 //
 // private
 //
 
-static pool_element_t  _pool[POOL_SIZE];
-static u8              _pool_count; 
-static pool_element_t* _pool_head;
-static pool_element_t* _pool_last_free;
+static pool_t _pool;
+static pool_t* notes = &_pool;
 
-static pool_element_t *pool_tail(void) {
-  pool_element_t *element = _pool_head;
+
+static pool_element_t *pool_tail(pool_t *p) {
+  pool_element_t *element = p->head;
   while (element) element = element->next;
-  //print_dbg("\r\npool_tail() = ");
-  //print_dbg_hex(element);
   return element;
 }
 
-static inline pool_element_t *pool_head(void) {
-  //print_dbg("\r\npool_head() = ");
-  //print_dbg_hex(_pool_head);
-  return _pool_head;
+static inline pool_element_t *pool_head(pool_t *p) {
+  return p->head;
 }
 
-static inline void pool_push(pool_element_t *head) {
-  head->next = _pool_head;
-  _pool_head = head;
+static inline void pool_push(pool_t *p, pool_element_t *head) {
+  head->next = p->head;
+  p->head = head;
 }
 
-inline static u8 pool_remaining(void) {
-  return POOL_SIZE - _pool_count;
+inline static u8 pool_remaining(pool_t *p) {
+  return POOL_SIZE - p->count;
 }
 
-inline static u8 pool_count(void) {
-  return _pool_count;
+inline static u8 pool_count(pool_t *p) {
+  return p->count;
 }
 
-static pool_element_t *pool_take(void) {
+static pool_element_t *pool_take(pool_t *p) {
   pool_element_t *allocated = NULL;
   
-  // print_dbg("\r\npool_take()... ");
-  
-  if (pool_remaining() == 0) {
+  if (pool_remaining(p) == 0) {
     // fail fast if full
     return NULL;
   }
-  if (_pool_last_free) {
+  if (p->last_free) {
     // quick
-    allocated = _pool_last_free;
-    _pool_last_free = NULL;
+    allocated = p->last_free;
+    p->last_free = NULL;
   }
   else {
     // search
     for (u8 i = 0; i < POOL_SIZE; i++) {
-      if (_pool[i].is_free) {
-        allocated = &(_pool[i]);
+      if (p->elements[i].is_free) {
+        allocated = &(p->elements[i]);
         break;
       }
     }
@@ -81,58 +83,56 @@ static pool_element_t *pool_take(void) {
     // record
     allocated->is_free = 0;
     allocated->next = NULL;
-    _pool_count++;
-    pool_push(allocated); // chain and set as head
+    p->count++;
+    pool_push(p, allocated); // chain and set as head
   }
-  
-  // print_dbg_hex(allocated);
   
   return allocated;
 }
 
-static void pool_return(pool_element_t *element) {
+static void pool_return(pool_t *p, pool_element_t *element) {
   pool_element_t *before;
-  // print_dbg("\r\n pool_return()... ");
+
   if (element) {
     if (element->next) {
       // middle of chain, pop out of chain
-      before = pool_head();
+      before = pool_head(p);
       while (before && before->next != element)
         before = before->next;
       before->next = element->next;
     }
-    // print_dbg(" num: ");
-    // print_dbg_ulong(element->note.num);
+
     element->is_free = 1;
     element->next = NULL;
     element->note.num = 0;
     element->note.vel = 0;
-    _pool_last_free = element;
-    _pool_count--;
-    // print_dbg(" new count: ");
-    // print_dbg_ulong(_pool_count);
+
+    p->last_free = element;
+    p->count--;
   }
 }
 
-static void pool_init(void) {
-  // print_dbg("\r\npool_init...");
+static void pool_init(pool_t *p) {
+	pool_element_t *e = &(p->elements[0]);
+
   for (u8 i = 0; i < POOL_SIZE; i++) {
-    _pool[i].note.num = 0;
-    _pool[i].note.vel = 0;
-    _pool[i].is_free = 1;
-    _pool[i].next = NULL;
+    e->note.num = 0;
+    e->note.vel = 0;
+    e->is_free = 1;
+    e->next = NULL;
+		e++;
   }
-  _pool_count = 0;
-  _pool_head = NULL;
-  _pool_last_free = NULL;
-  // print_dbg(" done.");  
+
+	p->count = 0;
+  p->head = NULL;
+  p->last_free = NULL;
 }
 
 //
 // public
 //
 void notes_init(void) {
-  pool_init();
+  pool_init(&_pool);
 }
 
 void notes_hold(u8 num, u8 vel) {
@@ -142,21 +142,19 @@ void notes_hold(u8 num, u8 vel) {
   notes_release(num);
 
   // if at capacity, free the least recently held note
-  if (pool_remaining() == 0) {
-    pool_return(pool_tail());
+  if (pool_remaining(notes) == 0) {
+    pool_return(notes, pool_tail(notes));
   }
 
-  head = pool_take(); // shouldn't be NULL given the above
+  head = pool_take(notes); // shouldn't be NULL given the above
   head->note.num = num;
   head->note.vel = vel;
 }
 
 void notes_release(u8 num) {
   // FIXME: uses pool internals :|
-  pool_element_t *element = pool_head();
+  pool_element_t *element = pool_head(notes);
   pool_element_t *before = NULL;
-  
-  // print_dbg("\r\nnotes_release()...");
   
   // find matching note
   while (element && element->note.num != num) {
@@ -165,25 +163,22 @@ void notes_release(u8 num) {
   }
   
   if (element) {
-    // print_dbg(" match");
     // found a match
     if (before) {
       // in the middle
       before->next = element->next;
-      // print_dbg(" middle.");
     }
     else {
       // element is head
-      _pool_head = element->next;
+      notes->head = element->next; // FIXME: we are breaking the pool abstraction here
       element->next = NULL; // FIXME: to prevent pool_return from messing up head?? nope
-      // print_dbg(" head.");
     }
-    pool_return(element);
+    pool_return(notes, element);
   }
 }
 
 const held_note_t *notes_get(note_priority p) {
-  pool_element_t *element = pool_head();
+  pool_element_t *element = pool_head(notes);
   if (element) {
     // at least one held note...
     switch (p) {
