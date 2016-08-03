@@ -10,7 +10,7 @@
 void test_pool_init(void) {
 	// ensure initializer doesn't crash
 	u16 canary_before = 0xaaff;
-	pool_t p;
+	note_pool_t p;
 	u16 canary_after = 0xffaa;
 
 	pool_init(&p);
@@ -25,10 +25,10 @@ void test_pool_init(void) {
 	TEST_ASSERT_TRUE(p.elements[0].is_free);
 
 	// check last element
-	TEST_ASSERT_EQUAL_INT(0, p.elements[POOL_SIZE-1].note.num);
-	TEST_ASSERT_EQUAL_INT(0, p.elements[POOL_SIZE-1].note.vel);
-	TEST_ASSERT_NULL(p.elements[POOL_SIZE-1].next);
-	TEST_ASSERT_TRUE(p.elements[POOL_SIZE-1].is_free);
+	TEST_ASSERT_EQUAL_INT(0, p.elements[NOTE_POOL_SIZE-1].note.num);
+	TEST_ASSERT_EQUAL_INT(0, p.elements[NOTE_POOL_SIZE-1].note.vel);
+	TEST_ASSERT_NULL(p.elements[NOTE_POOL_SIZE-1].next);
+	TEST_ASSERT_TRUE(p.elements[NOTE_POOL_SIZE-1].is_free);
 
 	// check pool level info
 	TEST_ASSERT_EQUAL_INT(0, p.count);
@@ -42,7 +42,8 @@ void test_pool_init(void) {
 //
 void test_notes_init(void) {
 	// ensure initializer doesn't crash
-	notes_init();
+	note_pool_t p;
+	notes_init(&p);
 }
 
 
