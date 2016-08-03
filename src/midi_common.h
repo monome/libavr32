@@ -23,9 +23,18 @@ typedef struct {
 	// TODO: system real-time, panic, etc.
 } midi_behavior_t;
 
+typedef struct {
+	u8 sustain : 1;
+	u8 legato : 1;
+	u8 portamento : 1;
+} midi_voice_flags_t;
+
+
 //-----------------------------
 //----- types
 
 void midi_packet_parse(midi_behavior_t *b, u32 data);
+
+void midi_flags_init(midi_voice_flags_t *f);
 
 #endif

@@ -59,3 +59,9 @@ void midi_packet_parse(midi_behavior_t *b, u32 data) {
 		break;
   }
 }
+
+void midi_flags_init(midi_voice_flags_t *f) {
+	f->sustain = 0;
+	f->legato = 0;
+	f->portamento = 0;
+}
