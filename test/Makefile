@@ -137,9 +137,9 @@ $(build-dir)%.txt: $(build-dir)%.$(TARGET_EXTENSION)
 
 test: $(test-results)
 	@echo "-----------------------\nIGNORES:\n-----------------------"
-	@echo `grep -s IGNORE $(test-results)`
+	@echo `grep --no-filename -s IGNORE $(test-results)`
 	@echo "-----------------------\nFAILURES:\n-----------------------"
-	@echo `grep -s FAIL $(test-results)`
+	@echo `grep --no-filename -s FAIL $(test-results)`
 	@echo "\nDONE"
 
 clean:

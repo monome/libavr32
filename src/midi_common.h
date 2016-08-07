@@ -3,6 +3,9 @@
 
 #include "types.h"
 
+#define MAX_VOICE_COUNT 4
+
+
 //-----------------------------
 //----- types
 
@@ -24,17 +27,43 @@ typedef struct {
 } midi_behavior_t;
 
 typedef struct {
-	u8 sustain : 1;
-	u8 legato : 1;
+	u8 sustain    : 1;
+	u8 legato     : 1;
 	u8 portamento : 1;
-} midi_voice_flags_t;
+} voice_flags_t;
 
+typedef enum {
+	kVoiceAllocRotate,
+	kVoiceAllocLRU
+} voice_alloc_mode;
+
+typedef struct {
+	u8 num    : 7;
+	u8 active : 1;
+} voice_t;
+
+typedef struct {
+	u8               head;
+	u8               tail;
+	u8               count;
+	voice_t          voice[MAX_VOICE_COUNT];
+	voice_alloc_mode mode;
+} voice_state_t;
 
 //-----------------------------
 //----- types
 
 void midi_packet_parse(midi_behavior_t *b, u32 data);
 
-void midi_flags_init(midi_voice_flags_t *f);
+void voice_flags_init(voice_flags_t *f);
+
+void voice_slot_init(voice_state_t *v, voice_alloc_mode mode, u8 count);
+u8   voice_slot_next(voice_state_t *v);
+u8   voice_slot_num(voice_state_t *v, u8 slot);
+u8   voice_slot_active(voice_state_t *v, u8 slot);
+void voice_slot_activate(voice_state_t *v, u8 slot, u8 num);
+s8   voice_slot_find(voice_state_t *v, u8 num);
+void voice_slot_release(voice_state_t *v, u8 slot);
+
 
 #endif
