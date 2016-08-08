@@ -5,6 +5,9 @@
 
 #define MAX_VOICE_COUNT 4
 
+#define MIDI_BEND_ZERO 0x2000  // 1 << 13
+
+
 
 //-----------------------------
 //----- types
