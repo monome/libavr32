@@ -2,12 +2,6 @@
 
 // cribbed from aleph/bees op_random
 
-struct random_state {
-	s16 min, max, val;
-	u32 a, c, x;
-};
-
-
 void random_init(random_state_t *r, u32 seed, s16 min, s16 max) {
 	r->min = min;
 	r->max = max;
