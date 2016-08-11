@@ -54,6 +54,23 @@ void midi_packet_parse(midi_behavior_t *b, u32 data) {
     val = (data &   0xff00) >> 8;
 		if (b->control_change) b->control_change(ch, num, val);
 		break;
+	case 0xf:
+		// system message, ch is message type
+		switch (ch) {
+		case 0x8:
+			if (b->clock_tick) b->clock_tick();
+			break;
+		case 0xa:
+			if (b->seq_start) b->seq_start();
+			break;
+		case 0xb:
+			if (b->seq_continue) b->seq_continue();
+			break;
+		case 0xc:
+			if (b->seq_stop) b->seq_stop();
+			break;
+		}
+		break;
 	default:
 		// TODO: poly pressure, program change, chanel mode *, rtc, etc
 		break;
