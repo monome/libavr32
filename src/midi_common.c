@@ -161,3 +161,49 @@ void voice_slot_release(voice_state_t *v, u8 slot) {
 		break;
 	}
 }
+
+void midi_clock_init(midi_clock_t *c) {
+	c->running = true;
+	c->pulse_period = 20;  // 20 ms is 120 bpm at 24 ppq
+	c->pulse_count = 0;
+	c->trigger = 0;
+	midi_clock_set_div(c, 1);
+}
+
+
+void midi_clock_pulse(midi_clock_t *c, u16 period) {
+	c->trigger = 0;
+	if (period != 0) {
+		c->pulse_period = period;
+	}
+	c->pulse_count++;
+	if (c->pulse_count >= c->pulse_div_count) {
+		c->pulse_count = 0;
+		if (c->running) {
+			c->trigger = 1;
+		}
+	}
+}
+
+bool midi_clock_set_div(midi_clock_t *c, u8 div) {
+	if (div > 24 || div == 0) {
+		return false;
+	}
+	c->pulse_div = div;
+	c->pulse_div_count = 24 / div;
+	c->pulse_count = 0;
+	return true;
+}
+
+void midi_clock_start(midi_clock_t *c) {
+	c->running = true;
+	c->pulse_count = 0;
+}
+
+void midi_clock_stop(midi_clock_t *c) {
+	c->running = false;
+}
+
+void midi_clock_continue(midi_clock_t *c) {
+	c->running = true;
+}

@@ -2,11 +2,11 @@
 #define _MIDI_COMMON_H_
 
 #include "types.h"
+#include "compiler.h"
 
 #define MAX_VOICE_COUNT 4
 
 #define MIDI_BEND_ZERO 0x2000  // 1 << 13
-
 
 
 //-----------------------------
@@ -57,8 +57,18 @@ typedef struct {
 	voice_alloc_mode mode;
 } voice_state_t;
 
+typedef struct {
+	bool running;
+	u16  pulse_period; // ms per tick, midi timing is 24 ppq
+	u8   pulse_count;
+	u8   pulse_div_count;
+	u8   pulse_div;    //
+	u8   trigger;
+} midi_clock_t;
+
+
 //-----------------------------
-//----- types
+//----- functions
 
 void midi_packet_parse(midi_behavior_t *b, u32 data);
 
@@ -71,6 +81,13 @@ u8   voice_slot_active(voice_state_t *v, u8 slot);
 void voice_slot_activate(voice_state_t *v, u8 slot, u8 num);
 s8   voice_slot_find(voice_state_t *v, u8 num);
 void voice_slot_release(voice_state_t *v, u8 slot);
+
+void midi_clock_init(midi_clock_t *c);
+void midi_clock_pulse(midi_clock_t *c, u16 period);
+bool midi_clock_set_div(midi_clock_t *c, u8 div);
+void midi_clock_start(midi_clock_t *c);
+void midi_clock_stop(midi_clock_t *c);
+void midi_clock_continue(midi_clock_t *c);
 
 
 #endif
