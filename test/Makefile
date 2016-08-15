@@ -71,8 +71,10 @@ test-deps = $(addprefix $(build-dir), $(addsuffix .d,$(basename $(tests))))
 test-execs = $(addprefix $(build-dir), $(addsuffix .$(TARGET_EXTENSION),$(basename $(tests))))
 test-results = $(addprefix $(build-dir), $(addsuffix .txt,$(basename $(tests))))
 
+test-include-dir = include/
+
 cflags-inc = $(foreach INC,$(addprefix $(PRJ_ROOT)/,$(INC_PATH)),-I$(INC))
-cppflags = -DTEST -I$(unity-dir)
+cppflags = -DTEST -I$(unity-dir) -I$(test-include-dir)
 
 #
 # http://make.mad-scientist.net/papers/advanced-auto-dependency-generation/
