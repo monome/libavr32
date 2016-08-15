@@ -1,0 +1,5 @@
+- add some docs, test file naming expectations, how to write skeleton
+- TEST define and when to use it
+- trick about including the .c file to get at internals and static data
+- add many more tests, fairly incomplete at the moment
+- figure out integration with travis?
