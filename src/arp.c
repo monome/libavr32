@@ -26,6 +26,8 @@ void chord_init(chord_t *c) {
 }
 
 bool chord_note_add(chord_t *c, u8 num, u8 vel) {
+	u8 i, j;
+
 	if (c->note_count == CHORD_MAX_NOTES) {
 		return false;
 	}
@@ -38,29 +40,50 @@ bool chord_note_add(chord_t *c, u8 num, u8 vel) {
 		return true;
 	}
 
-	// not empty, search down from top to figure out where to insert
-	for (u8 i = c->note_count - 1; i >= 0; i--) {
-		if (c->notes[i].num == num) {
-			// nothing to do
+	// not empty, find insert point
+	for (i = 0; i < c->note_count; i++) {
+		if (num == c->notes[i].num) {
+			// matches existing note, nothing to do
 			return false;
 		}
 
-		if (c->notes[i].num < num) {
-			// insert at i+1, need to move i+1 to note_count-1 up
-			for (u8 j = i + 2; j <= c->note_count; j++) {
-				c->notes[j].num = c->notes[j-1].num;
-				c->notes[j].vel = c->notes[j-1].vel;
-			}
-			c->notes[i+1].num = num;
-			c->notes[i+1].vel = vel;
-			c->note_count++;
-		}
+		if (num < c->notes[i].num) break;
 	}
+
+	// shift up to make space
+	for (j = c->note_count; j > i; j--) {
+		c->notes[j] = c->notes[j - 1];
+	}
+
+	// insert new values
+	c->notes[i].num = num;
+	c->notes[i].vel = vel;
+	c->note_count++;
+
 	return true;
 }
 
 bool chord_note_release(chord_t *c, u8 num) {
-	return false;
+	u8 i, j;
+	bool found = false;
+
+	// find index for num
+	for (i = 0; i < c->note_count; i++) {
+		if (c->notes[i].num == num) {
+			found = true;
+			break;
+		}
+	}
+
+	// shift down (to overwrite)
+	if (found) {
+		for (j = i; j < c->note_count; j++) {
+			c->notes[j] = c->notes[j + 1];
+		}
+		c->note_count--;
+	}
+
+	return found;
 }
 
 s8 chord_note_low(chord_t *c) {
