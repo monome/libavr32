@@ -37,15 +37,15 @@ void reset_dacs(void) {
 		aout[i].now = 0;
 		aout[i].off = 0;
 		aout[i].target = 0;
-		aout[i].slew = 0;
-		aout[i].step = 0;
+		aout[i].slew = 1;
+		aout[i].step = 1;
 		aout[i].delta = 0;
 		aout[i].a = 0;
 
 		is_slewing[i] = false;
 	}
 
-	// dac_timer_update();
+	dac_timer_update();
 }
 
 
