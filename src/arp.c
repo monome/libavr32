@@ -147,7 +147,7 @@ static void arp_seq_build_up(arp_seq_t *s, chord_t *c) {
 	s->style = eStyleUp;
 	for (u8 u = 0; u < c->note_count; u++) {
 		s->seq[u].note = c->notes[u];
-		s->seq[u].gate_length = 12; // TODO: figure out how this is determined/manipulated
+		s->seq[u].gate_length = 8; // TODO: figure out how this is determined/manipulated
 		s->seq[u].empty = 0;
 	}
 	s->length = c->note_count;
@@ -158,7 +158,7 @@ static void arp_seq_build_down(arp_seq_t *s, chord_t *c) {
 	u8 d = c->note_count - 1;
 	for (u8 i = 0; i < c->note_count; i++) {
 		s->seq[d].note = c->notes[i];
-		s->seq[d].gate_length = 12; // TODO: figure out how this is determined/manipulated
+		s->seq[d].gate_length = 8; // TODO: figure out how this is determined/manipulated
 		s->seq[d].empty = 0;
 		d--;
 	}
@@ -189,7 +189,7 @@ static void arp_seq_build_random(arp_seq_t *s, chord_t *c) {
 			if (ri == count) ri = 0;
 		}
 		s->seq[ri].note = c->notes[i];
-		s->seq[ri].gate_length = 12; // TODO: figure out how this is determined/manipulated
+		s->seq[ri].gate_length = 8; // TODO: figure out how this is determined/manipulated
 		s->seq[ri].empty = 0;
 	}
 	s->length = count;
@@ -198,8 +198,6 @@ static void arp_seq_build_random(arp_seq_t *s, chord_t *c) {
 static void arp_seq_build_played(arp_seq_t *s, chord_t *c) {
 	// TODO: need some way to now order within chord
 }
-
-#define ARP_PPQ 24
 
 void arp_player_init(arp_player_t *p) {
 	p->ch = 0;
@@ -210,7 +208,7 @@ void arp_player_init(arp_player_t *p) {
 	p->gate = eGateFixed;
 
 	p->fixed_velocity = 127;
-	p->fixed_gate = 12;
+	p->fixed_gate = ARP_PPQ - 1;
 
 	p->latch = false;
 
@@ -222,6 +220,10 @@ void arp_player_pulse(arp_player_t *p, arp_seq_t *s, midi_behavior_t *b) {
 	// ...call midi_note_on, midi_note_off as needed
 	u8 i, d, g, v;
 
+	if (s->length == 0) {
+		return;
+	}
+	
 	p->tick_count++;
 	p->div_count++;
 	if (p->div_count == ARP_PPQ) {

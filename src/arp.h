@@ -14,6 +14,8 @@
 #define ARP_MAX_OCTAVE 4
 #define ARP_MAX_LENGTH (2 * ARP_MAX_CHORD)
 
+#define ARP_PPQ 4
+
 #define CHORD_MAX_NOTES 12
 #define CHORD_NOTE_MAX 127
 #define CHORD_VELOCITY_MAX 127
