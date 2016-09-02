@@ -136,8 +136,6 @@ void test_chord_note_release(void) {
 	TEST_ASSERT_EQUAL_UINT8(c.note_count, 1);
 }
 
-
-
 int main(void) {
 	UNITY_BEGIN();
 

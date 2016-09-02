@@ -14,7 +14,7 @@
 #define ARP_MAX_OCTAVE 4
 #define ARP_MAX_LENGTH (2 * ARP_MAX_CHORD)
 
-#define ARP_PPQ 4
+#define ARP_PPQ 1
 
 #define CHORD_MAX_NOTES 12
 #define CHORD_NOTE_MAX 127
@@ -45,6 +45,12 @@ typedef enum {
 	eGateVariable
 } arp_gate;
 
+typedef enum {
+	eSeqFree,
+	eSeqBuilding,
+	eSeqWaiting,
+	eSeqPlaying
+} arp_seq_state;
 
 //-----------------------------
 //----- types
@@ -55,7 +61,6 @@ typedef struct {
 } chord_t;
 
 typedef struct {
-	//u8 note_idx;       // [0-CHORD_MAX_NOTES), which note in the code to play
 	held_note_t note;
 	u8 gate_length;    // [0-ARP_PPQ], 0 is tie, 1-ARP_PPQ is fraction of quater note
 	u8 empty : 1;
@@ -63,26 +68,25 @@ typedef struct {
 
 typedef struct {
 	arp_style style;
-	arp_note_t seq[ARP_MAX_LENGTH];
+	arp_note_t notes[ARP_MAX_LENGTH];
 	u8 length;
+	arp_seq_state state;
 } arp_seq_t;
 	
 typedef struct {
-	u8 ch;              // channel; passed to midi behavior
-	u8 start;           // starting note index (on reset)
-	u8 index;           // currrent note index
-	u8 div_count;       // current sub-note position (in ticks)
-	u8 tick_count;      // current global position (in ticks)
-
-	u8 octaves;         // number of octaves
+	u8 ch;                // channel; passed to midi behavior
+	u8 index;             // currrent note index
 
 	arp_velocity velocity;
 	arp_gate gate;
 
-	u8 fixed_velocity;  // fixed velocity value [0-127]
-	u8 fixed_gate;      // fixed gate length [0-??]
+	u8 fixed_velocity;    // fixed velocity value [0-127]
+	u8 fixed_gate;        // fixed gate length [0-??]
 
-	bool latch;         //
+	s8 active_note;       // if > 0 the note which is actively playing
+	u8 active_gate;       // gate length (in ticks) for active note
+	
+	bool latch;           //
 } arp_player_t;
 
 
@@ -96,6 +100,8 @@ s8   chord_note_low(chord_t *c);
 s8   chord_note_high(chord_t *c);
 
 void arp_seq_init(arp_seq_t *s);
+bool arp_seq_set_state(arp_seq_t *s, arp_seq_state state);
+arp_seq_state arp_seq_get_state(arp_seq_t *s);
 void arp_seq_build(arp_seq_t *a, arp_style style, chord_t *c);
 
 void arp_player_init(arp_player_t* p);
