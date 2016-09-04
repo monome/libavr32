@@ -2,12 +2,7 @@
 #define _MIDI_COMMON_H_
 
 #include "types.h"
-#ifndef TEST
 #include "compiler.h"
-#else
-#include "test_bool.h"
-#endif
-
 
 #define MAX_VOICE_COUNT 4
 

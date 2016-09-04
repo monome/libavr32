@@ -4,11 +4,7 @@
 #include "notes.h"
 #include "midi_common.h"
 
-#ifndef TEST
 #include "compiler.h"   // for bool; shouldn't this be "types.h"
-#else
-#include "test_bool.h"
-#endif
 
 #define ARP_MAX_CHORD  12
 #define ARP_MAX_OCTAVE 4
@@ -32,7 +28,9 @@ typedef enum {
 	eStyleConverge,     // outside in
 	eStyleDiverge,      // inside out
 	eStyleRandom,
-	eStylePlayed
+	eStylePlayed,
+
+	eStyleMax
 } arp_style;
 
 typedef enum {

@@ -136,6 +136,104 @@ void test_chord_note_release(void) {
 	TEST_ASSERT_EQUAL_UINT8(c.note_count, 1);
 }
 
+arp_seq_t seq;
+chord_t empty, one, two, three;
+
+void setup_seq(void) {
+	arp_seq_init(&seq);
+	chord_init(&empty);
+
+	chord_init(&one);
+	chord_note_add(&one, 1, 0);
+
+	chord_init(&two);
+	chord_note_add(&two, 10, 0);
+	chord_note_add(&two, 20, 0);
+
+	chord_init(&three);
+	chord_note_add(&three, 30, 0);
+	chord_note_add(&three, 40, 0);
+	chord_note_add(&three, 50, 0);
+}
+
+
+void test_seq_build_up_down(void) {
+	setup_seq();
+
+	// up, down
+	arp_seq_build_up_down(&seq, &empty, eStyleUpDown);
+	TEST_ASSERT_EQUAL(eStyleUpDown, seq.style);
+	TEST_ASSERT_EQUAL_INT8(0, seq.length);
+
+	arp_seq_build_up_down(&seq, &one, eStyleUpDown);
+	TEST_ASSERT_EQUAL(eStyleUpDown, seq.style);
+	TEST_ASSERT_EQUAL_INT8(1, seq.length);
+	TEST_ASSERT_EQUAL_INT8(1, seq.notes[0].note.num);
+
+	arp_seq_build_up_down(&seq, &two, eStyleUpDown);
+	TEST_ASSERT_EQUAL(eStyleUpDown, seq.style);
+	TEST_ASSERT_EQUAL_INT8(3, seq.length);
+	TEST_ASSERT_EQUAL_INT8(10, seq.notes[0].note.num);
+	TEST_ASSERT_EQUAL_INT8(20, seq.notes[1].note.num);
+	TEST_ASSERT_EQUAL_INT8(10, seq.notes[2].note.num);
+
+	arp_seq_build_up_down(&seq, &three, eStyleUpDown);
+	TEST_ASSERT_EQUAL(eStyleUpDown, seq.style);
+	TEST_ASSERT_EQUAL_INT8(5, seq.length);
+	TEST_ASSERT_EQUAL_INT8(30, seq.notes[0].note.num);
+	TEST_ASSERT_EQUAL_INT8(40, seq.notes[1].note.num);
+	TEST_ASSERT_EQUAL_INT8(50, seq.notes[2].note.num);
+	TEST_ASSERT_EQUAL_INT8(40, seq.notes[3].note.num);
+	TEST_ASSERT_EQUAL_INT8(30, seq.notes[4].note.num);
+
+	// up and down
+	arp_seq_build_up_down(&seq, &empty, eStyleUpAndDown);
+	TEST_ASSERT_EQUAL(eStyleUpAndDown, seq.style);
+	TEST_ASSERT_EQUAL_INT8(0, seq.length);
+
+	arp_seq_build_up_down(&seq, &one, eStyleUpAndDown);
+	TEST_ASSERT_EQUAL(eStyleUpAndDown, seq.style);
+	TEST_ASSERT_EQUAL_INT8(1, seq.length);
+	TEST_ASSERT_EQUAL_INT8(1, seq.notes[0].note.num);
+
+	arp_seq_build_up_down(&seq, &two, eStyleUpAndDown);
+	TEST_ASSERT_EQUAL(eStyleUpAndDown, seq.style);
+	TEST_ASSERT_EQUAL_INT8(4, seq.length);
+	TEST_ASSERT_EQUAL_INT8(10, seq.notes[0].note.num);
+	TEST_ASSERT_EQUAL_INT8(20, seq.notes[1].note.num);
+	TEST_ASSERT_EQUAL_INT8(20, seq.notes[2].note.num);
+	TEST_ASSERT_EQUAL_INT8(10, seq.notes[3].note.num);
+
+	arp_seq_build_up_down(&seq, &three, eStyleUpAndDown);
+	TEST_ASSERT_EQUAL(eStyleUpAndDown, seq.style);
+	TEST_ASSERT_EQUAL_INT8(6, seq.length);
+	TEST_ASSERT_EQUAL_INT8(30, seq.notes[0].note.num);
+	TEST_ASSERT_EQUAL_INT8(40, seq.notes[1].note.num);
+	TEST_ASSERT_EQUAL_INT8(50, seq.notes[2].note.num);
+	TEST_ASSERT_EQUAL_INT8(50, seq.notes[3].note.num);
+	TEST_ASSERT_EQUAL_INT8(40, seq.notes[4].note.num);
+	TEST_ASSERT_EQUAL_INT8(30, seq.notes[5].note.num);
+}
+
+void test_seq_build_random(void) {
+	u8 i, j;
+	bool missing;
+
+	setup_seq();
+
+	arp_seq_build_random(&seq, &empty);
+	TEST_ASSERT_EQUAL(eStyleRandom, seq.style);
+	TEST_ASSERT_EQUAL_INT8(0, seq.length);
+
+	arp_seq_build_random(&seq, &one);
+	TEST_ASSERT_EQUAL(eStyleRandom, seq.style);
+	TEST_ASSERT_EQUAL_INT8(1, seq.length);
+
+	arp_seq_build_random(&seq, &three);
+	TEST_ASSERT_EQUAL(eStyleRandom, seq.style);
+	TEST_ASSERT_EQUAL_INT8(3, seq.length);
+}
+
 int main(void) {
 	UNITY_BEGIN();
 
@@ -144,6 +242,9 @@ int main(void) {
 	RUN_TEST(test_chord_note_add_dumps_notes_at_capacity);
 	RUN_TEST(test_chord_note_low_and_high);
 	RUN_TEST(test_chord_note_release);
+
+	RUN_TEST(test_seq_build_up_down);
+	RUN_TEST(test_seq_build_random);
 
 	return UNITY_END();
 }

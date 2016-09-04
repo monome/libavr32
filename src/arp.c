@@ -10,6 +10,7 @@
 
 static void arp_seq_build_up(arp_seq_t *s, chord_t *c);
 static void arp_seq_build_down(arp_seq_t *s, chord_t *c);
+static void arp_seq_build_up_down(arp_seq_t *s, chord_t *c, arp_style style);
 static void arp_seq_build_converge(arp_seq_t *s, chord_t *c);
 static void arp_seq_build_diverge(arp_seq_t *s, chord_t *c);
 static void arp_seq_build_random(arp_seq_t *s, chord_t *c);
@@ -154,10 +155,8 @@ void arp_seq_build(arp_seq_t *s, arp_style style, chord_t *c) {
 		arp_seq_build_down(s, c);
 		break;
 	case eStyleUpDown:
-		arp_seq_build_up(s, c);
-		break;
 	case eStyleUpAndDown:
-		// TODO
+		arp_seq_build_up_down(s, c, style);
 		break;
 	case eStyleConverge:
 		arp_seq_build_converge(s, c);
@@ -172,6 +171,8 @@ void arp_seq_build(arp_seq_t *s, arp_style style, chord_t *c) {
 		// TODO: we loose the note order currently
 		arp_seq_build_played(s, c);
 		break;
+	default:
+		break;
 	}
 }
 
@@ -179,7 +180,7 @@ static void arp_seq_build_up(arp_seq_t *s, chord_t *c) {
 	s->style = eStyleUp;
 	for (u8 u = 0; u < c->note_count; u++) {
 		s->notes[u].note = c->notes[u];
-		s->notes[u].gate_length = 8; // TODO: figure out how this is determined/manipulated
+		s->notes[u].gate_length = 1;
 		s->notes[u].empty = 0;
 	}
 	s->length = c->note_count;
@@ -190,31 +191,67 @@ static void arp_seq_build_down(arp_seq_t *s, chord_t *c) {
 	u8 d = c->note_count - 1;
 	for (u8 i = 0; i < c->note_count; i++) {
 		s->notes[d].note = c->notes[i];
-		s->notes[d].gate_length = 8; // TODO: figure out how this is determined/manipulated
+		s->notes[d].gate_length = 1;
 		s->notes[d].empty = 0;
 		d--;
 	}
 	s->length = c->note_count;
 }
 
+static void arp_seq_build_up_down(arp_seq_t *s, chord_t *c, arp_style style) {
+	s8 i, u, d;
+
+	s->style = style;
+	d = (style == eStyleUpDown) ? 1 : 0;
+
+	u = 0;
+	for (i = 0; i < c->note_count; i++) {
+		s->notes[u].note = c->notes[i];
+		s->notes[u].gate_length = 1;
+		s->notes[u].empty = 0;
+		u++;
+	}
+	if (c->note_count > 1) {
+		for (i = c->note_count - 1 - d; i >= 0; --i) {
+			s->notes[u].note = c->notes[i];
+			s->notes[u].gate_length = 1;
+			s->notes[u].empty = 0;
+			u++;
+		}
+	}
+	s->length = u;
+}
+
 static void arp_seq_build_converge(arp_seq_t *s, chord_t *c) {
+	s->style = eStyleConverge;
+	s->length = 0;
 }
 
 static void arp_seq_build_diverge(arp_seq_t *s, chord_t *c) {
+	s->style = eStyleDiverge;
+	s->length = 0;
 }
 
 static void arp_seq_build_random(arp_seq_t *s, chord_t *c) {
 	random_state_t r;
 	s16 ri;
-	u8 count = c->note_count;
+	u8 count, upper, i;
 
 	s->style = eStyleRandom;
 
-	random_init(&r, time_now(), 0, count - 1);
+	count = c->note_count;
+	upper = (count > 0) ? count - 1 : 0;
+
+	random_init(&r, time_now(), 0, upper);
+
+	// ensure empty starts in a known state
+	for (i = 0; i < count; i++) {
+		s->notes[ri].empty = 1;
+	}
 
 	// go through each note, pick a random index within the sequence,
 	// place note at next free index...
-	for (u8 i = 0; i < count; i++) {
+	for (i = 0; i < count; i++) {
 		ri = random_next(&r);
 		while (!s->notes[ri].empty) {
 			ri++;
@@ -229,6 +266,8 @@ static void arp_seq_build_random(arp_seq_t *s, chord_t *c) {
 
 static void arp_seq_build_played(arp_seq_t *s, chord_t *c) {
 	// TODO: need some way to now order within chord
+	s->style = eStylePlayed;
+	s->length = 0;
 }
 
 void arp_player_init(arp_player_t *p, u8 ch, u8 division) {
