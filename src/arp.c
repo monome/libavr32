@@ -231,81 +231,96 @@ static void arp_seq_build_played(arp_seq_t *s, chord_t *c) {
 	// TODO: need some way to now order within chord
 }
 
-void arp_player_init(arp_player_t *p) {
-	p->ch = 0;
-	p->division = 1;
+void arp_player_init(arp_player_t *p, u8 ch, u8 division) {
+	p->ch = ch;
 
 	p->velocity = eVelocityPlayed;
 	p->gate = eGateFixed;
 
 	p->fixed_velocity = 127;
-	p->fixed_gate = ARP_PPQ >> 1;
 
 	p->active_note = -1;
 	p->active_gate = 0;
 	
 	p->latch = false;
 
+	arp_player_set_division(p, division);
 	arp_player_reset(p);
 }
 
-void arp_player_pulse(arp_player_t *p, arp_seq_t *s, midi_behavior_t *b) {
+void arp_player_set_division(arp_player_t *p, u8 division) {
+	if (division > 0) {
+		p->division = division;
+		p->fixed_gate = division - 1;
+	}
+}
+
+void arp_player_pulse(arp_player_t *p, arp_seq_t *s, midi_behavior_t *b, u8 phase) {
 	u8 i, g, v;
 
-	if (p->div_count == 0) {
-		// release any active note
-		if (p->active_note >= 0) {
-			// TODO: how to handle tied note?
+	if (phase) {
+		if (p->div_count == 0) {
+			// release any active note
+			if (p->active_note >= 0) {
+				// TODO: how to handle tied note?
+				b->note_off(p->ch, p->active_note, 0);
+				p->active_note = -1;
+			}
+
+			if (s->length > 0) {
+				// ensure if seq got shorter we don't go off the end
+				if (p->index >= s->length) {
+					p->index = 0;
+				}
+
+				i = p->index;
+
+				// determine velocity
+				switch (p->velocity) {
+				case eVelocityPlayed:
+					v = s->notes[i].note.vel;
+					break;
+				case eVelocityFixed:
+				default:
+					v = p->fixed_velocity;
+					break;
+				}
+
+				// determine gate length
+				switch (p->gate) {
+				case eGateVariable:
+					g = s->notes[i].gate_length;
+				case eGateFixed:
+				default:
+					g = p->fixed_gate;
+					break;
+				}
+
+				p->active_note = s->notes[i].note.num;
+				p->active_gate = g;
+				b->note_on(p->ch, p->active_note, v);
+
+				// advance seq
+				p->index++;
+
+				if (p->index >= s->length) {
+					p->index = 0;
+				}
+			}
+		}
+
+		// always advance div_count
+		p->div_count++;
+		if (p->div_count >= p->division) {
+			p->div_count = 0;
+		}
+	}
+	else {
+		// clock low, look for notes to turn off
+		if (p->active_gate <= p->div_count && p->active_note >= 0) {
 			b->note_off(p->ch, p->active_note, 0);
 			p->active_note = -1;
 		}
-
-		if (s->length > 0) {
-			// ensure if seq got shorter we don't go off the end
-			if (p->index >= s->length) {
-				p->index = 0;
-			}
-
-			i = p->index;
-
-			// determine velocity
-			switch (p->velocity) {
-			case eVelocityPlayed:
-				v = s->notes[i].note.vel;
-				break;
-			case eVelocityFixed:
-			default:
-				v = p->fixed_velocity;
-				break;
-			}
-
-			// determine gate length
-			switch (p->gate) {
-			case eGateVariable:
-				g = s->notes[i].gate_length;
-			case eGateFixed:
-			default:
-				g = p->fixed_gate;
-				break;
-			}
-
-			p->active_note = s->notes[i].note.num;
-			p->active_gate = g;
-			b->note_on(p->ch, p->active_note, v);
-
-			// advance seq
-			p->index++;
-
-			if (p->index >= s->length) {
-				p->index = 0;
-			}
-		}
-	}
-
-	// always advance div_count
-	p->div_count++;
-	if (p->div_count >= p->division) {
-		p->div_count = 0;
 	}
 }
 
