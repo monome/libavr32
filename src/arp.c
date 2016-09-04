@@ -233,6 +233,7 @@ static void arp_seq_build_played(arp_seq_t *s, chord_t *c) {
 
 void arp_player_init(arp_player_t *p) {
 	p->ch = 0;
+	p->division = 1;
 
 	p->velocity = eVelocityPlayed;
 	p->gate = eGateFixed;
@@ -251,56 +252,64 @@ void arp_player_init(arp_player_t *p) {
 void arp_player_pulse(arp_player_t *p, arp_seq_t *s, midi_behavior_t *b) {
 	u8 i, g, v;
 
-	// release any active note
-	if (p->active_note >= 0) {
-		// TODO: how to handle tied note?
-		p->active_note = -1;
-		b->note_off(p->ch, p->active_note, 0);
+	if (p->div_count == 0) {
+		// release any active note
+		if (p->active_note >= 0) {
+			// TODO: how to handle tied note?
+			b->note_off(p->ch, p->active_note, 0);
+			p->active_note = -1;
+		}
+
+		if (s->length > 0) {
+			// ensure if seq got shorter we don't go off the end
+			if (p->index >= s->length) {
+				p->index = 0;
+			}
+
+			i = p->index;
+
+			// determine velocity
+			switch (p->velocity) {
+			case eVelocityPlayed:
+				v = s->notes[i].note.vel;
+				break;
+			case eVelocityFixed:
+			default:
+				v = p->fixed_velocity;
+				break;
+			}
+
+			// determine gate length
+			switch (p->gate) {
+			case eGateVariable:
+				g = s->notes[i].gate_length;
+			case eGateFixed:
+			default:
+				g = p->fixed_gate;
+				break;
+			}
+
+			p->active_note = s->notes[i].note.num;
+			p->active_gate = g;
+			b->note_on(p->ch, p->active_note, v);
+
+			// advance seq
+			p->index++;
+
+			if (p->index >= s->length) {
+				p->index = 0;
+			}
+		}
 	}
 
-	if (s->length == 0) {
-		return;
-	}
-	
-	// ensure if seq got shorter we don't go off the end
-	if (p->index >= s->length) {
-		p->index = 0;
-	}
-
-	i = p->index;
-
-	// determine velocity
-	switch (p->velocity) {
-	case eVelocityPlayed:
-		v = s->notes[i].note.vel;
-		break;
-	case eVelocityFixed:
-	default:
-		v = p->fixed_velocity;
-		break;
-	}
-
-	// determine gate length
-	switch (p->gate) {
-	case eGateVariable:
-		g = s->notes[i].gate_length;
-	case eGateFixed:
-	default:
-		g = p->fixed_gate;
-		break;
-	}
-
-	p->active_note = s->notes[i].note.num;
-	p->active_gate = g;
-	b->note_on(p->ch, p->active_note, v);
-
-	// advance seq
-	p->index++;
-	if (p->index >= s->length) {
-		p->index = 0;
+	// always advance div_count
+	p->div_count++;
+	if (p->div_count >= p->division) {
+		p->div_count = 0;
 	}
 }
 
 void arp_player_reset(arp_player_t *p) {
 	p->index = 0;
+	p->div_count = 0;
 }

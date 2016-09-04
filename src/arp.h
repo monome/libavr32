@@ -77,6 +77,9 @@ typedef struct {
 	u8 ch;                // channel; passed to midi behavior
 	u8 index;             // currrent note index
 
+	u8 division;          // pulses per note
+	u8 div_count;         // current note division
+
 	arp_velocity velocity;
 	arp_gate gate;
 
