@@ -404,7 +404,7 @@ void arp_player_pulse(arp_player_t *p, arp_seq_t *s, midi_behavior_t *b, u8 phas
 	}
 	else {
 		// clock low, look for notes to turn off
-		if (p->active_gate <= p->div_count && p->active_note >= 0) {
+		if (p->active_note >= 0 && p->div_count >= p->active_gate) {
 			b->note_off(p->ch, p->active_note, 0);
 			p->active_note = -1;
 		}
