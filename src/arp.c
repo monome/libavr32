@@ -325,20 +325,38 @@ void arp_player_init(arp_player_t *p, u8 ch, u8 division) {
 	p->gate = eGateFixed;
 
 	p->fixed_velocity = 127;
+	p->fixed_gate = 0;   // [0-division] == [trigger-tie]
+	p->fixed_width = 0;  // [0-128] == [trigger-tie]
 
 	p->active_note = -1;
 	p->active_gate = 0;
 	
 	p->latch = false;
 
-	arp_player_set_division(p, division);
+	arp_player_set_division(p, division, NULL);
+	arp_player_set_gate_width(p, 0);
 	arp_player_reset(p, NULL);
 }
 
-void arp_player_set_division(arp_player_t *p, u8 division) {
-	if (division > 0) {
+u8 arp_player_set_gate_width(arp_player_t *p, u8 width) {
+	u16 gate = (width * p->division) >> 7;
+
+	p->fixed_width = width;
+	p->fixed_gate = gate;
+
+	return p->fixed_gate;
+}
+
+void arp_player_set_division(arp_player_t *p, u8 division, midi_behavior_t *b) {
+	if (division > 0 && division != p->division) {
+		if (b && division < p->division && p->active_note >= 0) {
+			b->note_off(p->ch, p->active_note, 0);
+			p->active_note = -1;
+		}
+
 		p->division = division;
-		p->fixed_gate = division - 1;
+		p->div_count = 0;
+		arp_player_set_gate_width(p, p->fixed_width);
 	}
 }
 
