@@ -108,6 +108,6 @@ void arp_seq_build(arp_seq_t *a, arp_style style, chord_t *c);
 void arp_player_init(arp_player_t *p, u8 ch, u8 division);
 void arp_player_set_division(arp_player_t *p, u8 division);
 void arp_player_pulse(arp_player_t *p, arp_seq_t *s, midi_behavior_t *b, u8 phase);
-void arp_player_reset(arp_player_t *a);
+void arp_player_reset(arp_player_t *a, midi_behavior_t *b);
 
 #endif // __ARP__

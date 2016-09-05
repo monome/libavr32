@@ -284,7 +284,7 @@ void arp_player_init(arp_player_t *p, u8 ch, u8 division) {
 	p->latch = false;
 
 	arp_player_set_division(p, division);
-	arp_player_reset(p);
+	arp_player_reset(p, NULL);
 }
 
 void arp_player_set_division(arp_player_t *p, u8 division) {
@@ -363,7 +363,12 @@ void arp_player_pulse(arp_player_t *p, arp_seq_t *s, midi_behavior_t *b, u8 phas
 	}
 }
 
-void arp_player_reset(arp_player_t *p) {
+void arp_player_reset(arp_player_t *p, midi_behavior_t *b) {
 	p->index = 0;
 	p->div_count = 0;
+
+	if (b && p->active_note >= 0) {
+		b->note_off(p->ch, p->active_note, 0);
+		p->active_note = -1;
+	}
 }
