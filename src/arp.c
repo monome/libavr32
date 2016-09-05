@@ -177,17 +177,17 @@ void arp_seq_build(arp_seq_t *s, arp_style style, chord_t *c) {
 }
 
 static void arp_seq_build_up(arp_seq_t *s, chord_t *c) {
-	s->style = eStyleUp;
 	for (u8 u = 0; u < c->note_count; u++) {
 		s->notes[u].note = c->notes[u];
 		s->notes[u].gate_length = 1;
 		s->notes[u].empty = 0;
 	}
+
+	s->style = eStyleUp;
 	s->length = c->note_count;
 }
 
 static void arp_seq_build_down(arp_seq_t *s, chord_t *c) {
-	s->style = eStyleDown;
 	u8 d = c->note_count - 1;
 	for (u8 i = 0; i < c->note_count; i++) {
 		s->notes[d].note = c->notes[i];
@@ -195,13 +195,14 @@ static void arp_seq_build_down(arp_seq_t *s, chord_t *c) {
 		s->notes[d].empty = 0;
 		d--;
 	}
+
+	s->style = eStyleDown;
 	s->length = c->note_count;
 }
 
 static void arp_seq_build_up_down(arp_seq_t *s, chord_t *c, arp_style style) {
 	s8 i, u, d;
 
-	s->style = style;
 	d = (style == eStyleUpDown) ? 1 : 0;
 
 	u = 0;
@@ -219,25 +220,70 @@ static void arp_seq_build_up_down(arp_seq_t *s, chord_t *c, arp_style style) {
 			u++;
 		}
 	}
+
+	s->style = style;
 	s->length = u;
 }
 
 static void arp_seq_build_converge(arp_seq_t *s, chord_t *c) {
+	bool take_high;
+	u8 low_idx, high_idx, i, j;
+
+	if (c->note_count > 0) {
+		i = 0;
+		low_idx = 0;
+		high_idx = c->note_count - 1;
+		take_high = false;
+		do {
+			j = take_high ? high_idx-- : low_idx++;
+			take_high = !take_high;
+			s->notes[i].note = c->notes[j];
+			s->notes[i].gate_length = 1;
+			s->notes[i].empty = 0;
+			i++;
+		} while (low_idx <= high_idx);
+	}
+
 	s->style = eStyleConverge;
-	s->length = 0;
+	s->length = c->note_count;
 }
 
 static void arp_seq_build_diverge(arp_seq_t *s, chord_t *c) {
+	bool take_high;
+	u8 low_idx, high_idx, i, j;
+
+	if (c->note_count == 1) {
+		s->notes[0].note = c->notes[0];
+		s->notes[0].gate_length = 1;
+		s->notes[0].empty = 0;
+	}
+	else if (c->note_count > 1) {
+		low_idx = c->note_count >> 1;
+		high_idx = low_idx + 1;
+
+		if (c->note_count % 2 == 0) {
+			low_idx--;
+			high_idx--;
+		}
+
+		take_high = false;
+		for (i = 0; i < c->note_count; i++) {
+			j = take_high ? high_idx++ : low_idx--;
+			take_high = !take_high;
+			s->notes[i].note = c->notes[j];
+			s->notes[i].gate_length = 1;
+			s->notes[i].empty = 0;
+		}
+	}
+
 	s->style = eStyleDiverge;
-	s->length = 0;
+	s->length = c->note_count;
 }
 
 static void arp_seq_build_random(arp_seq_t *s, chord_t *c) {
 	random_state_t r;
 	s16 ri;
 	u8 count, upper, i;
-
-	s->style = eStyleRandom;
 
 	count = c->note_count;
 	upper = (count > 0) ? count - 1 : 0;
@@ -246,7 +292,7 @@ static void arp_seq_build_random(arp_seq_t *s, chord_t *c) {
 
 	// ensure empty starts in a known state
 	for (i = 0; i < count; i++) {
-		s->notes[ri].empty = 1;
+		s->notes[i].empty = 1;
 	}
 
 	// go through each note, pick a random index within the sequence,
@@ -261,6 +307,8 @@ static void arp_seq_build_random(arp_seq_t *s, chord_t *c) {
 		s->notes[ri].gate_length = 8; // TODO: figure out how this is determined/manipulated
 		s->notes[ri].empty = 0;
 	}
+
+	s->style = eStyleRandom;
 	s->length = count;
 }
 
