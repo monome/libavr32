@@ -122,17 +122,7 @@ bool arp_seq_set_state(arp_seq_t *s, arp_seq_state state) {
 
 	s->state = state;
 	result = true;
-	/*
-	if (s->state == eSeqFree) {
-		s->state = state; // free, building, playing
-		result = true;
-	}
-	else if (state == eSeqFree) {
-		s->state = state; // building -> free or playing -> free
-		result = true;
-	}
-	// invalid transition; build -> play or play -> build
-	*/
+
 	cpu_irq_enable_level(APP_TC_IRQ_PRIORITY);
 	
 	return result;
@@ -304,7 +294,7 @@ static void arp_seq_build_random(arp_seq_t *s, chord_t *c) {
 			if (ri == count) ri = 0;
 		}
 		s->notes[ri].note = c->notes[i];
-		s->notes[ri].gate_length = 8; // TODO: figure out how this is determined/manipulated
+		s->notes[ri].gate_length = 1;
 		s->notes[ri].empty = 0;
 	}
 

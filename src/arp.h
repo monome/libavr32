@@ -1,5 +1,5 @@
-#ifndef __ARP__
-#define __ARP__
+#ifndef __ARP_H__
+#define __ARP_H__
 
 #include "notes.h"
 #include "midi_common.h"
@@ -112,4 +112,4 @@ void arp_player_set_division(arp_player_t *p, u8 division, midi_behavior_t *b);
 void arp_player_pulse(arp_player_t *p, arp_seq_t *s, midi_behavior_t *b, u8 phase);
 void arp_player_reset(arp_player_t *a, midi_behavior_t *b);
 
-#endif // __ARP__
+#endif // __ARP_H__
