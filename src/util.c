@@ -55,3 +55,11 @@ char* itoa(int value, char* result, int base) {
 	}
 	return result;
 }
+
+u32 uclip(u32 value, u32 low, u32 high) {
+	if (value < low)
+		return low;
+	if (value > high)
+		return high;
+	return value;
+}

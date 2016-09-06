@@ -1,8 +1,6 @@
 #include "midi_common.h"
 
-#ifndef TEST
 #include "print_funcs.h"
-#endif
 
 void midi_packet_parse(midi_behavior_t *b, u32 data) {
 	static u8 com;

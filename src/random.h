@@ -6,7 +6,10 @@
 //------------------------------
 //----- types
 
-typedef struct random_state random_state_t;
+typedef struct {
+	s16 min, max, val;
+	u32 a, c, x;
+} random_state_t;
 
 //------------------------------
 //----- functions
