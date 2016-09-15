@@ -178,19 +178,18 @@ void test_seq_build_up_down(void) {
 
 	arp_seq_build_up_down(&seq, &two, eStyleUpDown);
 	TEST_ASSERT_EQUAL(eStyleUpDown, seq.style);
-	TEST_ASSERT_EQUAL_INT8(3, seq.length);
+	TEST_ASSERT_EQUAL_INT8(2, seq.length);
 	TEST_ASSERT_EQUAL_INT8(10, seq.notes[0].note.num);
 	TEST_ASSERT_EQUAL_INT8(20, seq.notes[1].note.num);
-	TEST_ASSERT_EQUAL_INT8(10, seq.notes[2].note.num);
 
 	arp_seq_build_up_down(&seq, &three, eStyleUpDown);
 	TEST_ASSERT_EQUAL(eStyleUpDown, seq.style);
-	TEST_ASSERT_EQUAL_INT8(5, seq.length);
+	TEST_ASSERT_EQUAL_INT8(4, seq.length);
 	TEST_ASSERT_EQUAL_INT8(30, seq.notes[0].note.num);
 	TEST_ASSERT_EQUAL_INT8(40, seq.notes[1].note.num);
 	TEST_ASSERT_EQUAL_INT8(50, seq.notes[2].note.num);
 	TEST_ASSERT_EQUAL_INT8(40, seq.notes[3].note.num);
-	TEST_ASSERT_EQUAL_INT8(30, seq.notes[4].note.num);
+
 
 	// up and down
 	arp_seq_build_up_down(&seq, &empty, eStyleUpAndDown);
