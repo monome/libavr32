@@ -203,7 +203,7 @@ static void arp_seq_build_up_down(arp_seq_t *s, chord_t *c, arp_style style) {
 		u++;
 	}
 	if (c->note_count > 1) {
-		for (i = c->note_count - 1 - d; i >= 0; --i) {
+		for (i = c->note_count - 1 - d; i >= 0 + d; --i) {
 			s->notes[u].note = c->notes[i];
 			s->notes[u].gate_length = 1;
 			s->notes[u].empty = 0;
@@ -348,6 +348,10 @@ void arp_player_set_division(arp_player_t *p, u8 division, midi_behavior_t *b) {
 		p->div_count = 0;
 		arp_player_set_gate_width(p, p->fixed_width);
 	}
+}
+
+bool arp_player_at_end(arp_player_t *p, arp_seq_t *s) {
+	return p->index >= s->length - 1;
 }
 
 void arp_player_pulse(arp_player_t *p, arp_seq_t *s, midi_behavior_t *b, u8 phase) {
