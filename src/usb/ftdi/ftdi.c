@@ -27,67 +27,70 @@ static u8 rxBuf[FTDI_RX_BUF_SIZE];
 static u32 rxBytes = 0;
 static u8 rxBusy = 0;
 static u8 txBusy = 0;
-static uhd_trans_status_t status = 0;
 static event_t e;
 
 //------- static functions
 
-static void ftdi_rx_done(  usb_add_t add,
-			   usb_ep_t ep,
-			   uhd_trans_status_t stat,
-			   iram_size_t nb) {
-  status = stat;
-  rxBusy = 0;
+static void ftdi_rx_done(usb_add_t add,
+                         usb_ep_t ep,
+                         uhd_trans_status_t stat,
+                         iram_size_t nb) {
   rxBytes = nb - FTDI_STATUS_BYTES;
-  /* print_dbg("\r\n ftdi rx transfer callback. status: 0x"); */
-  /* print_dbg_hex((u32)status); */
-  /* print_dbg(" ; bytes transferred: "); */
-  /* print_dbg_ulong(nb); */
-  /* print_dbg(" ; status bytes: 0x"); */
-  /* print_dbg_hex(rxBuf[0]); */
-  /* print_dbg(" 0x"); */
-  /* print_dbg_hex(rxBuf[1]); */			    
-  if(rxBytes) {
+
+  /* if (stat != UHD_TRANS_NOERROR) { */
+  /*   print_dbg("\r\n ftdi rx transfer callback error. status: 0x"); */
+  /*   print_dbg_hex((u32)stat); */
+  /*   print_dbg(" ; bytes transferred: "); */
+  /*   print_dbg_ulong(nb); */
+  /*   print_dbg(" ; status bytes: 0x"); */
+  /*   print_dbg_hex(rxBuf[0]); */
+  /*   print_dbg(" 0x"); */
+  /*   print_dbg_hex(rxBuf[1]); */
+  /* } */
+  /* else */
+
+  if (rxBytes) {
     // check for monome events
     //    if(monome_read_serial != NULL) { 
-      (*monome_read_serial)(); 
-      //}
+    (*monome_read_serial)();
+    //}
     ///... TODO: other protocols
-  } 
+  }
+
+  rxBusy = false;
 }
 
-static void ftdi_tx_done(
-			       usb_add_t add,
-			       usb_ep_t ep,
-			       uhd_trans_status_t stat,
-			       iram_size_t nb) {
-  status = stat;
-  txBusy = 0;
-  /* print_dbg("\r\n ftdi tx transfer callback. status: 0x"); */
-  /* print_dbg_hex((u32)status); */
-  if (status != UHD_TRANS_NOERROR) {
-    // print_dbg("\r\n ftdi tx error");
-    return;
-  }
+static void ftdi_tx_done(usb_add_t add,
+                         usb_ep_t ep,
+                         uhd_trans_status_t stat,
+                         iram_size_t nb) {
+  txBusy = false;
   
+  if (stat != UHD_TRANS_NOERROR) {
+    print_dbg("\r\n ftdi tx transfer callback error. status: 0x");
+    print_dbg_hex((u32)stat);
+  }
 }
 
 //-------- extern functions
 void ftdi_write(u8* data, u32 bytes) {
-  txBusy = 1;
-  if(!uhi_ftdi_out_run(data, bytes, &ftdi_tx_done)) {
-    // print_dbg("\r\n error requesting ftdi output pipe");
+  if (txBusy == false) {
+    txBusy = true;
+    if(!uhi_ftdi_out_run(data, bytes, &ftdi_tx_done)) {
+      print_dbg("\r\n ftdi tx transfer error");
+    }
   }
 }
     
 void ftdi_read(void) {
-  rxBytes = 0;
-  rxBusy = true;
-  if (!uhi_ftdi_in_run((u8*)rxBuf,
-		       FTDI_RX_BUF_SIZE, &ftdi_rx_done)) {
-    print_dbg("\r\n ftdi rx transfer error");
+  if (rxBusy == false) {
+    rxBytes = 0;
+    rxBusy = true;
+    if (!uhi_ftdi_in_run((u8*)rxBuf,
+                         FTDI_RX_BUF_SIZE, &ftdi_rx_done)) {
+      print_dbg("\r\n ftdi rx transfer error");
+    }
   }
-  return;
 }
 
 

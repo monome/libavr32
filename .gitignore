@@ -40,3 +40,10 @@
 
 # Debug files
 *.dSYM/
+
+# emacs
+*~
+\#*\#
+
+# testing
+test/build
