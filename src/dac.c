@@ -8,10 +8,12 @@
 
 
 struct {
+    u16 value;
     u16 now;
     u16 off;
     u16 target;
     u16 slew;
+    u16 slew_ms;
     u16 step;
     s32 delta;
     u32 a;
@@ -73,6 +75,7 @@ void update_dacs(uint16_t *d) {
 
 
 void dac_set_value_noslew(uint8_t n, uint16_t v) {
+    aout[n].value = v;
 	int16_t t = v + aout[n].off;
     if (t < 0)
         t = 0;
@@ -87,6 +90,7 @@ void dac_set_value_noslew(uint8_t n, uint16_t v) {
 }
 
 void dac_set_value(uint8_t n, uint16_t v) {
+    aout[n].value = v;
 	int16_t t = v + aout[n].off;
     if (t < 0)
         t = 0;
@@ -101,6 +105,7 @@ void dac_set_value(uint8_t n, uint16_t v) {
 }
 
 void dac_set_slew(uint8_t n, uint16_t s) {
+    aout[n].slew_ms = s;
 	aout[n].slew = s / DAC_RATE_CV;
     if (aout[n].slew == 0)
     	aout[n].slew = 1;
@@ -108,6 +113,18 @@ void dac_set_slew(uint8_t n, uint16_t s) {
 
 void dac_set_off(uint8_t n, int16_t o) {
     aout[n].off = o;
+}
+
+uint16_t dac_get_value(uint8_t n) {
+    return aout[n].value;
+}
+
+uint16_t dac_get_slew(uint8_t n) {
+    return aout[n].slew_ms;
+}
+
+uint16_t dac_get_off(uint8_t n) {
+    return aout[n].off;
 }
 
 

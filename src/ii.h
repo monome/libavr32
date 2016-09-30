@@ -1,3 +1,16 @@
+#define II_ANSIBLE_ADDR       0xA0
+#define II_GET                128
+#define II_ANSIBLE_TR         1
+#define II_ANSIBLE_TR_TOG     2
+#define II_ANSIBLE_TR_PULSE   3
+#define II_ANSIBLE_TR_TIME    4
+#define II_ANSIBLE_TR_POL     5
+#define II_ANSIBLE_CV         6
+#define II_ANSIBLE_CV_SLEW    7
+#define II_ANSIBLE_CV_OFF     8
+#define II_ANSIBLE_CV_SET     9
+#define II_ANSIBLE_INPUT      10
+
 #define WW 				0x10
 #define WW_PRESET 		0x11
 #define WW_POS			0x12
