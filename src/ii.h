@@ -11,6 +11,18 @@
 #define II_ANSIBLE_CV_SET     9
 #define II_ANSIBLE_INPUT      10
 
+#define JF_ADDR 	0xF0
+#define JF_TR 		1
+#define JF_RMODE 	2
+#define JF_RUN 		3
+#define JF_SHIFT 	4
+#define JF_VTR 		5
+#define JF_MODE 	6
+#define JF_TICK 	7
+#define JF_VOX 		8
+#define JF_NOTE 	9
+#define JF_GOD 		10
+
 #define WW 				0x10
 #define WW_PRESET 		0x11
 #define WW_POS			0x12

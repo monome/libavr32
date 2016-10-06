@@ -40,6 +40,8 @@ typedef enum {
   // Trigger EVENT (8 digital inputs)
   kEventTrigger,
   kEventII,
+  kEventIItx,
+  kEventIIrx,
 
   kEventMidiConnect,
   kEventMidiDisconnect,
