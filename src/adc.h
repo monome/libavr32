@@ -2,6 +2,7 @@
 #define _ADC_H_
 
 #include "compiler.h"
+#include "types.h"
 
 // setup ad7923
 extern void init_adc(void);
