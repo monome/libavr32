@@ -4,6 +4,7 @@
 
 Common code shared between Monome Eurorack firmwares:
 
+* [ansible][]
 * [earthsea][]
 * [kria][]
 * [meadowphysics][]
@@ -80,6 +81,7 @@ To upload it, you'll need a [USB A-A][digikey] cable, then:
 
 This folder contains the Atmel software framework, if you wish to make changes here, please make them using the [diet-asf][] repo.
 
+[ansible]: https://github.com/monome/ansible
 [earthsea]: https://github.com/monome/earthsea
 [kria]: https://github.com/monome/kria
 [meadowphysics]: https://github.com/monome/meadowphysics
