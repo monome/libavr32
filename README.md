@@ -61,7 +61,7 @@ cd teletype
 Let's build it, we need to make sure that `avr32-gcc` and company are available on our path. Assuming they are installed in `~/avr32-tools`:
 ```bash
 export PATH="$HOME/avr32-tools/bin:$PATH"
-cd src
+cd module
 make
 ```
 
@@ -71,7 +71,7 @@ To upload it, you'll need a [USB A-A][digikey] cable, then:
 
 1. Power on your module with no USB cables attached, while holding down the front panel button
 2. Connect the USB A-A cable to your computer and the module
-3. Run `./flash.sh` in the `src` directory
+3. Run `./flash.sh` in the `module` directory
 4. The firmware should upload and verify itself. If it can't find the device, try repeating the steps.
 5. Disconnect the USB A-A and power cycle the module to re-enable normal USB mode (otherwise your grid or keyboard will not be detected)
 
