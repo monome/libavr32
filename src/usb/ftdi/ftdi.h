@@ -1,9 +1,9 @@
 /* ftdi.h
-   
+
    ftdi driver for monome aleph
  */
 
-#ifndef _ALEPH_FTD_H_
+#ifndef _ALEPH_FTDI_H_
 #define _ALEPH_FTDI_H_
 
 #include "types.h"
