@@ -22,6 +22,7 @@
 #define JF_VOX 		8
 #define JF_NOTE 	9
 #define JF_GOD 		10
+#define JF_TUNE		11
 
 #define WW 				0x10
 #define WW_PRESET 		0x11
