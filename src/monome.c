@@ -568,9 +568,9 @@ static u8 setup_mext(void) {
   // print_dbg_ulong(rxBytes);
 
   if(rxBytes != 6 ){
-    print_dbg("\r\n got unexpected byte count in response to mext setup request;\r\n");
-    print_dbg_ulong(*prx);
-    
+    print_dbg("\r\n got unexpected byte count in response to mext setup request; \r\n");
+    prx = ftdi_rx_buf();
+
     for(;rxBytes != 0; rxBytes--) {
       print_dbg_ulong(*(++prx));
       print_dbg(" ");
