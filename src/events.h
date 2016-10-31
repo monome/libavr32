@@ -3,11 +3,6 @@
 
 #include "types.h"
 
-
-// global array of pointers to handlers
-extern void (*app_event_handlers[])(s32 data);
-
-
 // enumerate event types
 typedef enum {
   kEventNone,
@@ -35,7 +30,7 @@ typedef enum {
   kEventHidDisconnect,
   kEventHidPacket,
   kEventHidTimer,
-
+  
   kEventScreenRefresh,
   // Trigger EVENT (8 digital inputs)
   kEventTrigger,
@@ -46,23 +41,46 @@ typedef enum {
   kEventMidiConnect,
   kEventMidiDisconnect,
   kEventMidiPacket,
+  kEventMidiRefresh,
 
   kEventTr,
   kEventTrNormal,
   kEventKey,
-
-
+  
+  // aleph-specific
+  kEventAdc0 , 	// receive values from polled ADC channels
+  kEventAdc1 ,
+  kEventAdc2 ,
+  kEventAdc3 ,
+  /// encoders
+  kEventEncoder0,
+  kEventEncoder1,
+  kEventEncoder2 ,
+  kEventEncoder3 ,
+  //// switches
+  kEventSwitch0, // fn1
+  kEventSwitch1, // fn2
+  kEventSwitch2, // fn3
+  kEventSwitch3, // fn4
+  kEventSwitch4, // mode
+  kEventSwitch5, // power
+  kEventSwitch6, // foot1
+  kEventSwitch7, // foot2
+  // serial rx
+  kEventSerial,
+  // arbitrary loopback from within application
+  kEventAppCustom,
   /// dummy/count
   kNumEventTypes,
 } etype;
-
-
 
 typedef struct {
   etype type;
   s32 data;
 } event_t;
 
+// global array of pointers to handlers
+extern void (*app_event_handlers[])(s32 data);
 
 // init event queue
 void init_events( void );
