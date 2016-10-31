@@ -1,4 +1,4 @@
-//ASF
+// ASF
 #include "compiler.h"
 #include "delay.h"
 #include "interrupt.h"
@@ -25,18 +25,16 @@
 #ifdef MOD_TRILOGY
 #define AD7923_CMD_BASE ( AD7923_CTL_WRITE | AD7923_CTL_PM0 | AD7923_CTL_PM1 | AD7923_CTL_CODING)
 #endif
+
 #ifdef MOD_TELETYPE
 #define AD7923_CMD_BASE ( AD7923_CTL_WRITE | AD7923_CTL_PM0 | AD7923_CTL_PM1 | AD7923_CTL_CODING | AD7923_CTL_RANGE)
 #endif
 
+#ifdef MOD_ALEPH
+#define AD7923_CMD_BASE \
+    (AD7923_CTL_WRITE | AD7923_CTL_PM0 | AD7923_CTL_PM1 | AD7923_CTL_CODING)
+#endif
 
-// // adc events
-// static const etype adctypes[4] = { 
-//   kEventAdc0 ,
-//   kEventAdc1 ,
-//   kEventAdc2 ,
-//   kEventAdc3 ,
-// };
 
 // perform a conversion on all 4 channels
 void adc_convert(U16 (*dst)[4]) {
@@ -45,40 +43,40 @@ void adc_convert(U16 (*dst)[4]) {
   // data into AD7923 is a left-justified 12-bit value in a 16-bit word
   // so, always lshift the command before sending
   cmd = ( AD7923_CMD_BASE ) << 4;
-  spi_selectChip(SPI, ADC_SPI);
-  spi_write(SPI, cmd);
-  spi_unselectChip(SPI, ADC_SPI);
+  spi_selectChip(ADC_SPI, ADC_SPI_NPCS);
+  spi_write(ADC_SPI, cmd);
+  spi_unselectChip(ADC_SPI, ADC_SPI_NPCS);
 
   // get channel 0, setup channel 1
   cmd = ( AD7923_CMD_BASE | AD7923_CTL_ADD0 ) << 4;
-  spi_selectChip(SPI, ADC_SPI);
-  spi_write(SPI, cmd);
-  spi_read(SPI, &val);
-  spi_unselectChip(SPI, ADC_SPI);
+  spi_selectChip(ADC_SPI, ADC_SPI_NPCS);
+  spi_write(ADC_SPI, cmd);
+  spi_read(ADC_SPI, &val);
+  spi_unselectChip(ADC_SPI, ADC_SPI_NPCS);
   (*dst)[0] = val & 0xfff; 
 
   // get channel 1, setup channel 2
   cmd = ( AD7923_CMD_BASE | AD7923_CTL_ADD1 ) << 4;
-  spi_selectChip(SPI, ADC_SPI);
-  spi_write(SPI, cmd);
-  spi_read(SPI, &val);
-  spi_unselectChip(SPI, ADC_SPI);
+  spi_selectChip(ADC_SPI, ADC_SPI_NPCS);
+  spi_write(ADC_SPI, cmd);
+  spi_read(ADC_SPI, &val);
+  spi_unselectChip(ADC_SPI, ADC_SPI_NPCS);
   (*dst)[1] = val & 0xfff;
 
   // get channel 2, setup channel 3
   cmd = ( AD7923_CMD_BASE | AD7923_CTL_ADD1 | AD7923_CTL_ADD0 ) << 4;
-  spi_selectChip(SPI, ADC_SPI);
-  spi_write(SPI, cmd);
-  spi_read(SPI, &val);
-  spi_unselectChip(SPI, ADC_SPI);
+  spi_selectChip(ADC_SPI, ADC_SPI_NPCS);
+  spi_write(ADC_SPI, cmd);
+  spi_read(ADC_SPI, &val);
+  spi_unselectChip(ADC_SPI, ADC_SPI_NPCS);
   (*dst)[2] = val & 0xfff;
 
   // get channel 3, dummy write
   cmd = ( AD7923_CMD_BASE ) << 4;
-  spi_selectChip(SPI, ADC_SPI);
-  spi_write(SPI, cmd);
-  spi_read(SPI, &val);
-  spi_unselectChip(SPI, ADC_SPI);
+  spi_selectChip(ADC_SPI, ADC_SPI_NPCS);
+  spi_write(ADC_SPI, cmd);
+  spi_read(ADC_SPI, &val);
+  spi_unselectChip(ADC_SPI, ADC_SPI_NPCS);
   (*dst)[3] = val & 0xfff;
 
 }
@@ -88,42 +86,17 @@ void init_adc(void) {
   u16 cmd;
 
   // at powerup, the part wants a dummy conversion with DIN high
-  spi_selectChip(SPI, ADC_SPI);
-  spi_write(SPI, 0xffff);
-  spi_unselectChip(SPI, ADC_SPI);
+  spi_selectChip(ADC_SPI, ADC_SPI_NPCS);
+  spi_write(ADC_SPI, 0xffff);
+  spi_unselectChip(ADC_SPI, ADC_SPI_NPCS);
 
   // wait for powerup time (5us in datasheet)
   delay_us(5);
   
   // write base configuration
   cmd = AD7923_CMD_BASE << 4;
-  spi_selectChip(SPI, ADC_SPI );
-  spi_write(SPI, cmd );
-  spi_unselectChip(SPI, ADC_SPI );
+  spi_selectChip(ADC_SPI, ADC_SPI_NPCS );
+  spi_write(ADC_SPI, cmd );
+  spi_unselectChip(ADC_SPI, ADC_SPI_NPCS );
 
 }
-
-// // perform conversion, check for changes, and post events
-// u16 adc_poll(void) {
-//   static u16 adcVal[4] = {0, 0, 0, 0};
-//   // static event_t e;
-//   // u8 i;
-
-//   adc_convert(&adcVal);
-
-//   // print_dbg("\r\nadc:\t");
-//   // print_dbg_ulong(adcVal[0]); print_dbg("\t");
-//   // print_dbg_ulong(adcVal[1]); print_dbg("\t");
-//   // print_dbg_ulong(adcVal[2]); print_dbg("\t");
-//   // print_dbg_ulong(adcVal[3]);
-
-
-//   /// test with no filtering.. maybe this is fine
-//   // for(i=0; i<4; i++) {        
-//   //   e.type = adctypes[i];
-//   //   e.data = (S16)(adcVal[i]);
-//   //   event_post(&e);
-//   // }
-
-//   return adcVal[0];
-// }
