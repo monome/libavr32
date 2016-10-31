@@ -1,24 +1,17 @@
-// std 
-/// FIXME: eliminate!!
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
 // ASF
+#include "board.h"
 #include "delay.h"
 #include "gpio.h"
-//#include "util.h"
 #include "intc.h"
 #include "print_funcs.h"
 #include "spi.h"
-//#include "conf_aleph.h"
-// #include "fix.h"
+
+// libavr32
 #include "font.h"
-// #include "global.h"
 #include "screen.h"
 
 //-----------------------------
 //---- variables
-// const U8 lines[CHAR_ROWS] = { 0, 8, 16, 24, 32, 40, 48, 56 };
 
 // screen buffer
 static u8 screenBuf[GRAM_BYTES];
@@ -28,17 +21,13 @@ static u32 i, j;
 static u8* pScr; // movable pointer to screen buf
 static u32 nb; // count of destination bytes
 
-//static u32 pos;
-// fixed-point text buffer
-//static char buf[FIX_DIG_TOTAL];
-
 static void write_command(U8 c);
 static void write_command(U8 c) {
-  spi_selectChip(SPI, OLED_SPI);
+  spi_selectChip(OLED_SPI, OLED_SPI_NPCS);
   // pull register select low to write a command
   gpio_clr_gpio_pin(OLED_DC_PIN);
-  spi_write(SPI, c);
-  spi_unselectChip(SPI, OLED_SPI);
+  spi_write(OLED_SPI, c);
+  spi_unselectChip(OLED_SPI, OLED_SPI_NPCS);
 }
 
 // set the current drawing area of the physical screen (hopefully)
@@ -57,11 +46,7 @@ void screen_set_rect(u8 x, u8 y, u8 w, u8 h) {
 //------------------
 // al functions
 void init_oled(void) {
-  //U32 i;
-  // volatile u64 delay;
-  //  cpu_irq_disable();
   Disable_global_interrupt();
-  //  delay_ms(1);
   // flip the reset pin
   gpio_set_gpio_pin(OLED_RES_PIN);
   delay_ms(1);
@@ -132,25 +117,50 @@ void init_oled(void) {
   Enable_global_interrupt();
 }
 
+static void writeScreenBuffer(u8 x, u8 y, u8 w, u8 h) {
+  // set drawing region
+  screen_set_rect(x, y, w, h);
+  // select chip for data
+  spi_selectChip(OLED_SPI, OLED_SPI_NPCS);
+  // register select high for data
+  gpio_set_gpio_pin(OLED_DC_PIN);
+  // send data
+  for(i=0; i<(nb); i++) {
+    spi_write(OLED_SPI, screenBuf[i]);
+  }
+  spi_unselectChip(OLED_SPI, OLED_SPI_NPCS);
+}
 
 // draw data given target rect
 // assume x-offset and width are both even!
  void screen_draw_region(u8 x, u8 y, u8 w, u8 h, u8* data) {
   // 1 row address = 2 horizontal pixels
-  
   // physical screen memory: 2px = 1byte
   w >>= 1;
   x >>= 1;
   nb = w * h;
-
-  /// the screen is mounted upside down!
-  // copy, pack, and reverse into the top of the screen buffer
-  // 2 bytes input -> 1 byte output
-    // pScr = (u8*)screenBuf + nb - 1;
-    pScr = (u8*)screenBuf;// + x + (y*128) - 1;
+  
+  #ifdef MOD_ALEPH // aleph screen is mounted upside down...
+  pScr = (u8*)screenBuf + nb - 1;  
+  x = SCREEN_ROW_BYTES - x - w;
+  y = SCREEN_COL_BYTES - y - h;
+   // copy and pack into the screen buffer
+  // 2 bytes input per 1 byte output
   for(j=0; j<h; j++) {
     for(i=0; i<w; i++) {
-      // 2 bytes input per 1 byte output
+	  *pScr = (0xf0 & ((*data) << 4) );
+      data++;
+      *pScr |= ((*data) & 0xf);
+      data++;
+      pScr--;
+    }
+  }
+  #else 
+  pScr = (u8*)screenBuf;
+   // copy and pack into the screen buffer
+  // 2 bytes input per 1 byte output
+  for(j=0; j<h; j++) {
+    for(i=0; i<w; i++) {
       *pScr = ((*data) & 0xf);
       data++;
       *pScr |= (0xf0 & ((*data) << 4) );
@@ -158,22 +168,9 @@ void init_oled(void) {
       pScr++;
     }
   }
-  
-  // flip the screen coordinates 
-  // x = SCREEN_ROW_BYTES - x - w;
-  // y = SCREEN_COL_BYTES - y - h;
-  
-  // set drawing region
-  screen_set_rect(x, y, w, h);
-  // select chip for data
-  spi_selectChip(SPI, OLED_SPI);
-  // register select high for data
-  gpio_set_gpio_pin(OLED_DC_PIN);
-  // send data
-  for(i=0; i<(nb); i++) {
-    spi_write(SPI, screenBuf[i]);
-  }
-  spi_unselectChip(SPI, OLED_SPI);
+  #endif
+
+  writeScreenBuffer(x, y, w, h);
 }
 
 // draw data at given rectangle, with starting byte offset within the region data.
@@ -194,15 +191,16 @@ void screen_draw_region_offset(u8 x, u8 y, u8 w, u8 h, u32 len, u8* data, u32 of
   x >>= 1;
   nb = len >> 1;
 
-  /// the screen is mounted upside down!
-  // copy, pack, and reverse into the top of the screen buffer
-  // 2 bytes input -> 1 byte output
-  pScr = (u8*)screenBuf + nb - 1;
-
+  
+  #ifdef MOD_ALEPH // aleph screen is mounted upside down...
+  pScr = (u8*)screenBuf + nb - 1;  
+  x = SCREEN_ROW_BYTES - x - w;
+  y = SCREEN_COL_BYTES - y - h;
+   // copy and pack into the screen buffer
+  // 2 bytes input per 1 byte output
   for(j=0; j<h; j++) {
     for(i=0; i<w; i++) {
-      // 2 bytes input per 1 byte output
-      *pScr = (0xf0 & ((*data) << 4) );
+	  *pScr = (0xf0 & ((*data) << 4) );
       data++;
       if(data > dataEnd) { data = dataStart; }
       *pScr |= ((*data) & 0xf);
@@ -211,33 +209,35 @@ void screen_draw_region_offset(u8 x, u8 y, u8 w, u8 h, u32 len, u8* data, u32 of
       pScr--;
     }
   }
-  
-  // flip the screen coordinates 
-  x = SCREEN_ROW_BYTES - x - w;
-  y = SCREEN_COL_BYTES - y - h;
-  
-  // set drawing region
-  screen_set_rect(x, y, w, h);
-  // select chip for data
-  spi_selectChip(SPI, OLED_SPI);
-  // register select high for data
-  gpio_set_gpio_pin(OLED_DC_PIN);
-  // send data
-  for(i=0; i<(nb); i++) {
-    spi_write(SPI, screenBuf[i]);
+  #else 
+  pScr = (u8*)screenBuf;
+   // copy and pack into the screen buffer
+  // 2 bytes input per 1 byte output
+  for(j=0; j<h; j++) {
+    for(i=0; i<w; i++) {
+      *pScr = ((*data) & 0xf);
+      data++;
+      if(data > dataEnd) { data = dataStart; }
+      *pScr |= (0xf0 & ((*data) << 4) );
+      data++;
+      if(data > dataEnd) { data = dataStart; }
+      pScr++;
+    }
   }
-  spi_unselectChip(SPI, OLED_SPI);
+  #endif
+  
+  writeScreenBuffer(x, y, w, h);
 }
 
 
  // clear OLED RAM and local screenbuffer
 void screen_clear(void) {
-  spi_selectChip(SPI, OLED_SPI);
+  spi_selectChip(OLED_SPI, OLED_SPI_NPCS);
   // pull register select high to write data
   gpio_set_gpio_pin(OLED_DC_PIN);
   for(i=0; i<GRAM_BYTES; i++) { 
     screenBuf[i] = 0;
-    spi_write(SPI, 0);
+    spi_write(OLED_SPI, 0);
   }
-  spi_unselectChip(SPI, OLED_SPI);
+  spi_unselectChip(OLED_SPI, OLED_SPI_NPCS);
 }
