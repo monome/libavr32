@@ -124,6 +124,7 @@ The modules use AVR32 MCUs from Atmel, either the [AT32UC3B0512][] or the [AT32U
 ### Useful AVR32 documents
 
 - [AVR32006: Getting started with GCC for AVR32](http://www.atmel.com/Images/doc32074.pdf): useful information on GCC flags and speed and size optimisation.
+- [AVR32007: UC3 C-coding Guidelines for ARM7 Developers](http://www.atmel.com/Images/doc32075.pdf): very useful short overview of the UC3, even if you know nothing about ARM processors.
 - [AVR32795: Using the GNU Linker Scripts on AVR UC3 Devices](http://www.atmel.com/images/doc32158.pdf): detailed instructions on controlling memory layout.
 - [AT08569: Optimizing ASF Code Size to Minimize Flash and RAM Usage](http://www.atmel.com/Images/Atmel-42370-Optimizing-ASF-Code-Size-to-Minimize-Flash-and-RAM-Usage_ApplicationNote_AT08569.pdf).
 
