@@ -77,6 +77,37 @@ To upload it, you'll need a [USB A-A][digikey] cable, then:
 
 **You cannot overwrite the bootloader if you update via USB**
 
+### Serial port
+
+Each of the modules has an unpopulated UART header on the rear, when populated it can be used with an FTDI cable or breakout board for print / trace debugging.
+
+The following cables are known to work:
+
+- [Sparkfun DEV-09718](https://www.sparkfun.com/products/9718)
+- [FTDI TTL-232R-5V](http://www.ftdichip.com/Products/Cables/USBTTLSerial.htm) ([Octopart](https://octopart.com/ttl-232r-5v-ftdi-19172129))
+
+When connecting, align the black cable with the `gnd` pin. Breakout boards are also available. 3.3V should work too.
+
+Newer versions of OSX and Linux include builtin drivers for the FTDI cable. On OSX the simplest way to connect to the serial port is to use the `cu` program (type `~.` to quit), e.g.
+
+```bash
+sudo cu -s 115200 -l <device>
+```
+
+On Linux and OSX, you can also use the `screen` command (type `C-a \`, or `C-a :quit` to quit), e.g.
+
+```bash
+sudo screen <device> 115200
+```
+
+The value of `<device>` depends on the adaptor being used and the OS, try the following 2 commands to identify it:
+
+```bash
+ls /dev | grep -i ttyusb   # should work on Linux
+ls /dev | grep -i tty.usb  # should work on OSX
+```
+
+
 ## `asf`
 
 This folder contains the Atmel software framework, if you wish to make changes here, please make them using the [diet-asf][] repo.
@@ -93,6 +124,7 @@ The modules use AVR32 MCUs from Atmel, either the [AT32UC3B0512][] or the [AT32U
 ### Useful AVR32 documents
 
 - [AVR32006: Getting started with GCC for AVR32](http://www.atmel.com/Images/doc32074.pdf): useful information on GCC flags and speed and size optimisation.
+- [AVR32007: UC3 C-coding Guidelines for ARM7 Developers](http://www.atmel.com/Images/doc32075.pdf): very useful short overview of the UC3, even if you know nothing about ARM processors.
 - [AVR32795: Using the GNU Linker Scripts on AVR UC3 Devices](http://www.atmel.com/images/doc32158.pdf): detailed instructions on controlling memory layout.
 - [AT08569: Optimizing ASF Code Size to Minimize Flash and RAM Usage](http://www.atmel.com/Images/Atmel-42370-Optimizing-ASF-Code-Size-to-Minimize-Flash-and-RAM-Usage_ApplicationNote_AT08569.pdf).
 
