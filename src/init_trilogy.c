@@ -189,8 +189,8 @@ extern void init_spi (void) {
 
 
   spi_options_t spiOptions = {
-    .reg = DAC_SPI,
-    .baudrate = 20000000,
+    .reg = DAC_SPI_NPCS,
+    .baudrate = 2000000,
     .bits = 8,
     .trans_delay = 0,
     .spck_delay = 0,
@@ -212,7 +212,7 @@ extern void init_spi (void) {
 
 
   // add ADC chip register
-  spiOptions.reg          = ADC_SPI;
+  spiOptions.reg          = ADC_SPI_NPCS;
   spiOptions.baudrate     = 20000000;
   spiOptions.bits         = 16;
   spiOptions.spi_mode     = 2;

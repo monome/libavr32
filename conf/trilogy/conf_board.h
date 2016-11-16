@@ -38,8 +38,10 @@
  * \asf_license_stop
  */
 
-#ifndef CONF_BOARD_H
-#define CONF_BOARD_H
+#ifndef _TRILOGY_CONF_BOARD_H_
+#define _TRILOGY_CONF_BOARD_H_
+
+// #warning including conf_board.h (trilogy)
 
 #include "compiler.h"
 
@@ -126,7 +128,6 @@
 #define SPARE_TWI_SDA_PIN           AVR32_TWI_SDA_0_0_PIN
 #define SPARE_TWI_SDA_FUNCTION      AVR32_TWI_SDA_0_0_FUNCTION
 
-
 // SCK A15
 // MISO A28
 // MOSI A29
@@ -144,8 +145,12 @@
 #define SPI_NPCS1_PIN         AVR32_SPI_NPCS_1_0_PIN
 #define SPI_NPCS1_FUNCTION    AVR32_SPI_NPCS_1_0_FUNCTION
 
-#define DAC_SPI 0
-#define ADC_SPI 1
+#define DAC_SPI_NPCS 0
+#define ADC_SPI_NPCS 1
+
+// compatibility with aleph
+#define ADC_SPI SPI
+#define DAC_SPI SPI
 
   //TWI
 #define TWI 					(&AVR32_TWI)

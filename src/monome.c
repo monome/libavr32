@@ -367,14 +367,6 @@ static inline void monome_grid_key_write_event(u8 x, u8 y, u8 val) {
   data[0] = x;
   data[1] = y;
   data[2] = val;
-  
-  /* print_dbg("\r\n monome.c wrote event; x: 0x"); */
-  /* print_dbg_hex(x); */
-  /* print_dbg("; y: 0x"); */
-  /* print_dbg_hex(y); */
-  /* print_dbg("; z: 0x"); */
-  /* print_dbg_hex(val); */
-
   ev.type = kEventMonomeGridKey;
   event_post(&ev);
 }
@@ -399,12 +391,6 @@ static inline void monome_ring_enc_write_event( u8 n, u8 val) {
   u8* data = (u8*)(&(ev.data));
   data[0] = n;
   data[1] = val;
-  
-   // print_dbg("\r\n monome.c wrote event; n: 0x"); 
-   // print_dbg_hex(n); 
-   // print_dbg("; d: 0x"); 
-   // print_dbg_hex(val); 
-
   ev.type = kEventMonomeRingEnc;
   event_post(&ev);
 }
@@ -439,8 +425,6 @@ void monome_calc_quadrant_flag(u8 x, u8 y) {
       monomeFrameDirty |= 0b0001;
     }
   } 
-  /* print_dbg("\r\n monome_calc_quadrant_flag: 0x"); */
-  /* print_dbg_hex(monomeFrameDirty); */
 }
 
 // set given quadrant dirty flag
@@ -471,6 +455,14 @@ void monome_led_toggle(u8 x, u8 y) {
   monomeLedBuffer[monome_xy_idx(x,y)] ^= 0xff;
   monome_calc_quadrant_flag(x, y);  
 }
+
+// arc led/set function
+void monome_arc_led_set(u8 enc, u8 ring, u8 val) {
+  monomeLedBuffer[ring + (enc << 6)] = val;
+  monomeFrameDirty |= (1 << enc);
+}
+
+
 
 
 eMonomeDevice monome_device(void) { return mdesc.device; }
@@ -554,12 +546,8 @@ static u8 setup_mext(void) {
   busy = 1;
 
   // print_dbg("\r\n setup request ftdi read; waiting...");
-
-  //  while(ftdi_rx_busy()) {;;}
   while(busy) {
     busy = ftdi_rx_busy();
-    // print_dbg("\r\n waiting for transfer complete; busy flag: ");
-    // print_dbg_ulong(busy);
     
   }
   rxBytes = ftdi_rx_bytes();

@@ -1,14 +1,9 @@
-/*****************************************************************************
- *
+/**
  * \file
  *
- * \brief Dummy board header file.
+ * \brief TWI Configuration File for AVR32 UC3.
  *
- * This file contains empty definitions to support board-independant applications (e.g. bootloader)
- *
- * To use this board, define BOARD=DUMMY_BOARD.
- *
- * Copyright (c) 2014-2015 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2012 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -44,13 +39,13 @@
  *
  * \asf_license_stop
  *
- ******************************************************************************/
-/*
- * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
  */
+#ifndef _CONF_TWI_H
+#define _CONF_TWI_H
+
+#include "board.h"
 
 
-#ifndef _DUMMY_BOARD_H_
-#define _DUMMY_BOARD_H_
+#define CONF_TWI_IRQ_LEVEL         3
 
-#endif  // _DUMMY_BOARD_H_
+#endif // _CONF_TWI_H
