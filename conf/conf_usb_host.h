@@ -16,7 +16,7 @@
 #define USB_HOST_UHI        UHI_FTDI, UHI_HID, UHI_MSC, UHI_MIDI
 
 //! Maximum current allowed on Vbus (mA)
-#define USB_HOST_POWER_MAX  300
+#define USB_HOST_POWER_MAX  500
 
 /**
  * USB Host callbacks
