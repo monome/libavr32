@@ -29,6 +29,8 @@ PREFIX=$HOME/avr32-tools make install-cross
 # go make a cup of tea, this will take a while...
 ```
 
+If you encounter an error make sure you have the Xcode command line tools installed. They can be installed by typing `xcode-select --install` (if they are already installed it will print an error message).
+
 ### Linux
 
 If you're on Linux, download the toolchain and the headers from [Atmel][atmellinux]. You need to dowload:
