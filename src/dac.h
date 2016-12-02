@@ -3,7 +3,7 @@
 
 #include "compiler.h"
 
-#define DAC_RATE_CV 6
+#define DAC_RATE_CV 3
 #define DAC_10V 16383
 
 void init_dacs(void);
