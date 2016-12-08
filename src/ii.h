@@ -25,6 +25,37 @@
 #define JF_TUNE		11
 #define JF_QT		12
 
+#define II_KR_ADDR		0xA8
+#define II_KR_PRESET	0
+#define II_KR_PATTERN	1
+#define II_KR_SCALE		2
+#define II_KR_PERIOD	3
+#define II_KR_POS		4
+#define II_KR_LOOP_ST	5
+#define II_KR_LOOP_LEN	6
+#define II_KR_RESET		7
+#define II_MP_ADDR		0xAA
+#define II_MP_PRESET	0
+#define II_MP_RESET 	1
+#define II_MP_STOP		2
+#define II_MP_SCALE		3
+#define II_MP_PERIOD	4
+#define II_LV_ADDR		0xAC
+#define II_LV_PRESET	0
+#define II_LV_RESET 	1
+#define II_LV_PATTERN	2
+#define II_LV_LOOP_ST	3
+#define II_LV_LOOP_LEN	4
+#define II_LV_POS		5
+#define II_CY_ADDR		0xAE
+#define II_CY_PRESET	0
+#define II_CY_RESET 	1
+#define II_CY_POS 		2
+#define II_CY_REV		3
+#define II_CY_BRAKE		4
+#define II_CY_ACCEL		5
+#define II_CY_RANGE		6
+
 #define WW 				0x10
 #define WW_PRESET 		0x11
 #define WW_POS			0x12
