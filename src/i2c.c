@@ -26,6 +26,12 @@ void i2c_master_tx(uint8_t addr, uint8_t *data, uint8_t length) {
   // How many bytes do we want to write
   packet.length = length;
 
+  // print_dbg("\r\nii_tx ");
+  // for(int i =0;i< length;i++) {
+  //   print_dbg_ulong(data[i]);
+  //   print_dbg(" ");
+  // }
+
   // perform a write access
   status = twi_master_write(TWI, &packet);
 }
@@ -42,6 +48,12 @@ void i2c_master_rx(uint8_t addr, uint8_t *data, uint8_t l) {
   packet.length = l;
 
   status = twi_master_read(TWI, &packet);
+
+  //   print_dbg("\r\nii_rx ");
+  // for(int i =0;i<l;i++) {
+  //   print_dbg_ulong(data[i]);
+  //   print_dbg(" ");
+  // }
 }
 
 
@@ -62,9 +74,9 @@ void twi_slave_stop( void )
 
 
 extern void ii_tx_queue(uint8_t data) {
-  print_dbg("\r\nii_tx_queue ");
+  // print_dbg("\r\nii_tx_queue ");
   tx_buffer[tx_pos_write] = data;
-  print_dbg_ulong(data);
+  // print_dbg_ulong(data);
 
   tx_pos_write = (tx_pos_write + 1) & 7;
   if(tx_pos_write == tx_pos_read)
@@ -73,13 +85,13 @@ extern void ii_tx_queue(uint8_t data) {
 
 uint8_t twi_slave_tx( void )
 {
-   print_dbg("\r\nii_tx ");
+   // print_dbg("\r\nii_tx ");
    if(tx_pos_write == tx_pos_read)
     return 27;
   else {
     uint8_t d = tx_buffer[tx_pos_read];
     tx_pos_read = (tx_pos_read + 1) & 7;
-    print_dbg_ulong(d);
+    // print_dbg_ulong(d);
     return d;
   }
 }
