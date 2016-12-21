@@ -44,9 +44,9 @@
 #define II_LV_PRESET	0
 #define II_LV_RESET 	1
 #define II_LV_POS		2
-#define II_LV_LOOP_ST	3
-#define II_LV_LOOP_LEN	4
-#define II_LV_LOOP_DIR	5
+#define II_LV_L_ST		3
+#define II_LV_L_LEN		4
+#define II_LV_L_DIR		5
 #define II_CY_ADDR		0xAE
 #define II_CY_PRESET	0
 #define II_CY_RESET 	1
