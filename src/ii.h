@@ -52,9 +52,6 @@
 #define II_CY_RESET 	1
 #define II_CY_POS 		2
 #define II_CY_REV		3
-#define II_CY_BRAKE		4
-#define II_CY_ACCEL		5
-#define II_CY_RANGE		6
 
 #define WW 				0x10
 #define WW_PRESET 		0x11
