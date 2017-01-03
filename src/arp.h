@@ -110,6 +110,8 @@ arp_seq_state arp_seq_get_state(arp_seq_t *s);
 void arp_seq_build(arp_seq_t *a, arp_style style, chord_t *c);
 
 void arp_player_init(arp_player_t *p, u8 ch, u8 division);
+void arp_player_set_steps(arp_player_t *p, u8 steps);
+void arp_player_set_offset(arp_player_t *p, s8 offset);
 u8 arp_player_set_gate_width(arp_player_t *p, u8 width);
 void arp_player_set_division(arp_player_t *p, u8 division, midi_behavior_t *b);
 bool arp_player_at_end(arp_player_t *p, arp_seq_t *s);

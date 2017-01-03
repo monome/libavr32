@@ -3,6 +3,7 @@
 
 #include "random.h"
 #include "timers.h"
+#include "util.h"
 
 #include "conf_tc_irq.h"
 
@@ -351,6 +352,18 @@ void arp_player_init(arp_player_t *p, u8 ch, u8 division) {
 	arp_player_reset(p, NULL);
 }
 
+void arp_player_set_steps(arp_player_t *p, u8 steps) {
+	p->steps = uclip(steps, 0, 8);
+	if (steps < p->step_count) {
+		p->step_count = 0;
+	}
+}
+
+void arp_player_set_offset(arp_player_t *p, s8 offset) {
+	p->offset = sclip(offset, -24, 24);
+	// MAINT: should step_count be reset here?
+}
+
 u8 arp_player_set_gate_width(arp_player_t *p, u8 width) {
 	u16 gate = (width * p->division) >> 7;
 
@@ -380,6 +393,8 @@ bool arp_player_at_end(arp_player_t *p, arp_seq_t *s) {
 void arp_player_pulse(arp_player_t *p, arp_seq_t *s, midi_behavior_t *b, u8 phase) {
 	u8 i, g, v;
 
+	s16 target_note;
+
 	if (phase) {
 		if (p->div_count == 0) {
 			// release any active note
@@ -393,6 +408,7 @@ void arp_player_pulse(arp_player_t *p, arp_seq_t *s, midi_behavior_t *b, u8 phas
 				// ensure if seq got shorter we don't go off the end
 				if (p->index >= s->length) {
 					p->index = 0;
+					p->step_count = 0;
 				}
 
 				i = p->index;
@@ -419,6 +435,11 @@ void arp_player_pulse(arp_player_t *p, arp_seq_t *s, midi_behavior_t *b, u8 phas
 				}
 
 				p->active_note = s->notes[i].note.num;
+				target_note = p->active_note + (p->step_count * p->offset);
+				if (target_note >= 0 && target_note <= MIDI_NOTE_MAX) {
+					// if no overflow, underflow
+					p->active_note = target_note;
+				}
 				p->active_gate = g;
 				b->note_on(p->ch, p->active_note, v);
 
@@ -427,6 +448,10 @@ void arp_player_pulse(arp_player_t *p, arp_seq_t *s, midi_behavior_t *b, u8 phas
 
 				if (p->index >= s->length) {
 					p->index = 0;
+					p->step_count++;
+					if (p->step_count > p->steps) {
+						p->step_count = 0;
+					}
 				}
 			}
 		}
@@ -449,6 +474,7 @@ void arp_player_pulse(arp_player_t *p, arp_seq_t *s, midi_behavior_t *b, u8 phas
 void arp_player_reset(arp_player_t *p, midi_behavior_t *b) {
 	p->index = 0;
 	p->div_count = 0;
+	p->step_count = 0;
 
 	if (b && p->active_note >= 0) {
 		b->note_off(p->ch, p->active_note, 0);

@@ -1,8 +1,8 @@
 #include "unity.h"
 
 // this
+#include "util.c"
 #include "arp.c"
-
 
 // chord structure
 // -- maintain insert order
