@@ -29,6 +29,30 @@ void test_chord_init(void) {
 	TEST_ASSERT_EQUAL_UINT8(0, c.note_count);
 }
 
+void test_chord_contains(void) {
+	setup_chord();
+
+	// make sure things aren't found
+	TEST_ASSERT_FALSE(chord_contains(&c, 100));
+	TEST_ASSERT_FALSE(chord_contains(&c, 34));
+	TEST_ASSERT_FALSE(chord_contains(&c, 0));
+	TEST_ASSERT_FALSE(chord_contains(&c, 127));
+
+	// add first...
+	chord_note_add(&c, 100, 0);
+	TEST_ASSERT_TRUE(chord_contains(&c, 100));
+	TEST_ASSERT_FALSE(chord_contains(&c, 34));
+
+	// add second, make sure it and previous are found
+	chord_note_add(&c, 34, 0);
+	TEST_ASSERT_TRUE(chord_contains(&c, 100));
+	TEST_ASSERT_TRUE(chord_contains(&c, 34));
+
+	// remove first
+	chord_note_release(&c, 100);
+	TEST_ASSERT_FALSE(chord_contains(&c, 100));
+	TEST_ASSERT_TRUE(chord_contains(&c, 34));
+}
 
 void test_chord_note_add_maintains_low_to_high_order(void) {
 	setup_chord();
@@ -300,6 +324,7 @@ int main(void) {
 	UNITY_BEGIN();
 
 	RUN_TEST(test_chord_init);
+	RUN_TEST(test_chord_contains);
 	RUN_TEST(test_chord_note_add_maintains_low_to_high_order);
 	RUN_TEST(test_chord_note_add_dumps_notes_at_capacity);
 	RUN_TEST(test_chord_note_low_and_high);

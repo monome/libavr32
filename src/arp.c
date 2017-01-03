@@ -1,8 +1,12 @@
+// libavr32
+#include "print_funcs.h"
+
 #include "random.h"
 #include "timers.h"
 
 #include "conf_tc_irq.h"
 
+// this
 #include "arp.h"
 
 //-----------------------------
@@ -27,6 +31,15 @@ void chord_init(chord_t *c) {
 		c->notes[i].vel = CHORD_VELOCITY_MAX;
 	}
 	c->note_count = 0;
+}
+
+bool chord_contains(chord_t *c, u8 num) {
+	for (u8 i = 0; i < c->note_count; i++) {
+		if (c->notes[i].num == num) {
+			return true;
+		}
+	}
+	return false;
 }
 
 bool chord_note_add(chord_t *c, u8 num, u8 vel) {
@@ -164,6 +177,14 @@ void arp_seq_build(arp_seq_t *s, arp_style style, chord_t *c) {
 	default:
 		break;
 	}
+
+	/*
+	print_dbg("\r\n > arp_seq_build: ");
+	for (u8 q = 0; q < s->length; q++) {
+		print_dbg_ulong(s->notes[q].note.num);
+		print_dbg(" ");
+	}
+	*/
 }
 
 static void arp_seq_build_up(arp_seq_t *s, chord_t *c) {
@@ -320,8 +341,10 @@ void arp_player_init(arp_player_t *p, u8 ch, u8 division) {
 
 	p->active_note = -1;
 	p->active_gate = 0;
-	
-	p->latch = false;
+
+	p->steps = 0;
+	p->step_count = 0;
+	p->offset = 12;
 
 	arp_player_set_division(p, division, NULL);
 	arp_player_set_gate_width(p, 0);

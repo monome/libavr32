@@ -88,7 +88,9 @@ typedef struct {
 	s8 active_note;       // if > 0 the note which is actively playing
 	u8 active_gate;       // gate length (in ticks) for active note
 	
-	bool latch;           //
+	u8 steps;             // number of steps (repeats?) of the arp pattern
+	u8 step_count;        // current step number
+	s8 offset;            // number of semitones to transpose by per step; [-24,24] or voltage offsets?
 } arp_player_t;
 
 
@@ -96,6 +98,7 @@ typedef struct {
 //----- functions
 
 void chord_init(chord_t *c);
+bool chord_contains(chord_t *c, u8 num);
 bool chord_note_add(chord_t *c, u8 num, u8 vel);
 bool chord_note_release(chord_t *c, u8 num);
 s8   chord_note_low(chord_t *c);
