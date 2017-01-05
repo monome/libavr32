@@ -434,12 +434,8 @@ void arp_player_pulse(arp_player_t *p, arp_seq_t *s, midi_behavior_t *b, u8 phas
 					break;
 				}
 
-				p->active_note = s->notes[i].note.num;
-				target_note = p->active_note + (p->step_count * p->offset);
-				if (target_note >= 0 && target_note <= MIDI_NOTE_MAX) {
-					// if no overflow, underflow
-					p->active_note = target_note;
-				}
+				p->active_note = uclip(s->notes[i].note.num + (p->step_count * p->offset),
+															 0, MIDI_NOTE_MAX);
 				p->active_gate = g;
 				b->note_on(p->ch, p->active_note, v);
 
