@@ -52,6 +52,19 @@
 #define II_CY_RESET 	1
 #define II_CY_POS 		2
 #define II_CY_REV		3
+#define II_ARP_ADDR		0xAF
+#define II_ARP_STYLE	0
+#define II_ARP_HOLD 	1
+#define II_ARP_STEPS 	2
+#define II_ARP_DIST   3
+#define II_ARP_GATE		5
+#define II_ARP_DIV    6
+#define II_ARP_ROT    7
+#define II_ARP_SLEW   8
+#define II_ARP_PULSE  9
+#define II_ARP_RESET  10
+#define II_ARP_TRANS  11
+
 
 #define WW 				0x10
 #define WW_PRESET 		0x11
