@@ -353,14 +353,14 @@ void arp_player_init(arp_player_t *p, u8 ch, u8 division) {
 }
 
 void arp_player_set_steps(arp_player_t *p, u8 steps) {
-	p->steps = uclip(steps, 0, 8);
+	p->steps = steps;
 	if (steps < p->step_count) {
 		p->step_count = 0;
 	}
 }
 
 void arp_player_set_offset(arp_player_t *p, s8 offset) {
-	p->offset = sclip(offset, -24, 24);
+	p->offset = offset;
 	// MAINT: should step_count be reset here?
 }
 
@@ -392,8 +392,6 @@ bool arp_player_at_end(arp_player_t *p, arp_seq_t *s) {
 
 void arp_player_pulse(arp_player_t *p, arp_seq_t *s, midi_behavior_t *b, u8 phase) {
 	u8 i, g, v;
-
-	s16 target_note;
 
 	if (phase) {
 		if (p->div_count == 0) {
