@@ -3,8 +3,11 @@
 #include "events.h"
 #include "i2c.h"
 
-uint8_t rx_buffer[I2C_RX_BUF_SIZE];
-static uint8_t rx_pos;
+#define RX_BUFFER_COUNT 8
+
+uint8_t rx_buffer[RX_BUFFER_COUNT][I2C_RX_BUF_SIZE];
+static uint8_t rx_pos[RX_BUFFER_COUNT];
+static uint8_t rx_buffer_index;
 
 uint8_t tx_buffer[I2C_TX_BUF_SIZE];
 static uint8_t tx_pos_read;
@@ -60,14 +63,20 @@ void i2c_master_rx(uint8_t addr, uint8_t *data, uint8_t l) {
 
 void twi_slave_rx( U8 u8_value )
 {
-  rx_buffer[rx_pos] = u8_value;
-  rx_pos++;
+  if (rx_pos[rx_buffer_index] < I2C_RX_BUF_SIZE) {
+    rx_buffer[rx_buffer_index][rx_pos[rx_buffer_index]] = u8_value;
+    rx_pos[rx_buffer_index]++;
+  }
 }
 
 void twi_slave_stop( void )
 {
-  process_ii(rx_buffer, rx_pos);
-  rx_pos = 0;
+  uint8_t index = rx_buffer_index;
+  // rx_buffer_index must be incremented before process_ii is called
+  if (++rx_buffer_index >= RX_BUFFER_COUNT) rx_buffer_index = 0;
+  
+  process_ii(rx_buffer[index], rx_pos[index]);
+  rx_pos[index] = 0;
 }
 
 
