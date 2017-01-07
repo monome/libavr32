@@ -4,7 +4,7 @@
 //============================================
 //====== IRQ priorities
 #define SYS_IRQ_PRIORITY       1
-#define APP_TC_IRQ_PRIORITY    3
+#define APP_TC_IRQ_PRIORITY    2
 #define UI_IRQ_PRIORITY        2
 
 //==============================================

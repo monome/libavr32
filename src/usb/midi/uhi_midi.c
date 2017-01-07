@@ -198,8 +198,10 @@ uhc_enum_status_t uhi_midi_install(uhc_device_t* dev) {
       }
       break;
     default:
+#if UHI_MIDI_PRINT_DBG
       print_dbg("\r\n uhi_midi_install ignoring descriptor; type: 0x");
       print_dbg_hex(ptr_iface->bDescriptorType );
+#endif
       break;
       
     }
