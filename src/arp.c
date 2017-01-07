@@ -19,7 +19,7 @@ static void arp_seq_build_up_down(arp_seq_t *s, chord_t *c, arp_style style);
 static void arp_seq_build_converge(arp_seq_t *s, chord_t *c);
 static void arp_seq_build_diverge(arp_seq_t *s, chord_t *c);
 static void arp_seq_build_random(arp_seq_t *s, chord_t *c);
-static void arp_seq_build_played(arp_seq_t *s, chord_t *c);
+static void arp_seq_build_played(arp_seq_t *s, note_pool_t *n);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -146,7 +146,7 @@ arp_seq_state arp_seq_get_state(arp_seq_t *s) {
 	return s->state;
 }
 	
-void arp_seq_build(arp_seq_t *s, arp_style style, chord_t *c) {
+void arp_seq_build(arp_seq_t *s, arp_style style, chord_t *c, note_pool_t *n) {
 	for (u8 i = 0; i < ARP_MAX_LENGTH; i++) {
 		s->notes[i].empty = 1;
 	}
@@ -172,8 +172,9 @@ void arp_seq_build(arp_seq_t *s, arp_style style, chord_t *c) {
 		arp_seq_build_random(s, c);
 		break;
 	case eStylePlayed:
-		// TODO: we loose the note order currently
-		arp_seq_build_played(s, c);
+		if (n) {
+			arp_seq_build_played(s, n);
+		}
 		break;
 	default:
 		break;
@@ -324,10 +325,31 @@ static void arp_seq_build_random(arp_seq_t *s, chord_t *c) {
 	s->length = count;
 }
 
-static void arp_seq_build_played(arp_seq_t *s, chord_t *c) {
-	// TODO: need some way to now order within chord
+static void arp_seq_build_played(arp_seq_t *s, note_pool_t *p) {
+	note_pool_iter_t i;
+	const held_note_t *n;
+	u8 pos, c;
+
+	// NB: note pools are a linked list in most recent first order (an
+	// implementation detail) - the order is reverse of what we need
+	// here so the sequence is built in reverse...
+
+	notes_iter_init(&i, p);
+
+	c = notes_count(p);
+	pos = c - 1;
+	n = notes_iter_next(&i);
+	while (n) {
+		s->notes[pos].note.num = n->num;
+		s->notes[pos].note.vel = n->vel;
+		s->notes[pos].gate_length = 1;
+		s->notes[pos].empty = 0;
+		pos--;
+		n = notes_iter_next(&i);
+	}
+
 	s->style = eStylePlayed;
-	s->length = 0;
+	s->length = c;
 }
 
 void arp_player_init(arp_player_t *p, u8 ch, u8 division) {

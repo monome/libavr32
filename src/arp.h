@@ -6,21 +6,24 @@
 
 #include "compiler.h"   // for bool; shouldn't this be "types.h"
 
-#define ARP_MAX_CHORD  12
-#define ARP_MAX_OCTAVE 4
-#define ARP_MAX_LENGTH (2 * ARP_MAX_CHORD)
+#ifndef CHORD_MAX_NOTES
+#define CHORD_MAX_NOTES 16
+#endif
 
-#define ARP_PPQ 1
-
-#define CHORD_MAX_NOTES 12
 #define CHORD_NOTE_MAX 127
 #define CHORD_VELOCITY_MAX 127
+
+#define ARP_MAX_OCTAVE 4
+#define ARP_MAX_LENGTH (2 * CHORD_MAX_NOTES)
+
+#define ARP_PPQ 1
 
 
 //-----------------------------
 //----- constants
 
 typedef enum {
+	eStylePlayed,
 	eStyleUp,
 	eStyleDown,
 	eStyleUpDown,
@@ -28,7 +31,6 @@ typedef enum {
 	eStyleConverge,     // outside in
 	eStyleDiverge,      // inside out
 	eStyleRandom,
-	eStylePlayed,
 
 	eStyleMax
 } arp_style;
@@ -107,7 +109,7 @@ s8   chord_note_high(chord_t *c);
 void arp_seq_init(arp_seq_t *s);
 bool arp_seq_set_state(arp_seq_t *s, arp_seq_state state);
 arp_seq_state arp_seq_get_state(arp_seq_t *s);
-void arp_seq_build(arp_seq_t *a, arp_style style, chord_t *c);
+void arp_seq_build(arp_seq_t *a, arp_style style, chord_t *c, note_pool_t *n);
 
 void arp_player_init(arp_player_t *p, u8 ch, u8 division);
 void arp_player_set_steps(arp_player_t *p, u8 steps);

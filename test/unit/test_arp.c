@@ -1,7 +1,10 @@
 #include "unity.h"
 
-// this
+// dependencies
 #include "util.c"
+#include "notes.c"
+
+// this
 #include "arp.c"
 
 // chord structure

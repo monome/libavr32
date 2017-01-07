@@ -165,3 +165,23 @@ const held_note_t *notes_get(note_pool_t *pool, note_priority p) {
   // nothing held
   return NULL;
 }
+
+u8 notes_count(note_pool_t *pool) {
+	return pool->count;
+}
+
+void notes_iter_init(note_pool_iter_t *i, note_pool_t *p) {
+	i->pool = p;
+	i->e = p ? p->head : NULL;
+}
+
+const held_note_t *notes_iter_next(note_pool_iter_t *i) {
+	held_note_t *n = NULL;
+
+	if (i->e) {
+		n = &(i->e->note);
+		i->e = i->e->next;
+	}
+
+	return n;
+}
