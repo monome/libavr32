@@ -134,7 +134,7 @@ void register_interrupts(void) {
   // INTC_register_interrupt( &irq_port1_line1, AVR32_GPIO_IRQ_0 + (AVR32_PIN_PB08 / 8), UI_IRQ_PRIORITY);
 
   // register TC interrupt
-  INTC_register_interrupt(&irq_tc, APP_TC_IRQ, UI_IRQ_PRIORITY);
+  INTC_register_interrupt(&irq_tc, APP_TC_IRQ, APP_TC_IRQ_PRIORITY);
 
   // register uart interrupt
   // INTC_register_interrupt(&irq_usart, AVR32_USART0_IRQ, UI_IRQ_PRIORITY);
