@@ -65,7 +65,7 @@
 #define II_ARP_RESET  10
 #define II_ARP_TRANS  11
 #define II_ARP_FILL   12
-
+#define II_ARP_ER     13
 
 #define WW 				0x10
 #define WW_PRESET 		0x11
