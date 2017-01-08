@@ -64,6 +64,7 @@
 #define II_ARP_PULSE  9
 #define II_ARP_RESET  10
 #define II_ARP_TRANS  11
+#define II_ARP_FILL   12
 
 
 #define WW 				0x10

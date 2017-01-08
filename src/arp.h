@@ -77,7 +77,8 @@ typedef struct {
 	u8 ch;                // channel; passed to midi behavior
 	u8 index;             // currrent note index
 
-	u8 division;          // pulses per note
+	u8 fill;              // er; fill
+	u8 division;          // er; len (was pulses per note)
 	u16 div_count;        // current note division
 
 	arp_velocity velocity;
@@ -115,6 +116,7 @@ void arp_player_init(arp_player_t *p, u8 ch, u8 division);
 void arp_player_set_steps(arp_player_t *p, u8 steps);
 void arp_player_set_offset(arp_player_t *p, s8 offset);
 u8 arp_player_set_gate_width(arp_player_t *p, u8 width);
+void arp_player_set_fill(arp_player_t *p, u8 fill);
 void arp_player_set_division(arp_player_t *p, u8 division, midi_behavior_t *b);
 bool arp_player_at_end(arp_player_t *p, arp_seq_t *s);
 void arp_player_pulse(arp_player_t *p, arp_seq_t *s, midi_behavior_t *b, u8 phase);

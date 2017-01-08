@@ -5,6 +5,8 @@
 #include "timers.h"
 #include "util.h"
 
+#include "euclidean/euclidean.h"
+
 #include "conf_tc_irq.h"
 
 // this
@@ -370,6 +372,7 @@ void arp_player_init(arp_player_t *p, u8 ch, u8 division) {
 	p->offset = 12;
 
 	arp_player_set_division(p, division, NULL);
+	arp_player_set_fill(p, 1);
 	arp_player_set_gate_width(p, 0);
 	arp_player_reset(p, NULL);
 }
@@ -395,6 +398,10 @@ u8 arp_player_set_gate_width(arp_player_t *p, u8 width) {
 	return p->fixed_gate;
 }
 
+void arp_player_set_fill(arp_player_t *p, u8 fill) {
+		p->fill = uclip(fill, 1, p->division);
+}
+
 void arp_player_set_division(arp_player_t *p, u8 division, midi_behavior_t *b) {
 	if (division > 0 && division != p->division) {
 		if (b && division < p->division && p->active_note >= 0) {
@@ -404,6 +411,10 @@ void arp_player_set_division(arp_player_t *p, u8 division, midi_behavior_t *b) {
 
 		p->division = division;
 		p->div_count = 0;
+
+		// re-set fill and gate to clip/recompute internal values which are affected
+		// by division
+		arp_player_set_fill(p, p->fill);
 		arp_player_set_gate_width(p, p->fixed_width);
 	}
 }
@@ -416,7 +427,7 @@ void arp_player_pulse(arp_player_t *p, arp_seq_t *s, midi_behavior_t *b, u8 phas
 	u8 i, g, v;
 
 	if (phase) {
-		if (p->div_count == 0) {
+		if (euclidean(p->fill, p->division, p->div_count)) {
 			// release any active note
 			if (p->active_note >= 0) {
 				// TODO: how to handle tied note?
