@@ -384,7 +384,7 @@ void arp_player_set_steps(arp_player_t *p, u8 steps) {
 	}
 }
 
-void arp_player_set_offset(arp_player_t *p, s8 offset) {
+inline void arp_player_set_offset(arp_player_t *p, s8 offset) {
 	p->offset = offset;
 	// MAINT: should step_count be reset here?
 }
@@ -398,8 +398,12 @@ u8 arp_player_set_gate_width(arp_player_t *p, u8 width) {
 	return p->fixed_gate;
 }
 
-void arp_player_set_fill(arp_player_t *p, u8 fill) {
-		p->fill = uclip(fill, 1, p->division);
+inline void arp_player_set_fill(arp_player_t *p, u8 fill) {
+	p->fill = fill;
+}
+
+inline u8 arp_player_get_fill(arp_player_t *p) {
+	return uclip(p->fill, 1, p->division);
 }
 
 void arp_player_set_division(arp_player_t *p, u8 division, midi_behavior_t *b) {
@@ -424,10 +428,12 @@ bool arp_player_at_end(arp_player_t *p, arp_seq_t *s) {
 }
 
 void arp_player_pulse(arp_player_t *p, arp_seq_t *s, midi_behavior_t *b, u8 phase) {
-	u8 i, g, v;
+	u8 i, g, v, f;
 
 	if (phase) {
-		if (euclidean(p->fill, p->division, p->div_count)) {
+		f = arp_player_get_fill(p);
+
+		if (euclidean(f, p->division, p->div_count)) {
 			// release any active note
 			if (p->active_note >= 0) {
 				// TODO: how to handle tied note?
