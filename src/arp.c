@@ -373,6 +373,7 @@ void arp_player_init(arp_player_t *p, u8 ch, u8 division) {
 
 	arp_player_set_division(p, division, NULL);
 	arp_player_set_fill(p, 1);
+	arp_player_set_rotation(p, 0);
 	arp_player_set_gate_width(p, 0);
 	arp_player_reset(p, NULL);
 }
@@ -423,6 +424,10 @@ void arp_player_set_division(arp_player_t *p, u8 division, midi_behavior_t *b) {
 	}
 }
 
+inline void arp_player_set_rotation(arp_player_t *p, s8 r) {
+	p->rotation = r;
+}
+
 bool arp_player_at_end(arp_player_t *p, arp_seq_t *s) {
 	return p->index >= s->length - 1;
 }
@@ -433,7 +438,7 @@ void arp_player_pulse(arp_player_t *p, arp_seq_t *s, midi_behavior_t *b, u8 phas
 	if (phase) {
 		f = arp_player_get_fill(p);
 
-		if (euclidean(f, p->division, p->div_count)) {
+		if (euclidean(f, p->division, p->div_count - p->rotation)) {
 			// release any active note
 			if (p->active_note >= 0) {
 				// TODO: how to handle tied note?
