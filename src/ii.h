@@ -62,7 +62,7 @@
 #define II_ARP_SLEW   6
 #define II_ARP_PULSE  7
 #define II_ARP_RESET  8
-#define II_ARP_TRANS  9
+#define II_ARP_SHIFT  9
 #define II_ARP_FILL   10
 #define II_ARP_ER     11
 
