@@ -55,17 +55,16 @@
 #define II_ARP_ADDR		0xAF
 #define II_ARP_STYLE	0
 #define II_ARP_HOLD 	1
-#define II_ARP_STEPS 	2
-#define II_ARP_DIST   3
-#define II_ARP_GATE		5
-#define II_ARP_DIV    6
-#define II_ARP_ROT    7
-#define II_ARP_SLEW   8
-#define II_ARP_PULSE  9
-#define II_ARP_RESET  10
-#define II_ARP_TRANS  11
-#define II_ARP_FILL   12
-#define II_ARP_ER     13
+#define II_ARP_RPT   	2
+#define II_ARP_GATE		3
+#define II_ARP_DIV    4
+#define II_ARP_ROT    5
+#define II_ARP_SLEW   6
+#define II_ARP_PULSE  7
+#define II_ARP_RESET  8
+#define II_ARP_TRANS  9
+#define II_ARP_FILL   10
+#define II_ARP_ER     11
 
 #define WW 				0x10
 #define WW_PRESET 		0x11
