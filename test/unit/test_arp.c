@@ -5,6 +5,8 @@
 #include "notes.c"
 
 // this
+#include "euclidean/data.c"
+#include "euclidean/euclidean.c"
 #include "arp.c"
 
 // chord structure
