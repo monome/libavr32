@@ -385,9 +385,17 @@ void arp_player_set_steps(arp_player_t *p, u8 steps) {
 	}
 }
 
+inline u8 arp_player_get_steps(arp_player_t *p) {
+	return p->steps;
+}
+
 inline void arp_player_set_offset(arp_player_t *p, s8 offset) {
 	p->offset = offset;
 	// MAINT: should step_count be reset here?
+}
+
+inline s8 arp_player_get_offset(arp_player_t *p) {
+	return p->offset;
 }
 
 u8 arp_player_set_gate_width(arp_player_t *p, u8 width) {
@@ -397,6 +405,10 @@ u8 arp_player_set_gate_width(arp_player_t *p, u8 width) {
 	p->fixed_gate = gate;
 
 	return p->fixed_gate;
+}
+
+inline u8 arp_player_get_gate_width(arp_player_t *p) {
+	return p->fixed_width;
 }
 
 inline void arp_player_set_fill(arp_player_t *p, u8 fill) {
@@ -424,8 +436,16 @@ void arp_player_set_division(arp_player_t *p, u8 division, midi_behavior_t *b) {
 	}
 }
 
+inline u8 arp_player_get_division(arp_player_t *p) {
+	return p->division;
+}
+
 inline void arp_player_set_rotation(arp_player_t *p, s8 r) {
 	p->rotation = r;
+}
+
+inline s8 arp_player_get_rotation(arp_player_t *p) {
+	return p->rotation;
 }
 
 bool arp_player_at_end(arp_player_t *p, arp_seq_t *s) {

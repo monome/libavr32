@@ -75,7 +75,7 @@ typedef struct {
 	
 typedef struct {
 	u8 ch;                // channel; passed to midi behavior
-	u8 index;             // currrent note index
+	u8 index;             // current note index
 
 	u8 fill;              // er; fill
 	u8 division;          // er; len (was pulses per note)
@@ -114,13 +114,25 @@ arp_seq_state arp_seq_get_state(arp_seq_t *s);
 void arp_seq_build(arp_seq_t *a, arp_style style, chord_t *c, note_pool_t *n);
 
 void arp_player_init(arp_player_t *p, u8 ch, u8 division);
+
 void arp_player_set_steps(arp_player_t *p, u8 steps);
+u8   arp_player_get_steps(arp_player_t *p);
+
 void arp_player_set_offset(arp_player_t *p, s8 offset);
+s8   arp_player_get_offset(arp_player_t *p);
+
 u8 arp_player_set_gate_width(arp_player_t *p, u8 width);
+u8 arp_player_get_gate_width(arp_player_t *p);
+
 void arp_player_set_fill(arp_player_t *p, u8 fill);
-u8 arp_player_get_fill(arp_player_t *p);
+u8   arp_player_get_fill(arp_player_t *p);
+
 void arp_player_set_division(arp_player_t *p, u8 division, midi_behavior_t *b);
+u8 arp_player_get_division(arp_player_t *p);
+
 void arp_player_set_rotation(arp_player_t *p, s8 rotation);
+s8   arp_player_get_rotation(arp_player_t *p);
+
 bool arp_player_at_end(arp_player_t *p, arp_seq_t *s);
 void arp_player_pulse(arp_player_t *p, arp_seq_t *s, midi_behavior_t *b, u8 phase);
 void arp_player_reset(arp_player_t *a, midi_behavior_t *b);

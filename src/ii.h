@@ -25,6 +25,22 @@
 #define JF_TUNE		11
 #define JF_QT		12
 
+#define II_MID_ADDR   0xA4
+#define II_MID_SLEW   1
+#define II_MID_SHIFT  2
+#define II_ARP_ADDR   0xA6
+#define II_ARP_STYLE  0
+#define II_ARP_HOLD   1
+#define II_ARP_RPT    2
+#define II_ARP_GATE   3
+#define II_ARP_DIV    4
+#define II_ARP_ROT    5
+#define II_ARP_SLEW   6
+#define II_ARP_PULSE  7
+#define II_ARP_RESET  8
+#define II_ARP_SHIFT  9
+#define II_ARP_FILL   10
+#define II_ARP_ER     11
 #define II_KR_ADDR		0xA8
 #define II_KR_PRESET	0
 #define II_KR_PATTERN	1
@@ -52,19 +68,6 @@
 #define II_CY_RESET 	1
 #define II_CY_POS 		2
 #define II_CY_REV		3
-#define II_ARP_ADDR		0xAF
-#define II_ARP_STYLE	0
-#define II_ARP_HOLD 	1
-#define II_ARP_RPT   	2
-#define II_ARP_GATE		3
-#define II_ARP_DIV    4
-#define II_ARP_ROT    5
-#define II_ARP_SLEW   6
-#define II_ARP_PULSE  7
-#define II_ARP_RESET  8
-#define II_ARP_SHIFT  9
-#define II_ARP_FILL   10
-#define II_ARP_ER     11
 
 #define WW 				0x10
 #define WW_PRESET 		0x11
