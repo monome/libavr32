@@ -8,6 +8,7 @@
 
 #define MIDI_BEND_ZERO 0x2000  // 1 << 13
 
+#define MIDI_NOTE_MAX 120
 
 //-----------------------------
 //----- types
