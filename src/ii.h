@@ -63,11 +63,13 @@
 #define II_LV_L_ST		3
 #define II_LV_L_LEN		4
 #define II_LV_L_DIR		5
+#define II_LV_CV		6
 #define II_CY_ADDR		0xAE
 #define II_CY_PRESET	0
 #define II_CY_RESET 	1
 #define II_CY_POS 		2
 #define II_CY_REV		3
+#define II_CY_CV		4
 
 #define WW 				0x10
 #define WW_PRESET 		0x11
