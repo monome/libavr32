@@ -35,7 +35,7 @@ volatile clock_pulse_t clock_pulse = &clock_null;
 volatile u8 clock_external;
 
 //----------------------
-//---- static functions 
+//---- static functions
 // interrupt handlers
 
 // irq for app timer
@@ -64,7 +64,7 @@ __attribute__((__interrupt__))
 static void irq_tc(void) {
   tcTicks++;
   // overflow control
-  if(tcTicks > tcMax) { 
+  if(tcTicks > tcMax) {
     tcTicks = 0;
     tcOverflow = 1;
   } else {
@@ -95,9 +95,9 @@ __attribute__((__interrupt__))
 static void irq_port1_line1(void) {
     // print_dbg("\r\ninterrupt on PB08-PB15.");
 
-    // static event_t e;   
+    // static event_t e;
     // e.type = kSwitchEvents[swIdx];
-    // e.data = gpio_get_pin_value(kSwitchPins[swIdx]); 
+    // e.data = gpio_get_pin_value(kSwitchPins[swIdx]);
     // event_post(&e);
 
     // clock norm
@@ -139,9 +139,10 @@ static void irq_port1_line1(void) {
 void register_interrupts(void) {
 	// enable interrupts on GPIO inputs
 	gpio_enable_pin_interrupt( NMI, GPIO_PIN_CHANGE);
+#ifndef EARTHSEA
 	gpio_enable_pin_interrupt( B08, GPIO_PIN_CHANGE);
 	gpio_enable_pin_interrupt( B09,	GPIO_PIN_CHANGE);
-
+#endif
 
 	// PA08 - PA15
 	INTC_register_interrupt( &irq_port0_line1, AVR32_GPIO_IRQ_0 + (AVR32_PIN_PA08 / 8), UI_IRQ_PRIORITY);
@@ -173,7 +174,7 @@ extern void init_gpio(void) {
 
 
 extern void init_spi (void) {
- 
+
   sysclk_enable_pba_module(SYSCLK_SPI);
 
   static const gpio_map_t SPI_GPIO_MAP = {
@@ -225,4 +226,3 @@ extern void init_spi (void) {
 
   // spi_enable(SPI);
  }
-
