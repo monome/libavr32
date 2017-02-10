@@ -11,7 +11,7 @@
 
 // manufacturer string length
 #define MONOME_MANSTR_LEN 6
-// product string lengthextern 
+// product string lengthextern
 #define MONOME_PRODSTR_LEN 8
 // serial string length
 #define MONOME_SERSTR_LEN 9
@@ -28,7 +28,7 @@
 typedef enum {
   eProtocol40h,      /// 40h and arduinome protocol (pre-2007)
   eProtocolSeries,   /// series protocol (2007-2011)
-  eProtocolMext,     /// extended protocol (2011 - ? ), arcs + grids  
+  eProtocolMext,     /// extended protocol (2011 - ? ), arcs + grids
   eProtocolNumProtocols // dummy and count
 } eMonomeProtocol;
 
@@ -40,7 +40,7 @@ typedef struct e_monomeDesc {
   u8 cols;  // number of columns
   u8 rows;  // number of rows
   u8 encs; // number of encoders
-  u8 tilt;  // has tilt (??)  
+  u8 tilt;  // has tilt (??)
   u8 vari; // is variable brightness, true/false
 } monomeDesc;
 
@@ -200,7 +200,7 @@ void init_monome(void) {
 }
 
 // determine if FTDI string descriptors match monome device pattern
-u8 check_monome_device_desc(char* mstr, char* pstr, char* sstr) { 
+u8 check_monome_device_desc(char* mstr, char* pstr, char* sstr) {
   char buf[16];
   u8 matchMan = 0;
   u8 i;
@@ -214,7 +214,7 @@ u8 check_monome_device_desc(char* mstr, char* pstr, char* sstr) {
   matchMan = ( strncmp(buf, "monome", MONOME_MANSTR_LEN) == 0 );
   /* print_dbg("\r\n manstring: "); */
   /* print_dbg(buf); */
- 
+
   // serial number string
   for(i=0; i<MONOME_SERSTR_LEN; i++) {
     buf[i] = sstr[i*2];
@@ -225,7 +225,7 @@ u8 check_monome_device_desc(char* mstr, char* pstr, char* sstr) {
   if(matchMan == 0) {
     // didn't match the manufacturer string, but check the serial for DIYs
     if( strncmp(buf, "a40h", 4) == 0) {
-      // this is probably an arduinome      
+      // this is probably an arduinome
       mdesc.protocol = eProtocol40h;
       mdesc.device = eDeviceGrid;
       mdesc.cols = 8;
@@ -291,7 +291,7 @@ void monome_grid_refresh(void) {
     }
   }
   // check quad 2
-  if( monomeFrameDirty &  0b0100 ) { 
+  if( monomeFrameDirty &  0b0100 ) {
     if( mdesc.rows > 7 ) {
       while( busy ) { busy = ftdi_tx_busy(); }
       (*monome_grid_map)(0, 8, monomeLedBuffer + 128);
@@ -336,7 +336,7 @@ void monome_arc_refresh(void) {
 // connect
 static inline void monome_connect_write_event(void) {
   u8* data = (u8*)(&(ev.data));
-  
+
   // print_dbg("\r\n posting monome connection event. ");
   // print_dbg(" device type: ");
   // print_dbg_ulong(mdesc.device);
@@ -411,7 +411,7 @@ void monome_ring_key_parse_event_data(u32 data, u8* n, u8* val) {
 // set quadrant refresh flag from pos
 void monome_calc_quadrant_flag(u8 x, u8 y) {
   if(x > 7) {
-    if (y > 7) {      
+    if (y > 7) {
       monomeFrameDirty |= 0b1000;
     }
     else {
@@ -424,7 +424,7 @@ void monome_calc_quadrant_flag(u8 x, u8 y) {
     else {
       monomeFrameDirty |= 0b0001;
     }
-  } 
+  }
 }
 
 // set given quadrant dirty flag
@@ -453,7 +453,7 @@ void monome_led_set(u8 x, u8 y, u8 z) {
 // top-level led/toggle function
 void monome_led_toggle(u8 x, u8 y) {
   monomeLedBuffer[monome_xy_idx(x,y)] ^= 0xff;
-  monome_calc_quadrant_flag(x, y);  
+  monome_calc_quadrant_flag(x, y);
 }
 
 // arc led/set function
@@ -532,42 +532,54 @@ static u8 setup_mext(void) {
 
   mdesc.vari = 1;
 
+
+  // clear out rxbuf
+  rxBytes = 1;
+  while(rxBytes != 0 && ftdi_connected()) {
+    ftdi_read();
+
+    delay_us(500);
+    busy = 1;
+
+    while(busy)
+      busy = ftdi_rx_busy();
+
+    rxBytes = ftdi_rx_bytes();
+  }
+
   rxBytes = 0;
 
-  while(rxBytes != 6) {
-  // FIXME: fuck these delays
-  delay_ms(1);
-  ftdi_write(&w, 1);	// query  
+  while(rxBytes != 6 && ftdi_connected()) {
+    // FIXME: fuck these delays
+    ftdi_write(&w, 1);	// query
 
-  delay_ms(1);
-  ftdi_read();
+    delay_us(500);
+    ftdi_read();
 
-  delay_ms(1);
-  busy = 1;
+    delay_us(500);
+    busy = 1;
 
-  // print_dbg("\r\n setup request ftdi read; waiting...");
-  while(busy) {
-    busy = ftdi_rx_busy();
-    
-  }
-  rxBytes = ftdi_rx_bytes();
+    while(busy)
+      busy = ftdi_rx_busy();
 
-  // print_dbg(" done waiting. bytes read: ");
-  // print_dbg_ulong(rxBytes);
+    rxBytes = ftdi_rx_bytes();
 
-  if(rxBytes != 6 ){
-    print_dbg("\r\n got unexpected byte count in response to mext setup request; \r\n");
-    prx = ftdi_rx_buf();
+    if(rxBytes != 6 ){
+      print_dbg("e");
+  /*
+      print_dbg("\r\n got unexpected byte count in response to mext setup request; \r\n");
+      prx = ftdi_rx_buf();
 
-    for(;rxBytes != 0; rxBytes--) {
-      print_dbg_ulong(*(++prx));
-      print_dbg(" ");
-    }
+      for(;rxBytes != 0; rxBytes--) {
+        print_dbg_ulong(*(++prx));
+        print_dbg(" ");
+      }
+  */
 
-    // return 0;
+      // return 0;
     }
   }
-  
+
   prx = ftdi_rx_buf();
   prx++; // 1st returned byte is 0
   if(*prx == 1) {
@@ -585,12 +597,12 @@ static u8 setup_mext(void) {
     }
     else if(*prx == 4) {
       // print_dbg("\r\n monome 256");
-      mdesc.rows = 16; 
+      mdesc.rows = 16;
       mdesc.cols = 16;
     }
     else {
       return 0; // bail
-    }		
+    }
     mdesc.tilt = 1;
   }
   else if(*prx == 5) {
@@ -670,13 +682,13 @@ static void read_serial_40h(void) {
 
     // press event
     if ((prx[0] & 0xf0) == 0) {
-      monome_grid_key_write_event( 
+      monome_grid_key_write_event(
         ((prx[1] & 0xf0) >> 4),
         prx[1] & 0xf,
         ((prx[0] & 0xf) != 0)
       );
     }
-    
+
     i += 2;
     prx += 2;
   }
@@ -702,7 +714,7 @@ static void read_serial_series(void) {
     /* print_dbg_hex(prx[1] & 0xf); */
     /* print_dbg(" ; z : 0x"); */
     /* print_dbg_hex(	 ((prx[0] & 0xf0) == 0) ); */
-    
+
     // process consecutive pairs of bytes
     monome_grid_key_write_event( ((prx[1] & 0xf0) >> 4) ,
 				 prx[1] & 0xf,
@@ -719,7 +731,7 @@ static void read_serial_mext(void) {
   static u8 nbp; // number of bytes processed
   static u8* prx; // pointer to rx buf
   static u8 com;
-  
+
   rxBytes = ftdi_rx_bytes();
   if( rxBytes ) {
     nbp = 0;
@@ -751,17 +763,17 @@ static void read_serial_mext(void) {
       	monome_ring_key_write_event( *prx++, 1);
       	nbp++;
       	break;
-      	/// TODO: more commands... 
+      	/// TODO: more commands...
             default:
       	return;
       }
-    }	
+    }
   }
 }
 
 //--- tx
 
-///// not using per-led updates.  
+///// not using per-led updates.
 /* static void grid_led_40h(u8 x, u8 y, u8 val) { */
 /*   // TODO */
 /* } */
@@ -793,12 +805,12 @@ static void grid_map_mext( u8 x, u8 y, const u8* data ) {
   static u8* ptx;
   static u8 i, j;
 
-  txBuf[0] = 0x1A;  
+  txBuf[0] = 0x1A;
   txBuf[1] = x;
   txBuf[2] = y;
-  
+
   ptx = txBuf + 3;
-  
+
   // copy and convert
   for(i=0; i<MONOME_QUAD_LEDS; i++) {
     // *ptx = 0;
@@ -862,7 +874,7 @@ static void grid_map_series(u8 x, u8 y, const u8* data) {
 
   // pointer to tx data
   ptx = txBuf + 1;
-  
+
   // copy and convert
   for(i=0; i<MONOME_QUAD_LEDS; i++) {
     *ptx = 0;
@@ -871,13 +883,13 @@ static void grid_map_series(u8 x, u8 y, const u8* data) {
       *ptx |= ((*data > VB_CUTOFF) << j);
       ++data;
     }
-    // print_dbg(" ");   
+    // print_dbg(" ");
     // print_dbg_hex(*ptx);
 
     data += MONOME_QUAD_LEDS; // skip the rest of the row to get back in target quad
     ++ptx;
   }
-  ftdi_write(txBuf, MONOME_QUAD_LEDS + 1);  
+  ftdi_write(txBuf, MONOME_QUAD_LEDS + 1);
 }
 
 /* static void grid_map_level_mext(u8 x, u8 y, const u8* data) { */
@@ -891,9 +903,9 @@ static void ring_map_mext(u8 n, u8* data) {
 
   txBuf[0] = 0x92;
   txBuf[1] = n;
-  
+
   ptx = txBuf + 2;
-  
+
   // smash 64 LEDs together, nibbles
   for(i=0; i<32; i++) {
     *ptx = *data << 4;
