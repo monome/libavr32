@@ -80,6 +80,8 @@
 #define A05   AVR32_PIN_PA05
 #define A06   AVR32_PIN_PA06
 #define A07   AVR32_PIN_PA07
+#define A09   AVR32_PIN_PA09
+#define A10   AVR32_PIN_PA10
 #define B08   AVR32_PIN_PB08
 #define B09   AVR32_PIN_PB09
 #define B10   AVR32_PIN_PB10
