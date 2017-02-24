@@ -28,7 +28,7 @@ static const u64 tcMax = (U64)0x7fffffff;
 static const u64 tcMaxInv = (u64)0x10000000;
 
 //----------------------
-//---- static functions 
+//---- static functions
 // interrupt handlers
 
 // irq for app timer
@@ -45,7 +45,7 @@ __attribute__((__interrupt__))
 static void irq_port0_line1(void);
 
 
-  
+
 // irq for uart
 // __attribute__((__interrupt__))
 // static void irq_usart(void);
@@ -60,7 +60,7 @@ __attribute__((__interrupt__))
 static void irq_tc(void) {
   tcTicks++;
   // overflow control
-  if(tcTicks > tcMax) { 
+  if(tcTicks > tcMax) {
     tcTicks = 0;
     tcOverflow = 1;
   } else {
@@ -90,6 +90,10 @@ static void irq_port0_line0(void) {
 // interrupt handler for PA08-PA15
 __attribute__((__interrupt__))
 static void irq_port0_line1(void) {
+    // turn on pull-ups for SDA/SCL 
+    gpio_enable_pin_pull_up(A09);
+    gpio_enable_pin_pull_up(A10);
+
     if(gpio_get_pin_interrupt_flag(NMI)) {
       gpio_clear_pin_interrupt_flag(NMI);
       // print_dbg("\r\n ### NMI ### ");
@@ -154,7 +158,7 @@ extern void init_gpio(void) {
 	gpio_enable_gpio_pin(B09);
 	gpio_enable_gpio_pin(B10);
 	gpio_enable_gpio_pin(B11);
-	
+
 	gpio_enable_gpio_pin(NMI);
 
 	gpio_configure_pin(B08, GPIO_DIR_OUTPUT);
@@ -228,4 +232,3 @@ extern void init_spi (void) {
 
 	spi_setupChipReg( SPI, &spiOptions, FPBA_HZ );
 }
-
