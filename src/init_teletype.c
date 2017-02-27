@@ -90,10 +90,6 @@ static void irq_port0_line0(void) {
 // interrupt handler for PA08-PA15
 __attribute__((__interrupt__))
 static void irq_port0_line1(void) {
-    // turn on pull-ups for SDA/SCL 
-    gpio_enable_pin_pull_up(A09);
-    gpio_enable_pin_pull_up(A10);
-
     if(gpio_get_pin_interrupt_flag(NMI)) {
       gpio_clear_pin_interrupt_flag(NMI);
       // print_dbg("\r\n ### NMI ### ");
@@ -158,6 +154,10 @@ extern void init_gpio(void) {
 	gpio_enable_gpio_pin(B09);
 	gpio_enable_gpio_pin(B10);
 	gpio_enable_gpio_pin(B11);
+
+  // turn on pull-ups for SDA/SCL
+  gpio_enable_pin_pull_up(A09);
+  gpio_enable_pin_pull_up(A10);
 
 	gpio_enable_gpio_pin(NMI);
 

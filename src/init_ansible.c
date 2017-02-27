@@ -34,7 +34,7 @@ static const u64 tcMaxInv = (u64)0x10000000;
 // volatile u8 clock_external;
 
 //----------------------
-//---- static functions 
+//---- static functions
 // interrupt handlers
 
 // irq for app timer
@@ -67,7 +67,7 @@ __attribute__((__interrupt__))
 static void irq_tc(void) {
   tcTicks++;
   // overflow control
-  if(tcTicks > tcMax) { 
+  if(tcTicks > tcMax) {
     tcTicks = 0;
     tcOverflow = 1;
   } else {
@@ -205,6 +205,10 @@ extern void init_gpio(void) {
     gpio_enable_pin_pull_up(B06);
     gpio_enable_pin_pull_up(B07);
 
+    // turn on pull-ups for SDA/SCL
+    // gpio_enable_pin_pull_up(A09);
+    // gpio_enable_pin_pull_up(A10);
+
     gpio_enable_pin_glitch_filter(B06);
     gpio_enable_pin_glitch_filter(B07);
     gpio_enable_pin_glitch_filter(NMI);
@@ -212,7 +216,7 @@ extern void init_gpio(void) {
 
 
 extern void init_spi (void) {
- 
+
   sysclk_enable_pba_module(SYSCLK_SPI);
 
   static const gpio_map_t SPI_GPIO_MAP = {
@@ -264,4 +268,3 @@ extern void init_spi (void) {
 
   // spi_enable(SPI);
  }
-

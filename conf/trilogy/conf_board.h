@@ -84,6 +84,8 @@
 #define B08   AVR32_PIN_PB08
 #define B09   AVR32_PIN_PB09
 #define B10   AVR32_PIN_PB10
+#define A09   AVR32_PIN_PA09
+#define A10   AVR32_PIN_PA10
 #define NMI   AVR32_PIN_PA13
 
 
