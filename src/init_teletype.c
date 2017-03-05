@@ -156,8 +156,8 @@ extern void init_gpio(void) {
 	gpio_enable_gpio_pin(B11);
 
   // turn on pull-ups for SDA/SCL
-  gpio_enable_pin_pull_up(A09);
-  gpio_enable_pin_pull_up(A10);
+  // gpio_enable_pin_pull_up(A09);
+  // gpio_enable_pin_pull_up(A10);
 
 	gpio_enable_gpio_pin(NMI);
 
