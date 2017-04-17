@@ -79,9 +79,7 @@ static void irq_port0_line0(void) {
     if(gpio_get_pin_interrupt_flag(i)) {
       gpio_clear_pin_interrupt_flag(i);
       // print_dbg("\r\n # A00");
-      static event_t e;
-      e.type = kEventTrigger;
-      e.data = i;
+      event_t e = { .type = kEventTrigger, .data = i };
       event_post(&e);
     }
   }
@@ -93,9 +91,7 @@ static void irq_port0_line1(void) {
     if(gpio_get_pin_interrupt_flag(NMI)) {
       gpio_clear_pin_interrupt_flag(NMI);
       // print_dbg("\r\n ### NMI ### ");
-      static event_t e;
-      e.type = kEventFront;
-      e.data = gpio_get_pin_value(NMI);
+      event_t e = { .type = kEventFront, .data = gpio_get_pin_value(NMI) };
       event_post(&e);
     }
 }
