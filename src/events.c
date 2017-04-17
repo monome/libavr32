@@ -12,9 +12,11 @@
 #include "conf_tc_irq.h"
 #include "events.h"
 
+ static void handler_Ignore(s32 data) { }
 
 // global array of pointers to handlers
- void (*app_event_handlers[kNumEventTypes])(s32 data);
+// initialise all it's entries to handler_Ignore
+ void (*app_event_handlers[kNumEventTypes])(s32 data) = { handler_Ignore };
 
 
 /// NOTE: if we are ever over-filling the event queue, we have problems.
