@@ -19,7 +19,7 @@ static twi_package_t packet;
 volatile process_ii_t process_ii;
 
 
-void i2c_master_tx(uint8_t addr, uint8_t *data, uint8_t length) {
+int i2c_master_tx(uint8_t addr, uint8_t *data, uint8_t length) {
   int status;
 
   packet.chip = addr;
@@ -29,18 +29,14 @@ void i2c_master_tx(uint8_t addr, uint8_t *data, uint8_t length) {
   // How many bytes do we want to write
   packet.length = length;
 
-  // print_dbg("\r\nii_tx ");
-  // for(int i =0;i< length;i++) {
-  //   print_dbg_ulong(data[i]);
-  //   print_dbg(" ");
-  // }
-
   // perform a write access
   status = twi_master_write(TWI, &packet);
+
+  return status;
 }
 
 
-void i2c_master_rx(uint8_t addr, uint8_t *data, uint8_t l) {
+int i2c_master_rx(uint8_t addr, uint8_t *data, uint8_t l) {
   int status;
 
   packet.chip = addr;
@@ -52,16 +48,12 @@ void i2c_master_rx(uint8_t addr, uint8_t *data, uint8_t l) {
 
   status = twi_master_read(TWI, &packet);
 
-  //   print_dbg("\r\nii_rx ");
-  // for(int i =0;i<l;i++) {
-  //   print_dbg_ulong(data[i]);
-  //   print_dbg(" ");
-  // }
+  return status;
 }
 
 
 
-void twi_slave_rx( U8 u8_value )
+void twi_slave_rx(uint8_t u8_value)
 {
   if (rx_pos[rx_buffer_index] < I2C_RX_BUF_SIZE) {
     rx_buffer[rx_buffer_index][rx_pos[rx_buffer_index]] = u8_value;
@@ -69,7 +61,7 @@ void twi_slave_rx( U8 u8_value )
   }
 }
 
-void twi_slave_stop( void )
+void twi_slave_stop(void)
 {
   uint8_t index = rx_buffer_index;
   // rx_buffer_index must be incremented before process_ii is called
@@ -92,7 +84,7 @@ extern void ii_tx_queue(uint8_t data) {
     print_dbg("\r\nii queue overrun");
 }
 
-uint8_t twi_slave_tx( void )
+uint8_t twi_slave_tx(void)
 {
    // print_dbg("\r\nii_tx ");
    if(tx_pos_write == tx_pos_read)
