@@ -35,6 +35,8 @@ u8 timer_add( softTimer_t* timer, u32 ticks, timer_callback_t callback, void* ca
 // find remove a timer from the processing list
 // return 1 if removed, 0 if not found
 u8 timer_remove( softTimer_t* timer );
+void timers_resume( void );
+void timers_pause( void );
 // process the timer list; call this on each tick.
 void process_timers( void );
 

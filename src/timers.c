@@ -142,6 +142,14 @@ u8 timer_remove( softTimer_t* t) {
    num = 0;
 }
 
+void timers_resume( void ) {
+    cpu_irq_enable_level(APP_TC_IRQ_PRIORITY);
+}
+
+void timers_pause( void ) {
+    cpu_irq_disable_level(APP_TC_IRQ_PRIORITY);
+}
+
 // process the timer list, presumably from TC interrupt
 void process_timers( void ) {
   u32 i;
