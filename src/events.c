@@ -52,8 +52,9 @@
 // Returns non-zero if an event was available
 u8 event_next( event_t *e ) {
   u8 status;
-  cpu_irq_disable_level(APP_TC_IRQ_PRIORITY);
-  
+
+  irqflags_t flags = cpu_irq_save();
+
   // if pointers are equal, the queue is empty... don't allow idx's to wrap!
   if ( getIdx != putIdx ) {
     INCR_EVENT_INDEX( getIdx );
@@ -66,7 +67,8 @@ u8 event_next( event_t *e ) {
     status = false;
   }
 
-  cpu_irq_enable_level(APP_TC_IRQ_PRIORITY);
+  cpu_irq_restore(flags);
+
   return status;
 }
 
@@ -79,8 +81,8 @@ u8 event_post( event_t *e ) {
    // print_dbg("\r\n posting event, type: ");
    // print_dbg_ulong(e->type);
 
-  cpu_irq_disable_level(APP_TC_IRQ_PRIORITY);
-  
+  irqflags_t flags = cpu_irq_save();
+
   // increment write idx, posbily wrapping
   saveIndex = putIdx;
   INCR_EVENT_INDEX( putIdx );
@@ -93,7 +95,7 @@ u8 event_post( event_t *e ) {
     putIdx = saveIndex;
   } 
 
-  cpu_irq_enable_level(APP_TC_IRQ_PRIORITY);
+  cpu_irq_restore(flags);
 
   if (!status)
     print_dbg("\r\n event queue full!");
