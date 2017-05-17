@@ -28,7 +28,7 @@ u8 timer_add( softTimer_t* t, u32 ticks, timer_callback_t callback, void* obj) {
   int ret;
 
   // disable timer interrupts
-  cpu_irq_disable_level(APP_TC_IRQ_PRIORITY);
+  timers_pause();
 
   // print_dbg("\r\n timer_add, @ 0x");
   // print_dbg_hex((u32)t);
@@ -67,7 +67,7 @@ u8 timer_add( softTimer_t* t, u32 ticks, timer_callback_t callback, void* obj) {
   }
 
   // enable timer interrupts
-  cpu_irq_enable_level(APP_TC_IRQ_PRIORITY);
+  timers_resume();
   return ret;
 }
 
@@ -79,11 +79,14 @@ u8 timer_remove( softTimer_t* t) {
   u8 found = 0;
 
   // disable timer interrupts
-  cpu_irq_disable_level(APP_TC_IRQ_PRIORITY);
+  timers_pause();
 
 
   // not linked
-  if( (t->next == NULL) || (t->prev == NULL)) { return 0; }
+  if( (t->next == NULL) || (t->prev == NULL)) {
+      timers_resume();
+      return 0;
+  }
 
   // check head
   if(t == head) { 
@@ -115,7 +118,7 @@ u8 timer_remove( softTimer_t* t) {
   }
 
   // enable timer interrupts
-  cpu_irq_enable_level(APP_TC_IRQ_PRIORITY);
+  timers_resume();
   return found;
 }
 
@@ -125,6 +128,10 @@ u8 timer_remove( softTimer_t* t) {
  void timers_clear(void) {
    int i;
    volatile softTimer_t* pt;
+
+   // disable timer interrupts
+   timers_pause();
+
    if(head != NULL) {
      // print_dbg("\r\n clearing timer list, size: ");
      // print_dbg_ulong(num);
@@ -140,14 +147,27 @@ u8 timer_remove( softTimer_t* t) {
    head = NULL;
    tail = NULL;
    num = 0;
+
+   // enable timer interrupts
+   timers_resume();
+}
+
+static volatile s8 timer_pause_resume_nesting = 0;
+
+void timers_pause( void ) {
+  if(timer_pause_resume_nesting == 0) {
+    cpu_irq_disable_level(APP_TC_IRQ_PRIORITY);
+    cpu_irq_disable_level(UI_IRQ_PRIORITY);
+  }
+  timer_pause_resume_nesting++;
 }
 
 void timers_resume( void ) {
+  timer_pause_resume_nesting--;
+  if(timer_pause_resume_nesting == 0) {
     cpu_irq_enable_level(APP_TC_IRQ_PRIORITY);
-}
-
-void timers_pause( void ) {
-    cpu_irq_disable_level(APP_TC_IRQ_PRIORITY);
+    cpu_irq_enable_level(UI_IRQ_PRIORITY);
+  }
 }
 
 // process the timer list, presumably from TC interrupt

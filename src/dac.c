@@ -106,9 +106,7 @@ uint16_t dac_get_off(uint8_t n) {
 
 void dac_update_now(void) {
 	// update the dacs now
-	//cpu_irq_disable_level(APP_TC_IRQ_PRIORITY);
 	dac_timer_update();
-	//cpu_irq_enable_level(APP_TC_IRQ_PRIORITY);
 }
 
 void dac_timer_update(void) {
