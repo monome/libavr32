@@ -12,9 +12,11 @@
 #include "conf_tc_irq.h"
 #include "events.h"
 
+ static void handler_Ignore(s32 data) { }
 
 // global array of pointers to handlers
- void (*app_event_handlers[kNumEventTypes])(s32 data);
+// initialise all it's entries to handler_Ignore
+ void (*app_event_handlers[kNumEventTypes])(s32 data) = { handler_Ignore };
 
 
 /// NOTE: if we are ever over-filling the event queue, we have problems.
@@ -50,8 +52,9 @@
 // Returns non-zero if an event was available
 u8 event_next( event_t *e ) {
   u8 status;
-  cpu_irq_disable_level(APP_TC_IRQ_PRIORITY);
-  
+
+  irqflags_t flags = cpu_irq_save();
+
   // if pointers are equal, the queue is empty... don't allow idx's to wrap!
   if ( getIdx != putIdx ) {
     INCR_EVENT_INDEX( getIdx );
@@ -64,7 +67,8 @@ u8 event_next( event_t *e ) {
     status = false;
   }
 
-  cpu_irq_enable_level(APP_TC_IRQ_PRIORITY);
+  cpu_irq_restore(flags);
+
   return status;
 }
 
@@ -77,8 +81,8 @@ u8 event_post( event_t *e ) {
    // print_dbg("\r\n posting event, type: ");
    // print_dbg_ulong(e->type);
 
-  cpu_irq_disable_level(APP_TC_IRQ_PRIORITY);
-  
+  irqflags_t flags = cpu_irq_save();
+
   // increment write idx, posbily wrapping
   saveIndex = putIdx;
   INCR_EVENT_INDEX( putIdx );
@@ -89,9 +93,12 @@ u8 event_post( event_t *e ) {
   } else {
     // idx wrapped, so queue is full, restore idx
     putIdx = saveIndex;
-    print_dbg("\r\n event queue full!");
   } 
 
-  cpu_irq_enable_level(APP_TC_IRQ_PRIORITY);
+  cpu_irq_restore(flags);
+
+  if (!status)
+    print_dbg("\r\n event queue full!");
+
   return status;
 }

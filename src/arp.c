@@ -133,14 +133,16 @@ void arp_seq_init(arp_seq_t* s) {
 
 bool arp_seq_set_state(arp_seq_t *s, arp_seq_state state) {
 	bool result = false;
-	
-	cpu_irq_disable_level(APP_TC_IRQ_PRIORITY);
+
+  // disable timer interrupts
+  timers_pause();
 
 	s->state = state;
 	result = true;
 
-	cpu_irq_enable_level(APP_TC_IRQ_PRIORITY);
-	
+  // enable timer interrupts
+  timers_resume();
+
 	return result;
 }
 

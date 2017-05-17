@@ -22,8 +22,8 @@
 //------------------------
 //----- variables
 // timer tick counter
-volatile u64 tcTicks = 0;
-volatile u8 tcOverflow = 0;
+static volatile u64 tcTicks = 0;
+static volatile u8 tcOverflow = 0;
 static const u64 tcMax = (U64)0x7fffffff;
 static const u64 tcMaxInv = (u64)0x10000000;
 
@@ -77,12 +77,10 @@ __attribute__((__interrupt__))
 static void irq_port0_line0(void) {
   for(int i=0;i<8;i++) {
     if(gpio_get_pin_interrupt_flag(i)) {
-      gpio_clear_pin_interrupt_flag(i);
       // print_dbg("\r\n # A00");
-      static event_t e;
-      e.type = kEventTrigger;
-      e.data = i;
+      event_t e = { .type = kEventTrigger, .data = i };
       event_post(&e);
+      gpio_clear_pin_interrupt_flag(i);
     }
   }
 }
@@ -91,12 +89,10 @@ static void irq_port0_line0(void) {
 __attribute__((__interrupt__))
 static void irq_port0_line1(void) {
     if(gpio_get_pin_interrupt_flag(NMI)) {
-      gpio_clear_pin_interrupt_flag(NMI);
       // print_dbg("\r\n ### NMI ### ");
-      static event_t e;
-      e.type = kEventFront;
-      e.data = gpio_get_pin_value(NMI);
+      event_t e = { .type = kEventFront, .data = gpio_get_pin_value(NMI) };
       event_post(&e);
+      gpio_clear_pin_interrupt_flag(NMI);
     }
 }
 

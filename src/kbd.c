@@ -3,6 +3,7 @@
 
 #include "kbd.h"
 
+static s8 old_frame[8];
 
 bool frame_compare(u8 data) {
 	u8 i;
