@@ -9,6 +9,7 @@
 // libavr32
 #include "font.h"
 #include "screen.h"
+#include "interrupts.h"
 
 //-----------------------------
 //---- variables
@@ -23,11 +24,13 @@ static u32 nb; // count of destination bytes
 
 static void write_command(U8 c);
 static void write_command(U8 c) {
+  u8 irq_flags = irqs_pause();
   spi_selectChip(OLED_SPI, OLED_SPI_NPCS);
   // pull register select low to write a command
   gpio_clr_gpio_pin(OLED_DC_PIN);
   spi_write(OLED_SPI, c);
   spi_unselectChip(OLED_SPI, OLED_SPI_NPCS);
+  irqs_resume(irq_flags);
 }
 
 // set the current drawing area of the physical screen (hopefully)
@@ -120,6 +123,9 @@ void init_oled(void) {
 static void writeScreenBuffer(u8 x, u8 y, u8 w, u8 h) {
   // set drawing region
   screen_set_rect(x, y, w, h);
+
+  u8 irq_flags = irqs_pause();
+
   // select chip for data
   spi_selectChip(OLED_SPI, OLED_SPI_NPCS);
   // register select high for data
@@ -129,6 +135,8 @@ static void writeScreenBuffer(u8 x, u8 y, u8 w, u8 h) {
     spi_write(OLED_SPI, screenBuf[i]);
   }
   spi_unselectChip(OLED_SPI, OLED_SPI_NPCS);
+
+  irqs_resume(irq_flags);
 }
 
 // draw data given target rect
@@ -232,6 +240,7 @@ void screen_draw_region_offset(u8 x, u8 y, u8 w, u8 h, u32 len, u8* data, u32 of
 
  // clear OLED RAM and local screenbuffer
 void screen_clear(void) {
+  u8 irq_flags = irqs_pause();
   spi_selectChip(OLED_SPI, OLED_SPI_NPCS);
   // pull register select high to write data
   gpio_set_gpio_pin(OLED_DC_PIN);
@@ -240,4 +249,5 @@ void screen_clear(void) {
     spi_write(OLED_SPI, 0);
   }
   spi_unselectChip(OLED_SPI, OLED_SPI_NPCS);
+  irqs_resume(irq_flags);
 }

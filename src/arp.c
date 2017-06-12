@@ -7,7 +7,7 @@
 
 #include "euclidean/euclidean.h"
 
-#include "conf_tc_irq.h"
+#include "interrupts.h"
 
 // this
 #include "arp.h"
@@ -132,16 +132,16 @@ void arp_seq_init(arp_seq_t* s) {
 }
 
 bool arp_seq_set_state(arp_seq_t *s, arp_seq_state state) {
-	bool result = false;
+	// disable timer interrupts
+	u8 irq_flags = irqs_pause();
 
-  // disable timer interrupts
-  timers_pause();
+	bool result = false;
 
 	s->state = state;
 	result = true;
 
-  // enable timer interrupts
-  timers_resume();
+	// enable timer interrupts
+	irqs_resume(irq_flags);
 
 	return result;
 }

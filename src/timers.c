@@ -1,6 +1,6 @@
 #include "print_funcs.h"
 
-#include "conf_tc_irq.h"
+#include "interrupts.h"
 #include "timers.h"
 
 //-----------------------------------------------
@@ -27,8 +27,8 @@ u8 timer_add( softTimer_t* t, u32 ticks, timer_callback_t callback, void* obj) {
   //  int i;
   int ret;
 
-  // disable timer interrupts
-  timers_pause();
+  // disable interrupts
+  u8 irq_flags = irqs_pause();
 
   // print_dbg("\r\n timer_add, @ 0x");
   // print_dbg_hex((u32)t);
@@ -67,7 +67,7 @@ u8 timer_add( softTimer_t* t, u32 ticks, timer_callback_t callback, void* obj) {
   }
 
   // enable timer interrupts
-  timers_resume();
+  irqs_resume(irq_flags);
   return ret;
 }
 
@@ -75,16 +75,15 @@ u8 timer_add( softTimer_t* t, u32 ticks, timer_callback_t callback, void* obj) {
 // return 1 if removed, 0 if not found
 u8 timer_remove( softTimer_t* t) {
   int i;
+  // disable interrupts
+  u8 irq_flags = irqs_pause();
+
   volatile softTimer_t* pt = NULL;
   u8 found = 0;
 
-  // disable timer interrupts
-  timers_pause();
-
-
   // not linked
   if( (t->next == NULL) || (t->prev == NULL)) {
-      timers_resume();
+      irqs_resume(irq_flags);
       return 0;
   }
 
@@ -117,8 +116,8 @@ u8 timer_remove( softTimer_t* t) {
     --num;
   }
 
-  // enable timer interrupts
-  timers_resume();
+  // enable interrupts
+  irqs_resume(irq_flags);
   return found;
 }
 
@@ -129,8 +128,8 @@ u8 timer_remove( softTimer_t* t) {
    int i;
    volatile softTimer_t* pt;
 
-   // disable timer interrupts
-   timers_pause();
+   // disable interrupts
+   u8 irq_flags = irqs_pause();
 
    if(head != NULL) {
      // print_dbg("\r\n clearing timer list, size: ");
@@ -148,26 +147,8 @@ u8 timer_remove( softTimer_t* t) {
    tail = NULL;
    num = 0;
 
-   // enable timer interrupts
-   timers_resume();
-}
-
-static volatile s8 timer_pause_resume_nesting = 0;
-
-void timers_pause( void ) {
-  if(timer_pause_resume_nesting == 0) {
-    cpu_irq_disable_level(APP_TC_IRQ_PRIORITY);
-    cpu_irq_disable_level(UI_IRQ_PRIORITY);
-  }
-  timer_pause_resume_nesting++;
-}
-
-void timers_resume( void ) {
-  timer_pause_resume_nesting--;
-  if(timer_pause_resume_nesting == 0) {
-    cpu_irq_enable_level(APP_TC_IRQ_PRIORITY);
-    cpu_irq_enable_level(UI_IRQ_PRIORITY);
-  }
+   // enable interrupts
+   irqs_resume(irq_flags);
 }
 
 // process the timer list, presumably from TC interrupt

@@ -226,3 +226,7 @@ extern void init_spi (void) {
 
   // spi_enable(SPI);
  }
+
+extern u64 get_ticks(void) {
+  return tcTicks;
+}
