@@ -9,7 +9,7 @@
 #include "compiler.h"
 #include "print_funcs.h"
 
-#include "conf_tc_irq.h"
+#include "interrupts.h"
 #include "events.h"
 
  static void handler_Ignore(s32 data) { }
@@ -27,11 +27,11 @@
 #define INCR_EVENT_INDEX( x )  { if ( ++x == MAX_EVENTS ) x = 0; }
 
 // et/Put indexes inxto sysEvents[] array
- static int putIdx = 0;
- static int getIdx = 0;
+volatile static int putIdx = 0;
+volatile  static int getIdx = 0;
 
 // The system event queue is a circular array of event records.
- static event_t sysEvents[ MAX_EVENTS ];
+volatile  static event_t sysEvents[ MAX_EVENTS ];
 
 // initializes (or re-initializes)  the system event queue.
  void init_events( void ) {
@@ -53,7 +53,7 @@
 u8 event_next( event_t *e ) {
   u8 status;
 
-  irqflags_t flags = cpu_irq_save();
+  u8 flags = irqs_pause();
 
   // if pointers are equal, the queue is empty... don't allow idx's to wrap!
   if ( getIdx != putIdx ) {
@@ -67,7 +67,7 @@ u8 event_next( event_t *e ) {
     status = false;
   }
 
-  cpu_irq_restore(flags);
+  irqs_resume(flags);
 
   return status;
 }
@@ -75,16 +75,14 @@ u8 event_next( event_t *e ) {
 
 // add event to queue, return success status
 u8 event_post( event_t *e ) {
-  u8 status = false;
-  int saveIndex;
-
    // print_dbg("\r\n posting event, type: ");
    // print_dbg_ulong(e->type);
 
-  irqflags_t flags = cpu_irq_save();
+  u8 flags = irqs_pause();
+  u8 status = false;
 
   // increment write idx, posbily wrapping
-  saveIndex = putIdx;
+  int saveIndex = putIdx;
   INCR_EVENT_INDEX( putIdx );
   if ( putIdx != getIdx  ) {
     sysEvents[ putIdx ].type = e->type;
@@ -95,10 +93,10 @@ u8 event_post( event_t *e ) {
     putIdx = saveIndex;
   } 
 
-  cpu_irq_restore(flags);
+  irqs_resume(flags);
 
-  if (!status)
-    print_dbg("\r\n event queue full!");
+  //if (!status)
+  //  print_dbg("\r\n event queue full!");
 
   return status;
 }

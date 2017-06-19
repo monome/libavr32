@@ -9,6 +9,7 @@
 #include "events.h"
 #include "types.h"
 #include "adc.h"
+#include "interrupts.h"
 
 // ad7923 control register
 #define AD7923_CTL_WRITE  (1 << 11)
@@ -39,6 +40,8 @@
 // perform a conversion on all 4 channels
 void adc_convert(U16 (*dst)[4]) {
   U16 cmd, val;
+
+  u8 irq_flags = irqs_pause();
 
   // data into AD7923 is a left-justified 12-bit value in a 16-bit word
   // so, always lshift the command before sending
@@ -79,6 +82,7 @@ void adc_convert(U16 (*dst)[4]) {
   spi_unselectChip(ADC_SPI, ADC_SPI_NPCS);
   (*dst)[3] = val & 0xfff;
 
+  irqs_resume(irq_flags);
 }
 
 // setup ad7923

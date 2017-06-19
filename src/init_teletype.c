@@ -228,3 +228,7 @@ extern void init_spi (void) {
 
 	spi_setupChipReg( SPI, &spiOptions, FPBA_HZ );
 }
+
+extern u64 get_ticks(void) {
+	return tcTicks;
+}

@@ -5,7 +5,7 @@
 #include "dac.h"
 
 #include "conf_board.h"
-#include "conf_tc_irq.h"
+#include "interrupts.h"
 
 
 struct {
@@ -130,6 +130,8 @@ void dac_timer_update(void) {
         }
 
     if (r) {
+        u8 irq_flags = irqs_pause();
+
         spi_selectChip(DAC_SPI, DAC_SPI_NPCS);
         spi_write(SPI, 0x31);
         a = aout[2].now >> 2;
@@ -151,6 +153,8 @@ void dac_timer_update(void) {
         spi_write(SPI, a >> 4);
         spi_write(SPI, a << 4);
         spi_unselectChip(DAC_SPI, DAC_SPI_NPCS);
+
+        irqs_resume(irq_flags);
     }
 }
 
