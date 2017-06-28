@@ -21,7 +21,8 @@ If you're on OSX you can use the [avr32-toolchain][] repo to build your own. You
 
 To install on OSX in `~/avr32-tools`:
 
-```bash
+```
+bash
 brew install mpfr gmp libmpc texinfo dfu-programmer
 git clone https://github.com/monome/avr32-toolchain.git
 cd avr32-toolchain
@@ -41,7 +42,8 @@ The headers need to be installed in the correct location.
 
 To install on Linux in `~/avr32-tools`:
 
-```bash
+```
+bash
 tar xvfz avr32-gnu-toolchain-3.4.3.820-linux.any.x86_64.tar.gz
 mv avr32-gnu-toolchain-linux_x86_64 $HOME/avr32-tools
 unzip avr32-headers-6.2.0.742.zip -d $HOME/avr32-tools/avr32/include
@@ -49,19 +51,60 @@ unzip avr32-headers-6.2.0.742.zip -d $HOME/avr32-tools/avr32/include
 
 You should also install `dfu-programmer` from your package manager.
 
+### Windows
+
+Install bash: https://msdn.microsoft.com/en-us/commandline/wsl/install_guide
+
+Install dependencies to compile the toolchain (unzip and gperf needed to compile toolchain, but aren't listed as dependencies in the README):
+
+```
+sudo apt update
+sudo apt upgrade
+sudo apt install curl flex bison libgmp3-dev libmpfr-dev autoconf build-essential libncurses5-dev libmpc-dev texinfo
+sudo apt install gperf unzip
+```
+
+Install clang-format:
+```
+sudo apt install clang-format
+```
+
+Compile the toolchain (this will take a few hours, the tar steps can take a while and won't print anything to screen):
+
+```
+cd
+git clone https://github.com/monome/avr32-toolchain
+cd avr32-toolchain
+PREFIX=$HOME/avr32-tools make install-cross
+```
+
+Install ragel and compile the firmware:
+
+```
+sudo apt install ragel
+export PATH="$HOME/avr32-tools/bin:$PATH"
+cd
+git clone --recursive https://github.com/samdoshi/teletype  # change to repo of your preference
+cd teletype
+cd module
+make
+```
+
 ### Building a firmware
 
 Let's build and upload a copy of the [teletype][] firmware
 
 First clone the repo, we need to clone recursively to bring in the `libavr32` submodule.
-```bash
+```
+bash
 git clone --recursive https://github.com/monome/teletype.git
 cd teletype
 
 ```
 
 Let's build it, we need to make sure that `avr32-gcc` and company are available on our path. Assuming they are installed in `~/avr32-tools`:
-```bash
+```
+bash
 export PATH="$HOME/avr32-tools/bin:$PATH"
 cd module
 make
@@ -92,19 +135,22 @@ When connecting, align the black cable with the `gnd` pin. Breakout boards are a
 
 Newer versions of OSX and Linux include builtin drivers for the FTDI cable. On OSX the simplest way to connect to the serial port is to use the `cu` program (type `~.` to quit), e.g.
 
-```bash
+```
+bash
 sudo cu -s 115200 -l <device>
 ```
 
 On Linux and OSX, you can also use the `screen` command (type `C-a \`, or `C-a :quit` to quit), e.g.
 
-```bash
+```
+bash
 sudo screen <device> 115200
 ```
 
 The value of `<device>` depends on the adaptor being used and the OS, try the following 2 commands to identify it:
 
-```bash
+```
+bash
 ls /dev | grep -i ttyusb   # should work on Linux
 ls /dev | grep -i tty.usb  # should work on OSX
 ```
