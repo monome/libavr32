@@ -73,7 +73,7 @@ Compile the toolchain (this will take a few hours, the tar steps can take a whil
 
 ```
 cd
-git clone https://github.com/monome/avr32-toolchain
+git clone https://github.com/scanner-darkly/avr32-toolchain
 cd avr32-toolchain
 PREFIX=$HOME/avr32-tools make install-cross
 ```
