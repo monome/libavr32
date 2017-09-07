@@ -21,8 +21,7 @@ If you're on OSX you can use the [avr32-toolchain][] repo to build your own. You
 
 To install on OSX in `~/avr32-tools`:
 
-```
-bash
+```bash
 brew install mpfr gmp libmpc texinfo dfu-programmer
 git clone https://github.com/monome/avr32-toolchain.git
 cd avr32-toolchain
@@ -42,8 +41,7 @@ The headers need to be installed in the correct location.
 
 To install on Linux in `~/avr32-tools`:
 
-```
-bash
+```bash
 tar xvfz avr32-gnu-toolchain-3.4.3.820-linux.any.x86_64.tar.gz
 mv avr32-gnu-toolchain-linux_x86_64 $HOME/avr32-tools
 unzip avr32-headers-6.2.0.742.zip -d $HOME/avr32-tools/avr32/include
