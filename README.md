@@ -55,7 +55,7 @@ Install bash: https://msdn.microsoft.com/en-us/commandline/wsl/install_guide
 
 Install dependencies to compile the toolchain (unzip and gperf needed to compile toolchain, but aren't listed as dependencies in the README):
 
-```
+```bash
 sudo apt update
 sudo apt upgrade
 sudo apt install curl flex bison libgmp3-dev libmpfr-dev autoconf build-essential libncurses5-dev libmpc-dev texinfo
@@ -63,13 +63,13 @@ sudo apt install gperf unzip
 ```
 
 Install clang-format:
-```
+```bash
 sudo apt install clang-format
 ```
 
 Compile the toolchain (this will take a few hours, the tar steps can take a while and won't print anything to screen):
 
-```
+```bash
 cd
 git clone https://github.com/scanner-darkly/avr32-toolchain
 cd avr32-toolchain
@@ -78,7 +78,7 @@ PREFIX=$HOME/avr32-tools make install-cross
 
 Install ragel and compile the firmware:
 
-```
+```bash
 sudo apt install ragel
 export PATH="$HOME/avr32-tools/bin:$PATH"
 cd
