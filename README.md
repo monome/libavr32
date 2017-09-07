@@ -93,16 +93,14 @@ make
 Let's build and upload a copy of the [teletype][] firmware
 
 First clone the repo, we need to clone recursively to bring in the `libavr32` submodule.
-```
-bash
+```bash
 git clone --recursive https://github.com/monome/teletype.git
 cd teletype
 
 ```
 
 Let's build it, we need to make sure that `avr32-gcc` and company are available on our path. Assuming they are installed in `~/avr32-tools`:
-```
-bash
+```bash
 export PATH="$HOME/avr32-tools/bin:$PATH"
 cd module
 make
@@ -133,22 +131,19 @@ When connecting, align the black cable with the `gnd` pin. Breakout boards are a
 
 Newer versions of OSX and Linux include builtin drivers for the FTDI cable. On OSX the simplest way to connect to the serial port is to use the `cu` program (type `~.` to quit), e.g.
 
-```
-bash
+```bash
 sudo cu -s 115200 -l <device>
 ```
 
 On Linux and OSX, you can also use the `screen` command (type `C-a \`, or `C-a :quit` to quit), e.g.
 
-```
-bash
+```bash
 sudo screen <device> 115200
 ```
 
 The value of `<device>` depends on the adaptor being used and the OS, try the following 2 commands to identify it:
 
-```
-bash
+```bash
 ls /dev | grep -i ttyusb   # should work on Linux
 ls /dev | grep -i tty.usb  # should work on OSX
 ```
