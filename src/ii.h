@@ -57,6 +57,7 @@
 #define II_MP_STOP		2
 #define II_MP_SCALE		3
 #define II_MP_PERIOD	4
+#define II_MP_CV		5
 #define II_LV_ADDR		0xAC
 #define II_LV_PRESET	0
 #define II_LV_RESET 	1
