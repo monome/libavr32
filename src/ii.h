@@ -50,6 +50,7 @@
 #define II_KR_LOOP_ST	5
 #define II_KR_LOOP_LEN	6
 #define II_KR_RESET		7
+#define II_KR_CV		8
 #define II_MP_ADDR		0xAA
 #define II_MP_PRESET	0
 #define II_MP_RESET 	1
