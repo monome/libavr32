@@ -50,12 +50,15 @@
 #define II_KR_LOOP_ST	5
 #define II_KR_LOOP_LEN	6
 #define II_KR_RESET		7
+#define II_KR_CV		8
+#define II_KR_MUTE		9
 #define II_MP_ADDR		0xAA
 #define II_MP_PRESET	0
 #define II_MP_RESET 	1
 #define II_MP_STOP		2
 #define II_MP_SCALE		3
 #define II_MP_PERIOD	4
+#define II_MP_CV		5
 #define II_LV_ADDR		0xAC
 #define II_LV_PRESET	0
 #define II_LV_RESET 	1
