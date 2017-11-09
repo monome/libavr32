@@ -69,6 +69,10 @@ void midi_packet_parse(midi_behavior_t *b, u32 data) {
 			break;
 		}
 		break;
+		case 0xc:
+			num = (data & 0x00ff0000) >> 16;
+			if (b->program_change) b->program_change(ch, num);
+			break;
 	default:
 		// TODO: poly pressure, program change, chanel mode *, rtc, etc
 		break;
