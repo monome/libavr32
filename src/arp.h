@@ -6,21 +6,24 @@
 
 #include "compiler.h"   // for bool; shouldn't this be "types.h"
 
-#define ARP_MAX_CHORD  12
-#define ARP_MAX_OCTAVE 4
-#define ARP_MAX_LENGTH (2 * ARP_MAX_CHORD)
+#ifndef CHORD_MAX_NOTES
+#define CHORD_MAX_NOTES 16
+#endif
 
-#define ARP_PPQ 1
-
-#define CHORD_MAX_NOTES 12
 #define CHORD_NOTE_MAX 127
 #define CHORD_VELOCITY_MAX 127
+
+#define ARP_MAX_OCTAVE 4
+#define ARP_MAX_LENGTH (2 * CHORD_MAX_NOTES)
+
+#define ARP_PPQ 1
 
 
 //-----------------------------
 //----- constants
 
 typedef enum {
+	eStylePlayed,
 	eStyleUp,
 	eStyleDown,
 	eStyleUpDown,
@@ -28,7 +31,6 @@ typedef enum {
 	eStyleConverge,     // outside in
 	eStyleDiverge,      // inside out
 	eStyleRandom,
-	eStylePlayed,
 
 	eStyleMax
 } arp_style;
@@ -73,9 +75,11 @@ typedef struct {
 	
 typedef struct {
 	u8 ch;                // channel; passed to midi behavior
-	u8 index;             // currrent note index
+	u8 index;             // current note index
 
-	u8 division;          // pulses per note
+	u8 fill;              // er; fill
+	u8 division;          // er; len (was pulses per note)
+	s8 rotation;          // er; offset/rotation
 	u16 div_count;        // current note division
 
 	arp_velocity velocity;
@@ -88,7 +92,9 @@ typedef struct {
 	s8 active_note;       // if > 0 the note which is actively playing
 	u8 active_gate;       // gate length (in ticks) for active note
 	
-	bool latch;           //
+	u8 steps;             // number of steps (repeats?) of the arp pattern
+	u8 step_count;        // current step number
+	s8 offset;            // number of semitones to transpose by per step; [-24,24] or voltage offsets?
 } arp_player_t;
 
 
@@ -96,6 +102,7 @@ typedef struct {
 //----- functions
 
 void chord_init(chord_t *c);
+bool chord_contains(chord_t *c, u8 num);
 bool chord_note_add(chord_t *c, u8 num, u8 vel);
 bool chord_note_release(chord_t *c, u8 num);
 s8   chord_note_low(chord_t *c);
@@ -104,11 +111,28 @@ s8   chord_note_high(chord_t *c);
 void arp_seq_init(arp_seq_t *s);
 bool arp_seq_set_state(arp_seq_t *s, arp_seq_state state);
 arp_seq_state arp_seq_get_state(arp_seq_t *s);
-void arp_seq_build(arp_seq_t *a, arp_style style, chord_t *c);
+void arp_seq_build(arp_seq_t *a, arp_style style, chord_t *c, note_pool_t *n);
 
 void arp_player_init(arp_player_t *p, u8 ch, u8 division);
+
+void arp_player_set_steps(arp_player_t *p, u8 steps);
+u8   arp_player_get_steps(arp_player_t *p);
+
+void arp_player_set_offset(arp_player_t *p, s8 offset);
+s8   arp_player_get_offset(arp_player_t *p);
+
 u8 arp_player_set_gate_width(arp_player_t *p, u8 width);
+u8 arp_player_get_gate_width(arp_player_t *p);
+
+void arp_player_set_fill(arp_player_t *p, u8 fill);
+u8   arp_player_get_fill(arp_player_t *p);
+
 void arp_player_set_division(arp_player_t *p, u8 division, midi_behavior_t *b);
+u8 arp_player_get_division(arp_player_t *p);
+
+void arp_player_set_rotation(arp_player_t *p, s8 rotation);
+s8   arp_player_get_rotation(arp_player_t *p);
+
 bool arp_player_at_end(arp_player_t *p, arp_seq_t *s);
 void arp_player_pulse(arp_player_t *p, arp_seq_t *s, midi_behavior_t *b, u8 phase);
 void arp_player_reset(arp_player_t *a, midi_behavior_t *b);

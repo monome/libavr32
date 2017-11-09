@@ -1,7 +1,7 @@
 /*
   uhi_ftdi.c
   aleph-avr32
-  
+
   usb host routines for ftdi driver
  */
 
@@ -23,7 +23,7 @@
 #endif
 
 //------ DEFINES
-#define UHI_FTDI_TIMEOUT 20000
+#define UHI_FTDI_TIMEOUT 20
 #define FTDI_STRING_DESC_REQ_TYPE ( (USB_REQ_DIR_IN) | (USB_REQ_TYPE_STANDARD) | (USB_REQ_RECIP_DEVICE) )
 #define FTDI_STRING_DESC_LANGID USB_LANGID_EN_US
 // offset into the string descriptor to get an actual (unicode) string
@@ -53,11 +53,11 @@ static uhi_ftdi_dev_t uhi_ftdi_dev = {
   .dev = NULL,
 };
 
-// manufacturer string 
+// manufacturer string
 char manufacturer_string[FTDI_STRING_MAX_LEN];
-// product string 
+// product string
 char product_string[FTDI_STRING_MAX_LEN];
-// serial number string 
+// serial number string
 char serial_string[FTDI_STRING_MAX_LEN];
 
 // control read-busy flag
@@ -66,9 +66,9 @@ static volatile u8 ctlReadBusy = 0;
 //------- static funcs
 
 // send control request
-static u8 send_ctl_request(u8 reqtype, u8 reqnum, 
+static u8 send_ctl_request(u8 reqtype, u8 reqnum,
 			   u8* data, u16 size,
-			     u16 index, u16 val, 
+			     u16 index, u16 val,
 			     uhd_callback_setup_end_t callbackEnd);
 // control request end
 static void ctl_req_end(
@@ -166,16 +166,16 @@ void uhi_ftdi_enable(uhc_device_t* dev) {
   /// todo: what do these mean???
   // val : ff
   // indx : 1
-  send_ctl_request(FTDI_DEVICE_OUT_REQTYPE, 
+  send_ctl_request(FTDI_DEVICE_OUT_REQTYPE,
 		   FTDI_REQ_BITMODE,
 		   NULL, 0,
-		   1, 0xff, 
+		   1, 0xff,
 		   NULL);
   /// line property
   /// todo: what do these mean???
   // index 1
   // val : 8
-  send_ctl_request(FTDI_DEVICE_OUT_REQTYPE, 
+  send_ctl_request(FTDI_DEVICE_OUT_REQTYPE,
 		   FTDI_REQ_LINE_PROPERTIES,
 		   NULL, 0,
 		   1, 8,
@@ -185,7 +185,7 @@ void uhi_ftdi_enable(uhc_device_t* dev) {
   // value: 26 (baudrate: 115200)
   // value: 49206 (baudrate : 57600)
   // index: 0
-  send_ctl_request(FTDI_DEVICE_OUT_REQTYPE, 
+  send_ctl_request(FTDI_DEVICE_OUT_REQTYPE,
 		   FTDI_REQ_BAUDRATE,
 		   NULL, 0,
 		   0, 49206,
@@ -193,7 +193,7 @@ void uhi_ftdi_enable(uhc_device_t* dev) {
 
   delay_ms(200);
 
-  ftdi_change(dev, true);  
+  ftdi_change(dev, true);
 }
 
 void uhi_ftdi_uninstall(uhc_device_t* dev) {
@@ -202,7 +202,7 @@ void uhi_ftdi_uninstall(uhc_device_t* dev) {
   }
   uhi_ftdi_dev.dev = NULL;
   Assert(uhi_ftdi_dev.report!=NULL);
-  ftdi_change(dev, false);  
+  ftdi_change(dev, false);
 }
 
 // run the input endpoint (bulk)
@@ -225,12 +225,12 @@ bool uhi_ftdi_out_run(uint8_t * buf, iram_size_t buf_size,
 //---- static functions definitions
 
 // send control request
-static u8 send_ctl_request(u8 reqtype, u8 reqnum, 
+static u8 send_ctl_request(u8 reqtype, u8 reqnum,
 			   u8* data, u16 size,
-			     u16 index, u16 val, 
+			     u16 index, u16 val,
 			     uhd_callback_setup_end_t callbackEnd) {
   usb_setup_req_t req;
- 
+
   /* if (uhi_ftdi_dev.dev != dev) { */
   /*   return;  // No interface to enable */
   /* } */
@@ -272,7 +272,7 @@ void ftdi_get_strings(char** pManufacturer, char** pProduct, char** pSerial) {
 			/* req type*/
 			FTDI_STRING_DESC_REQ_TYPE,
 			/* req num */
-			USB_REQ_GET_DESCRIPTOR, 
+			USB_REQ_GET_DESCRIPTOR,
 			/* data */
 			(u8*)manufacturer_string,
 			/* size */
@@ -285,13 +285,13 @@ void ftdi_get_strings(char** pManufacturer, char** pProduct, char** pSerial) {
 			(USB_DT_STRING << 8) | uhi_ftdi_dev.dev->dev_desc.iManufacturer,
 			// end-transfer callback
 			&ctl_req_end )
-       
+
        )) {
     // print_dbg("\r\n control request for string descriptor failed");
     return;
   }
   // wait for transfer end
-  while(ctlReadBusy) { ;; } 
+  while(ctlReadBusy) { ;; }
 
   // get product string
   ctlReadBusy = 1;
@@ -301,7 +301,7 @@ void ftdi_get_strings(char** pManufacturer, char** pProduct, char** pSerial) {
 			/* req type*/
 			FTDI_STRING_DESC_REQ_TYPE,
 			/* req num */
-			USB_REQ_GET_DESCRIPTOR, 
+			USB_REQ_GET_DESCRIPTOR,
 			/* data */
 			(u8*)product_string,
 			/* size */
@@ -313,13 +313,13 @@ void ftdi_get_strings(char** pManufacturer, char** pProduct, char** pSerial) {
 			(USB_DT_STRING << 8) | uhi_ftdi_dev.dev->dev_desc.iProduct,
 			// end-transfer callback
 			&ctl_req_end )
-       
+
        )) {
     // print_dbg("\r\n control request for string descriptor failed");
     return;
   }
   // wait for transfer end
-  while(ctlReadBusy) { ;; } 
+  while(ctlReadBusy) { ;; }
 
   // get serial string
   ctlReadBusy = 1;
@@ -328,7 +328,7 @@ void ftdi_get_strings(char** pManufacturer, char** pProduct, char** pSerial) {
 			/* req type*/
 			FTDI_STRING_DESC_REQ_TYPE,
 			/* req num */
-			USB_REQ_GET_DESCRIPTOR, 
+			USB_REQ_GET_DESCRIPTOR,
 			/* data */
 			(u8*)serial_string,
 			/* size */
@@ -339,7 +339,7 @@ void ftdi_get_strings(char** pManufacturer, char** pProduct, char** pSerial) {
 			(USB_DT_STRING << 8) | uhi_ftdi_dev.dev->dev_desc.iSerialNumber,
 			// end-transfer callback
 			&ctl_req_end )
-       
+
        )) {
     // print_dbg("\r\n control request for string descriptor failed");
     return;
@@ -351,9 +351,9 @@ void ftdi_get_strings(char** pManufacturer, char** pProduct, char** pSerial) {
   *pManufacturer = manufacturer_string + FTDI_STRING_DESC_OFFSET;
   *pProduct = product_string + FTDI_STRING_DESC_OFFSET;
   *pSerial = serial_string + FTDI_STRING_DESC_OFFSET;
-  
+
 }
-  
+
     /* for (i = 0; i < FTDI_EEPROM_SIZE__2; i++) { */
     /*     if (usb_control_msg(ftdi->usb_dev, FTDI_DEVICE_IN_REQTYPE, SIO_READ_EEPROM_REQUEST, 0, i, eeprom+(i*2), 2, ftdi->usb_read_timeout) != 2) */
     /*         ftdi_error_return(-1, "reading eeprom failed"); */

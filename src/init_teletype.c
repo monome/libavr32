@@ -22,13 +22,13 @@
 //------------------------
 //----- variables
 // timer tick counter
-volatile u64 tcTicks = 0;
-volatile u8 tcOverflow = 0;
+static volatile u64 tcTicks = 0;
+static volatile u8 tcOverflow = 0;
 static const u64 tcMax = (U64)0x7fffffff;
 static const u64 tcMaxInv = (u64)0x10000000;
 
 //----------------------
-//---- static functions 
+//---- static functions
 // interrupt handlers
 
 // irq for app timer
@@ -45,7 +45,7 @@ __attribute__((__interrupt__))
 static void irq_port0_line1(void);
 
 
-  
+
 // irq for uart
 // __attribute__((__interrupt__))
 // static void irq_usart(void);
@@ -60,7 +60,7 @@ __attribute__((__interrupt__))
 static void irq_tc(void) {
   tcTicks++;
   // overflow control
-  if(tcTicks > tcMax) { 
+  if(tcTicks > tcMax) {
     tcTicks = 0;
     tcOverflow = 1;
   } else {
@@ -77,12 +77,10 @@ __attribute__((__interrupt__))
 static void irq_port0_line0(void) {
   for(int i=0;i<8;i++) {
     if(gpio_get_pin_interrupt_flag(i)) {
-      gpio_clear_pin_interrupt_flag(i);
       // print_dbg("\r\n # A00");
-      static event_t e;
-      e.type = kEventTrigger;
-      e.data = i;
+      event_t e = { .type = kEventTrigger, .data = i };
       event_post(&e);
+      gpio_clear_pin_interrupt_flag(i);
     }
   }
 }
@@ -91,12 +89,10 @@ static void irq_port0_line0(void) {
 __attribute__((__interrupt__))
 static void irq_port0_line1(void) {
     if(gpio_get_pin_interrupt_flag(NMI)) {
-      gpio_clear_pin_interrupt_flag(NMI);
       // print_dbg("\r\n ### NMI ### ");
-      static event_t e;
-      e.type = kEventFront;
-      e.data = gpio_get_pin_value(NMI);
+      event_t e = { .type = kEventFront, .data = gpio_get_pin_value(NMI) };
       event_post(&e);
+      gpio_clear_pin_interrupt_flag(NMI);
     }
 }
 
@@ -134,7 +130,7 @@ void register_interrupts(void) {
   // INTC_register_interrupt( &irq_port1_line1, AVR32_GPIO_IRQ_0 + (AVR32_PIN_PB08 / 8), UI_IRQ_PRIORITY);
 
   // register TC interrupt
-  INTC_register_interrupt(&irq_tc, APP_TC_IRQ, UI_IRQ_PRIORITY);
+  INTC_register_interrupt(&irq_tc, APP_TC_IRQ, APP_TC_IRQ_PRIORITY);
 
   // register uart interrupt
   // INTC_register_interrupt(&irq_usart, AVR32_USART0_IRQ, UI_IRQ_PRIORITY);
@@ -154,7 +150,11 @@ extern void init_gpio(void) {
 	gpio_enable_gpio_pin(B09);
 	gpio_enable_gpio_pin(B10);
 	gpio_enable_gpio_pin(B11);
-	
+
+  // turn on pull-ups for SDA/SCL
+  // gpio_enable_pin_pull_up(A09);
+  // gpio_enable_pin_pull_up(A10);
+
 	gpio_enable_gpio_pin(NMI);
 
 	gpio_configure_pin(B08, GPIO_DIR_OUTPUT);
@@ -229,3 +229,6 @@ extern void init_spi (void) {
 	spi_setupChipReg( SPI, &spiOptions, FPBA_HZ );
 }
 
+extern u64 get_ticks(void) {
+	return tcTicks;
+}

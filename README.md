@@ -29,6 +29,8 @@ PREFIX=$HOME/avr32-tools make install-cross
 # go make a cup of tea, this will take a while...
 ```
 
+If you encounter an error make sure you have the Xcode command line tools installed. They can be installed by typing `xcode-select --install` (if they are already installed it will print an error message).
+
 ### Linux
 
 If you're on Linux, download the toolchain and the headers from [Atmel][atmellinux]. You need to dowload:
@@ -46,6 +48,45 @@ unzip avr32-headers-6.2.0.742.zip -d $HOME/avr32-tools/avr32/include
 ```
 
 You should also install `dfu-programmer` from your package manager.
+
+### Windows
+
+Install bash: https://msdn.microsoft.com/en-us/commandline/wsl/install_guide
+
+Install dependencies to compile the toolchain (unzip and gperf needed to compile toolchain, but aren't listed as dependencies in the README):
+
+```bash
+sudo apt update
+sudo apt upgrade
+sudo apt install curl flex bison libgmp3-dev libmpfr-dev autoconf build-essential libncurses5-dev libmpc-dev texinfo
+sudo apt install gperf unzip
+```
+
+Install clang-format:
+```bash
+sudo apt install clang-format
+```
+
+Compile the toolchain (this will take a few hours, the tar steps can take a while and won't print anything to screen):
+
+```bash
+cd
+git clone https://github.com/scanner-darkly/avr32-toolchain
+cd avr32-toolchain
+PREFIX=$HOME/avr32-tools make install-cross
+```
+
+Install ragel and compile the firmware:
+
+```bash
+sudo apt install ragel
+export PATH="$HOME/avr32-tools/bin:$PATH"
+cd
+git clone --recursive https://github.com/samdoshi/teletype  # change to repo of your preference
+cd teletype
+cd module
+make
+```
 
 ### Building a firmware
 
@@ -77,6 +118,37 @@ To upload it, you'll need a [USB A-A][digikey] cable, then:
 
 **You cannot overwrite the bootloader if you update via USB**
 
+### Serial port
+
+Each of the modules has an unpopulated UART header on the rear, when populated it can be used with an FTDI cable or breakout board for print / trace debugging.
+
+The following cables are known to work:
+
+- [Sparkfun DEV-09718](https://www.sparkfun.com/products/9718)
+- [FTDI TTL-232R-5V](http://www.ftdichip.com/Products/Cables/USBTTLSerial.htm) ([Octopart](https://octopart.com/ttl-232r-5v-ftdi-19172129))
+
+When connecting, align the black cable with the `gnd` pin. Breakout boards are also available. 3.3V should work too.
+
+Newer versions of OSX and Linux include builtin drivers for the FTDI cable. On OSX the simplest way to connect to the serial port is to use the `cu` program (type `~.` to quit), e.g.
+
+```bash
+sudo cu -s 115200 -l <device>
+```
+
+On Linux and OSX, you can also use the `screen` command (type `C-a \`, or `C-a :quit` to quit), e.g.
+
+```bash
+sudo screen <device> 115200
+```
+
+The value of `<device>` depends on the adaptor being used and the OS, try the following 2 commands to identify it:
+
+```bash
+ls /dev | grep -i ttyusb   # should work on Linux
+ls /dev | grep -i tty.usb  # should work on OSX
+```
+
+
 ## `asf`
 
 This folder contains the Atmel software framework, if you wish to make changes here, please make them using the [diet-asf][] repo.
@@ -93,6 +165,7 @@ The modules use AVR32 MCUs from Atmel, either the [AT32UC3B0512][] or the [AT32U
 ### Useful AVR32 documents
 
 - [AVR32006: Getting started with GCC for AVR32](http://www.atmel.com/Images/doc32074.pdf): useful information on GCC flags and speed and size optimisation.
+- [AVR32007: UC3 C-coding Guidelines for ARM7 Developers](http://www.atmel.com/Images/doc32075.pdf): very useful short overview of the UC3, even if you know nothing about ARM processors.
 - [AVR32795: Using the GNU Linker Scripts on AVR UC3 Devices](http://www.atmel.com/images/doc32158.pdf): detailed instructions on controlling memory layout.
 - [AT08569: Optimizing ASF Code Size to Minimize Flash and RAM Usage](http://www.atmel.com/Images/Atmel-42370-Optimizing-ASF-Code-Size-to-Minimize-Flash-and-RAM-Usage_ApplicationNote_AT08569.pdf).
 

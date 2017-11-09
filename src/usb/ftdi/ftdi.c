@@ -51,7 +51,7 @@ static void ftdi_rx_done(usb_add_t add,
 
   if (rxBytes) {
     // check for monome events
-    //    if(monome_read_serial != NULL) { 
+    //    if(monome_read_serial != NULL) {
     (*monome_read_serial)();
     //}
     ///... TODO: other protocols
@@ -65,7 +65,7 @@ static void ftdi_tx_done(usb_add_t add,
                          uhd_trans_status_t stat,
                          iram_size_t nb) {
   txBusy = false;
-  
+
   if (stat != UHD_TRANS_NOERROR) {
     print_dbg("\r\n ftdi tx transfer callback error. status: 0x");
     print_dbg_hex((u32)stat);
@@ -78,10 +78,11 @@ void ftdi_write(u8* data, u32 bytes) {
     txBusy = true;
     if(!uhi_ftdi_out_run(data, bytes, &ftdi_tx_done)) {
       print_dbg("\r\n ftdi tx transfer error");
+      txBusy = false;
     }
   }
 }
-    
+
 void ftdi_read(void) {
   if (rxBusy == false) {
     rxBytes = 0;
@@ -89,6 +90,7 @@ void ftdi_read(void) {
     if (!uhi_ftdi_in_run((u8*)rxBuf,
                          FTDI_RX_BUF_SIZE, &ftdi_rx_done)) {
       print_dbg("\r\n ftdi rx transfer error");
+      rxBusy = false;
     }
   }
 }
@@ -98,13 +100,14 @@ void ftdi_read(void) {
 // may be called from an interrupt
 void ftdi_change(uhc_device_t* dev, u8 plug) {
   // print_dbg("\r\n changed FTDI connection status");
-  if(plug) { 
-    e.type = kEventFtdiConnect; 
+  if(plug) {
+    e.type = kEventFtdiConnect;
   } else {
+    ftdiConnect = 0;
     e.type = kEventFtdiDisconnect;
   }
   // posting an event so the main loop can respond
-  event_post(&e); 
+  event_post(&e);
 }
 
 // setup new device connection
@@ -114,9 +117,12 @@ void ftdi_setup(void) {
   char * serstr;
   //  u8 matchMonome;
   // print_dbg("\r\n FTDI setup routine");
+  // set connection flag
+
+  ftdiConnect = 1;
 
   // get string data...
-  ftdi_get_strings(&manstr, &prodstr, &serstr);  
+  ftdi_get_strings(&manstr, &prodstr, &serstr);
   // print the strings
   // print_unicode_string(manstr, FTDI_STRING_MAX_LEN);
   //  print_unicode_string(prodstr, FTDI_STRING_MAX_LEN);
@@ -124,9 +130,6 @@ void ftdi_setup(void) {
   //// query if this is a monome device
   check_monome_device_desc(manstr, prodstr, serstr);
   //// TODO: other protocols??
-
-  // set connection flag
-  ftdiConnect = 1;
 }
 
 

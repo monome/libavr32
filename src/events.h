@@ -30,6 +30,9 @@ typedef enum {
   kEventHidDisconnect,
   kEventHidPacket,
   kEventHidTimer,
+  // MSC
+  kEventMscConnect,
+  kEventMscDisconnect,
   
   kEventScreenRefresh,
   // Trigger EVENT (8 digital inputs)

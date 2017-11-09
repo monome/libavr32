@@ -9,12 +9,14 @@
 #include "compiler.h"
 #include "print_funcs.h"
 
-#include "conf_tc_irq.h"
+#include "interrupts.h"
 #include "events.h"
 
+ static void handler_Ignore(s32 data) { }
 
 // global array of pointers to handlers
- void (*app_event_handlers[kNumEventTypes])(s32 data);
+// initialise all it's entries to handler_Ignore
+ void (*app_event_handlers[kNumEventTypes])(s32 data) = { handler_Ignore };
 
 
 /// NOTE: if we are ever over-filling the event queue, we have problems.
@@ -25,11 +27,11 @@
 #define INCR_EVENT_INDEX( x )  { if ( ++x == MAX_EVENTS ) x = 0; }
 
 // et/Put indexes inxto sysEvents[] array
- static int putIdx = 0;
- static int getIdx = 0;
+volatile static int putIdx = 0;
+volatile  static int getIdx = 0;
 
 // The system event queue is a circular array of event records.
- static event_t sysEvents[ MAX_EVENTS ];
+volatile  static event_t sysEvents[ MAX_EVENTS ];
 
 // initializes (or re-initializes)  the system event queue.
  void init_events( void ) {
@@ -50,8 +52,9 @@
 // Returns non-zero if an event was available
 u8 event_next( event_t *e ) {
   u8 status;
-  cpu_irq_disable_level(APP_TC_IRQ_PRIORITY);
-  
+
+  u8 flags = irqs_pause();
+
   // if pointers are equal, the queue is empty... don't allow idx's to wrap!
   if ( getIdx != putIdx ) {
     INCR_EVENT_INDEX( getIdx );
@@ -64,23 +67,22 @@ u8 event_next( event_t *e ) {
     status = false;
   }
 
-  cpu_irq_enable_level(APP_TC_IRQ_PRIORITY);
+  irqs_resume(flags);
+
   return status;
 }
 
 
 // add event to queue, return success status
 u8 event_post( event_t *e ) {
-  u8 status = false;
-  int saveIndex;
-
    // print_dbg("\r\n posting event, type: ");
    // print_dbg_ulong(e->type);
 
-  cpu_irq_disable_level(APP_TC_IRQ_PRIORITY);
-  
+  u8 flags = irqs_pause();
+  u8 status = false;
+
   // increment write idx, posbily wrapping
-  saveIndex = putIdx;
+  int saveIndex = putIdx;
   INCR_EVENT_INDEX( putIdx );
   if ( putIdx != getIdx  ) {
     sysEvents[ putIdx ].type = e->type;
@@ -89,9 +91,12 @@ u8 event_post( event_t *e ) {
   } else {
     // idx wrapped, so queue is full, restore idx
     putIdx = saveIndex;
-    print_dbg("\r\n event queue full!");
   } 
 
-  cpu_irq_enable_level(APP_TC_IRQ_PRIORITY);
+  irqs_resume(flags);
+
+  //if (!status)
+  //  print_dbg("\r\n event queue full!");
+
   return status;
 }

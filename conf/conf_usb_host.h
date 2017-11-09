@@ -16,7 +16,7 @@
 #define USB_HOST_UHI        UHI_FTDI, UHI_HID, UHI_MSC, UHI_MIDI
 
 //! Maximum current allowed on Vbus (mA)
-#define USB_HOST_POWER_MAX  300
+#define USB_HOST_POWER_MAX  500
 
 /**
  * USB Host callbacks
@@ -71,7 +71,7 @@
 // midi functions
 // #define UHI_MIDI_CHANGE(dev, b_plug) midi_change(dev, b_plug)
 
-#define UHI_MSC_CHANGE(dev,b_plug)
+#define UHI_MSC_CHANGE(dev,b_plug) msc_change(dev, b_plug)
 
 
 #include "uhi_ftdi.h"
@@ -80,5 +80,6 @@
 //#include "ui.h"
 #include "usb.h"
 #include "uhi_msc.h"
+#include "msc.h"
 
 #endif // _CONF_USB_HOST_H_

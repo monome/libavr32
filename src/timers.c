@@ -1,6 +1,6 @@
 #include "print_funcs.h"
 
-#include "conf_tc_irq.h"
+#include "interrupts.h"
 #include "timers.h"
 
 //-----------------------------------------------
@@ -41,8 +41,8 @@ u8 timer_add( softTimer_t* t, u32 ticks, timer_callback_t callback, void* obj) {
   //  int i;
   int ret;
 
-  // disable timer interrupts
-  cpu_irq_disable_level(APP_TC_IRQ_PRIORITY);
+  // disable interrupts
+  u8 irq_flags = irqs_pause();
 
   // print_dbg("\r\n timer_add, @ 0x");
   // print_dbg_hex((u32)t);
@@ -81,7 +81,7 @@ u8 timer_add( softTimer_t* t, u32 ticks, timer_callback_t callback, void* obj) {
   }
 
   // enable timer interrupts
-  cpu_irq_enable_level(APP_TC_IRQ_PRIORITY);
+  irqs_resume(irq_flags);
   return ret;
 }
 
@@ -89,15 +89,17 @@ u8 timer_add( softTimer_t* t, u32 ticks, timer_callback_t callback, void* obj) {
 // return 1 if removed, 0 if not found
 u8 timer_remove( softTimer_t* t) {
   int i;
+  // disable interrupts
+  u8 irq_flags = irqs_pause();
+
   volatile softTimer_t* pt = NULL;
   u8 found = 0;
 
-  // disable timer interrupts
-  cpu_irq_disable_level(APP_TC_IRQ_PRIORITY);
-
-
   // not linked
-  if( (t->next == NULL) || (t->prev == NULL)) { return 0; }
+  if( (t->next == NULL) || (t->prev == NULL)) {
+      irqs_resume(irq_flags);
+      return 0;
+  }
 
   // check head
   if(t == head) { 
@@ -132,8 +134,8 @@ u8 timer_remove( softTimer_t* t) {
     }
   }
 
-  // enable timer interrupts
-  cpu_irq_enable_level(APP_TC_IRQ_PRIORITY);
+  // enable interrupts
+  irqs_resume(irq_flags);
   return found;
 }
 
@@ -143,6 +145,10 @@ u8 timer_remove( softTimer_t* t) {
  void timers_clear(void) {
    int i;
    volatile softTimer_t* pt;
+
+   // disable interrupts
+   u8 irq_flags = irqs_pause();
+
    if(head != NULL) {
      // print_dbg("\r\n clearing timer list, size: ");
      // print_dbg_ulong(num);
@@ -158,6 +164,9 @@ u8 timer_remove( softTimer_t* t) {
    head = NULL;
    tail = NULL;
    num = 0;
+
+   // enable interrupts
+   irqs_resume(irq_flags);
 }
 
 // process the timer list, presumably from TC interrupt

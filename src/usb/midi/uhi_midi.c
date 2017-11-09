@@ -21,7 +21,7 @@
 #include "usb_protocol_midi.h"
 #include "uhi_midi.h"
 
-#define UHI_MIDI_PRINT_DBG 1
+#define UHI_MIDI_PRINT_DBG 0
 #define UHI_MIDI_TIMEOUT 20000
 
 // looks like we need to get class-specific endpoint descriptors,
@@ -198,8 +198,10 @@ uhc_enum_status_t uhi_midi_install(uhc_device_t* dev) {
       }
       break;
     default:
+#if UHI_MIDI_PRINT_DBG
       print_dbg("\r\n uhi_midi_install ignoring descriptor; type: 0x");
       print_dbg_hex(ptr_iface->bDescriptorType );
+#endif
       break;
       
     }

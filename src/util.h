@@ -14,5 +14,6 @@ extern u32 rnd(void);
 extern u16 rotl(u16 value, u16 shift);
 char* itoa(int value, char* result, int base);
 extern u32 uclip(u32 value, u32 low, u32 high);
+extern s32 sclip(s32 value, s32 low, s32 high);
 
 #endif

@@ -1,8 +1,15 @@
+// libavr32
+#include "print_funcs.h"
+
 #include "random.h"
 #include "timers.h"
+#include "util.h"
 
-#include "conf_tc_irq.h"
+#include "euclidean/euclidean.h"
 
+#include "interrupts.h"
+
+// this
 #include "arp.h"
 
 //-----------------------------
@@ -14,7 +21,7 @@ static void arp_seq_build_up_down(arp_seq_t *s, chord_t *c, arp_style style);
 static void arp_seq_build_converge(arp_seq_t *s, chord_t *c);
 static void arp_seq_build_diverge(arp_seq_t *s, chord_t *c);
 static void arp_seq_build_random(arp_seq_t *s, chord_t *c);
-static void arp_seq_build_played(arp_seq_t *s, chord_t *c);
+static void arp_seq_build_played(arp_seq_t *s, note_pool_t *n);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -27,6 +34,15 @@ void chord_init(chord_t *c) {
 		c->notes[i].vel = CHORD_VELOCITY_MAX;
 	}
 	c->note_count = 0;
+}
+
+bool chord_contains(chord_t *c, u8 num) {
+	for (u8 i = 0; i < c->note_count; i++) {
+		if (c->notes[i].num == num) {
+			return true;
+		}
+	}
+	return false;
 }
 
 bool chord_note_add(chord_t *c, u8 num, u8 vel) {
@@ -116,15 +132,17 @@ void arp_seq_init(arp_seq_t* s) {
 }
 
 bool arp_seq_set_state(arp_seq_t *s, arp_seq_state state) {
+	// disable timer interrupts
+	u8 irq_flags = irqs_pause();
+
 	bool result = false;
-	
-	cpu_irq_disable_level(APP_TC_IRQ_PRIORITY);
 
 	s->state = state;
 	result = true;
 
-	cpu_irq_enable_level(APP_TC_IRQ_PRIORITY);
-	
+	// enable timer interrupts
+	irqs_resume(irq_flags);
+
 	return result;
 }
 
@@ -132,7 +150,7 @@ arp_seq_state arp_seq_get_state(arp_seq_t *s) {
 	return s->state;
 }
 	
-void arp_seq_build(arp_seq_t *s, arp_style style, chord_t *c) {
+void arp_seq_build(arp_seq_t *s, arp_style style, chord_t *c, note_pool_t *n) {
 	for (u8 i = 0; i < ARP_MAX_LENGTH; i++) {
 		s->notes[i].empty = 1;
 	}
@@ -158,12 +176,21 @@ void arp_seq_build(arp_seq_t *s, arp_style style, chord_t *c) {
 		arp_seq_build_random(s, c);
 		break;
 	case eStylePlayed:
-		// TODO: we loose the note order currently
-		arp_seq_build_played(s, c);
+		if (n) {
+			arp_seq_build_played(s, n);
+		}
 		break;
 	default:
 		break;
 	}
+
+	/*
+	print_dbg("\r\n > arp_seq_build: ");
+	for (u8 q = 0; q < s->length; q++) {
+		print_dbg_ulong(s->notes[q].note.num);
+		print_dbg(" ");
+	}
+	*/
 }
 
 static void arp_seq_build_up(arp_seq_t *s, chord_t *c) {
@@ -302,10 +329,31 @@ static void arp_seq_build_random(arp_seq_t *s, chord_t *c) {
 	s->length = count;
 }
 
-static void arp_seq_build_played(arp_seq_t *s, chord_t *c) {
-	// TODO: need some way to now order within chord
+static void arp_seq_build_played(arp_seq_t *s, note_pool_t *p) {
+	note_pool_iter_t i;
+	const held_note_t *n;
+	u8 pos, c;
+
+	// NB: note pools are a linked list in most recent first order (an
+	// implementation detail) - the order is reverse of what we need
+	// here so the sequence is built in reverse...
+
+	notes_iter_init(&i, p);
+
+	c = notes_count(p);
+	pos = c - 1;
+	n = notes_iter_next(&i);
+	while (n) {
+		s->notes[pos].note.num = n->num;
+		s->notes[pos].note.vel = n->vel;
+		s->notes[pos].gate_length = 1;
+		s->notes[pos].empty = 0;
+		pos--;
+		n = notes_iter_next(&i);
+	}
+
 	s->style = eStylePlayed;
-	s->length = 0;
+	s->length = c;
 }
 
 void arp_player_init(arp_player_t *p, u8 ch, u8 division) {
@@ -320,12 +368,36 @@ void arp_player_init(arp_player_t *p, u8 ch, u8 division) {
 
 	p->active_note = -1;
 	p->active_gate = 0;
-	
-	p->latch = false;
+
+	p->steps = 0;
+	p->step_count = 0;
+	p->offset = 12;
 
 	arp_player_set_division(p, division, NULL);
+	arp_player_set_fill(p, 1);
+	arp_player_set_rotation(p, 0);
 	arp_player_set_gate_width(p, 0);
 	arp_player_reset(p, NULL);
+}
+
+void arp_player_set_steps(arp_player_t *p, u8 steps) {
+	p->steps = steps;
+	if (steps < p->step_count) {
+		p->step_count = 0;
+	}
+}
+
+inline u8 arp_player_get_steps(arp_player_t *p) {
+	return p->steps;
+}
+
+inline void arp_player_set_offset(arp_player_t *p, s8 offset) {
+	p->offset = offset;
+	// MAINT: should step_count be reset here?
+}
+
+inline s8 arp_player_get_offset(arp_player_t *p) {
+	return p->offset;
 }
 
 u8 arp_player_set_gate_width(arp_player_t *p, u8 width) {
@@ -337,6 +409,18 @@ u8 arp_player_set_gate_width(arp_player_t *p, u8 width) {
 	return p->fixed_gate;
 }
 
+inline u8 arp_player_get_gate_width(arp_player_t *p) {
+	return p->fixed_width;
+}
+
+inline void arp_player_set_fill(arp_player_t *p, u8 fill) {
+	p->fill = fill;
+}
+
+inline u8 arp_player_get_fill(arp_player_t *p) {
+	return uclip(p->fill, 1, p->division);
+}
+
 void arp_player_set_division(arp_player_t *p, u8 division, midi_behavior_t *b) {
 	if (division > 0 && division != p->division) {
 		if (b && division < p->division && p->active_note >= 0) {
@@ -346,8 +430,24 @@ void arp_player_set_division(arp_player_t *p, u8 division, midi_behavior_t *b) {
 
 		p->division = division;
 		p->div_count = 0;
+
+		// re-set fill and gate to clip/recompute internal values which are affected
+		// by division
+		arp_player_set_fill(p, p->fill);
 		arp_player_set_gate_width(p, p->fixed_width);
 	}
+}
+
+inline u8 arp_player_get_division(arp_player_t *p) {
+	return p->division;
+}
+
+inline void arp_player_set_rotation(arp_player_t *p, s8 r) {
+	p->rotation = r;
+}
+
+inline s8 arp_player_get_rotation(arp_player_t *p) {
+	return p->rotation;
 }
 
 bool arp_player_at_end(arp_player_t *p, arp_seq_t *s) {
@@ -355,10 +455,12 @@ bool arp_player_at_end(arp_player_t *p, arp_seq_t *s) {
 }
 
 void arp_player_pulse(arp_player_t *p, arp_seq_t *s, midi_behavior_t *b, u8 phase) {
-	u8 i, g, v;
+	u8 i, g, v, f;
 
 	if (phase) {
-		if (p->div_count == 0) {
+		f = arp_player_get_fill(p);
+
+		if (euclidean(f, p->division, p->div_count - p->rotation)) {
 			// release any active note
 			if (p->active_note >= 0) {
 				// TODO: how to handle tied note?
@@ -370,6 +472,7 @@ void arp_player_pulse(arp_player_t *p, arp_seq_t *s, midi_behavior_t *b, u8 phas
 				// ensure if seq got shorter we don't go off the end
 				if (p->index >= s->length) {
 					p->index = 0;
+					p->step_count = 0;
 				}
 
 				i = p->index;
@@ -395,7 +498,8 @@ void arp_player_pulse(arp_player_t *p, arp_seq_t *s, midi_behavior_t *b, u8 phas
 					break;
 				}
 
-				p->active_note = s->notes[i].note.num;
+				p->active_note = uclip(s->notes[i].note.num + (p->step_count * p->offset),
+															 0, MIDI_NOTE_MAX);
 				p->active_gate = g;
 				b->note_on(p->ch, p->active_note, v);
 
@@ -404,6 +508,10 @@ void arp_player_pulse(arp_player_t *p, arp_seq_t *s, midi_behavior_t *b, u8 phas
 
 				if (p->index >= s->length) {
 					p->index = 0;
+					p->step_count++;
+					if (p->step_count > p->steps) {
+						p->step_count = 0;
+					}
 				}
 			}
 		}
@@ -426,6 +534,7 @@ void arp_player_pulse(arp_player_t *p, arp_seq_t *s, midi_behavior_t *b, u8 phas
 void arp_player_reset(arp_player_t *p, midi_behavior_t *b) {
 	p->index = 0;
 	p->div_count = 0;
+	p->step_count = 0;
 
 	if (b && p->active_note >= 0) {
 		b->note_off(p->ch, p->active_note, 0);

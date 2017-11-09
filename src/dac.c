@@ -5,6 +5,7 @@
 #include "dac.h"
 
 #include "conf_board.h"
+#include "interrupts.h"
 
 
 struct {
@@ -49,30 +50,6 @@ void reset_dacs(void) {
 
 	dac_timer_update();
 }
-
-
-
-
-void update_dacs(uint16_t *d) {
-	spi_selectChip(DAC_SPI, DAC_SPI_NPCS);
-	spi_write(SPI,0x31);
-	spi_write(SPI,d[2]>>4); // 2
-	spi_write(SPI,d[2]<<4);
-	spi_write(SPI,0x31);
-	spi_write(SPI,d[0]>>4); // 0
-	spi_write(SPI,d[0]<<4);
-	spi_unselectChip(DAC_SPI, DAC_SPI_NPCS);
-	
-	spi_selectChip(DAC_SPI, DAC_SPI_NPCS);
-	spi_write(SPI,0x38);
-	spi_write(SPI,d[3]>>4); // 3
-	spi_write(SPI,d[3]<<4);
-	spi_write(SPI,0x38);
-	spi_write(SPI,d[1]>>4); // 1
-	spi_write(SPI,d[1]<<4);
-	spi_unselectChip(DAC_SPI, DAC_SPI_NPCS);
-}
-
 
 void dac_set_value_noslew(uint8_t n, uint16_t v) {
     aout[n].value = v;
@@ -127,6 +104,10 @@ uint16_t dac_get_off(uint8_t n) {
     return aout[n].off;
 }
 
+void dac_update_now(void) {
+	// update the dacs now
+	dac_timer_update();
+}
 
 void dac_timer_update(void) {
     u8 i, r = 0;
@@ -149,6 +130,8 @@ void dac_timer_update(void) {
         }
 
     if (r) {
+        u8 irq_flags = irqs_pause();
+
         spi_selectChip(DAC_SPI, DAC_SPI_NPCS);
         spi_write(SPI, 0x31);
         a = aout[2].now >> 2;
@@ -170,6 +153,8 @@ void dac_timer_update(void) {
         spi_write(SPI, a >> 4);
         spi_write(SPI, a << 4);
         spi_unselectChip(DAC_SPI, DAC_SPI_NPCS);
+
+        irqs_resume(irq_flags);
     }
 }
 

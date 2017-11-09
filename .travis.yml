@@ -23,6 +23,10 @@ script:
 matrix:
   include:
     - env:
+        - REPO=monome/ansible
+        - SRC_DIR=src
+        - LIBAVR32_DIR=libavr32
+    - env:
         - REPO=monome/earthsea
         - SRC_DIR=src
         - LIBAVR32_DIR=libavr32

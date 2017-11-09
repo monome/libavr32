@@ -49,8 +49,6 @@
 /**/
 
 
-s8 old_frame[8];
-
 extern u8 hid_to_ascii_raw(u8 data);
 extern u8 hid_to_ascii(u8 data, u8 mod);
 extern bool frame_compare(u8 data);

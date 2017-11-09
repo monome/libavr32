@@ -3,12 +3,10 @@
 
 #include "types.h"
 
-// global count of uptime, and overflow flag.
-volatile u64 tcTicks;
-volatile u8 tcOverflow;
-
 extern void register_interrupts(void);
 extern void init_gpio(void);
 extern void init_spi(void);
+
+extern u64 get_ticks(void);
 
 #endif
