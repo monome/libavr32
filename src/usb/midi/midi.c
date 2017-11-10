@@ -223,6 +223,19 @@ extern bool midi_write(const u8* data, u32 bytes) {
 
   return true;
 }
+extern void midi_write_packet(u8 cable_number, u8 *pack) {
+  uint8_t txBuf[4] = {
+    pack[0] >> 4,
+    pack[0],
+    pack[1],
+    pack[2]
+  };
+  txBuf[0] |= (cable_number << 4) & 0xf0;
+  txBusy = true;
+  if (!uhi_midi_out_run((uint8_t*)txBuf, 4, &midi_tx_done)) {
+    print_dbg("\r\n midi tx endpoint error");
+  }
+}
 
 // MIDI device was plugged or unplugged
 extern void midi_change(uhc_device_t* dev, u8 plug) {
