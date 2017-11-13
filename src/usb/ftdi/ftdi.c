@@ -111,7 +111,7 @@ void ftdi_change(uhc_device_t* dev, u8 plug) {
 }
 
 // setup new device connection
-void ftdi_setup(void) {
+u8 ftdi_setup(void) {
   char * manstr;
   char * prodstr;
   char * serstr;
@@ -122,13 +122,13 @@ void ftdi_setup(void) {
   ftdiConnect = 1;
 
   // get string data...
-  ftdi_get_strings(&manstr, &prodstr, &serstr);
+  if (!ftdi_get_strings(&manstr, &prodstr, &serstr)) return 0;
   // print the strings
   // print_unicode_string(manstr, FTDI_STRING_MAX_LEN);
   //  print_unicode_string(prodstr, FTDI_STRING_MAX_LEN);
   //  print_unicode_string(serstr, FTDI_STRING_MAX_LEN);
   //// query if this is a monome device
-  check_monome_device_desc(manstr, prodstr, serstr);
+  return check_monome_device_desc(manstr, prodstr, serstr);
   //// TODO: other protocols??
 }
 

@@ -34,7 +34,7 @@ extern void ftdi_write(u8* data, u32 bytes);
 // FTDI device was plugged or unplugged
 extern void ftdi_change(uhc_device_t* dev, u8 plug);
 // main-loop setup routine for new device connection
-extern void ftdi_setup(void);
+extern u8 ftdi_setup(void);
 
 //-- getters
 

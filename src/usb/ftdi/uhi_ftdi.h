@@ -38,6 +38,6 @@ extern bool uhi_ftdi_out_run(uint8_t * buf, iram_size_t buf_size,
 		uhd_callback_trans_t callback);
 
 // get string descriptions
-extern void ftdi_get_strings(char** pManufacturer, char** pProduct, char** pSerial);
+extern uint8_t ftdi_get_strings(char** pManufacturer, char** pProduct, char** pSerial);
 
 #endif // _UHI_FTDI_H_

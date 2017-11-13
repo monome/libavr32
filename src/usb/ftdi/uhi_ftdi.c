@@ -262,7 +262,7 @@ static void ctl_req_end(
 }
 
 // read eeprom
-void ftdi_get_strings(char** pManufacturer, char** pProduct, char** pSerial) {
+uint8_t ftdi_get_strings(char** pManufacturer, char** pProduct, char** pSerial) {
 
   // get manufacturer string
   ctlReadBusy = 1;
@@ -288,7 +288,7 @@ void ftdi_get_strings(char** pManufacturer, char** pProduct, char** pSerial) {
 
        )) {
     // print_dbg("\r\n control request for string descriptor failed");
-    return;
+    return 0;
   }
   // wait for transfer end
   while(ctlReadBusy) { ;; }
@@ -316,7 +316,7 @@ void ftdi_get_strings(char** pManufacturer, char** pProduct, char** pSerial) {
 
        )) {
     // print_dbg("\r\n control request for string descriptor failed");
-    return;
+    return 0;
   }
   // wait for transfer end
   while(ctlReadBusy) { ;; }
@@ -342,7 +342,7 @@ void ftdi_get_strings(char** pManufacturer, char** pProduct, char** pSerial) {
 
        )) {
     // print_dbg("\r\n control request for string descriptor failed");
-    return;
+    return 0;
   }
   // wait for transfer end
   while(ctlReadBusy) { ;; }
@@ -352,6 +352,7 @@ void ftdi_get_strings(char** pManufacturer, char** pProduct, char** pSerial) {
   *pProduct = product_string + FTDI_STRING_DESC_OFFSET;
   *pSerial = serial_string + FTDI_STRING_DESC_OFFSET;
 
+  return 1;
 }
 
     /* for (i = 0; i < FTDI_EEPROM_SIZE__2; i++) { */
