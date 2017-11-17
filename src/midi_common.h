@@ -19,6 +19,7 @@ typedef void (*midi_note_off_t)(u8 ch, u8 num, u8 vel);
 typedef void (*midi_channel_pressure_t)(u8 ch, u8 val);
 typedef void (*midi_pitch_bend_t)(u8 ch, u16 bend);
 typedef void (*midi_control_change_t)(u8 ch, u8 num, u8 val);
+typedef void (*midi_program_change_t)(u8 ch, u8 num);
 typedef void (*midi_real_time_t)(void);
 typedef void (*midi_panic_t)(void);
 
@@ -28,6 +29,7 @@ typedef struct {
 	midi_channel_pressure_t channel_pressure;
 	midi_pitch_bend_t       pitch_bend;
 	midi_control_change_t   control_change;
+	midi_program_change_t   program_change;
 
 	midi_real_time_t        clock_tick;
 	midi_real_time_t        seq_start;
