@@ -58,7 +58,8 @@ static void read_serial_dummy(void) { return; }
 u8 monomeFrameDirty = 0;
 // a buffer big enough to hold all l data for 256 or arc4
 // each led gets a full byte
-u8 monomeLedBuffer[MONOME_MAX_LED_BYTES];
+u8 defaultLedBuffer[MONOME_MAX_LED_BYTES];
+u8 *monomeLedBuffer = defaultLedBuffer;
 
 // global pointers to send functions.
 read_serial_t monome_read_serial = &read_serial_dummy;
@@ -75,9 +76,9 @@ refresh_t monome_refresh;
 static monomeDesc mdesc = {
   .protocol = eProtocolNumProtocols, // dummy
   .device = eDeviceNumDevices, // dummy
-  .cols = 0,
-  .rows = 0,
-  .encs = 0,
+  .cols = 16,
+  .rows = 8,
+  .encs = 4,
   .tilt = 0,
 };
 
@@ -222,6 +223,12 @@ u8 check_monome_device_desc(char* mstr, char* pstr, char* sstr) {
   buf[i] = 0;
   /* print_dbg("\r\n serial string: "); */
   /* print_dbg(buf); */
+  mdesc.protocol = eProtocolNumProtocols;
+  mdesc.device = eDeviceNumDevices;
+  mdesc.cols = 16;
+  mdesc.rows = 8;
+  mdesc.encs = 4;
+  mdesc.tilt = 0;
   if(matchMan == 0) {
     // didn't match the manufacturer string, but check the serial for DIYs
     if( strncmp(buf, "a40h", 4) == 0) {

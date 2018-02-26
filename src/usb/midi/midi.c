@@ -42,6 +42,7 @@ typedef union {
 //------ static variables
 // 
 
+static bool midi_connected = false;
 // buffers must be word aligned per docs on uhd_ep_run()
 COMPILER_WORD_ALIGNED static usb_midi_event_t rxBuf[MIDI_RX_EVENT_BUF_SIZE];
 static volatile bool rxBusy = false;
@@ -111,9 +112,12 @@ static void midi_tx_done(usb_add_t add,
 
 // read and spawn events (non-blocking)
 extern void midi_read(void) {
+  if(!midi_connected) {
+    return;
+  }
   if (rxBusy == false) {
-    rxBytes = 0;
     rxBusy = true;
+    rxBytes = 0;
     if (!uhi_midi_in_run((u8*)rxBuf, sizeof rxBuf, &midi_rx_done)) {
       // hm, every uhd enpoint run always returns error...
       // ...because most of the time a rx job is already running, by only
@@ -223,14 +227,41 @@ extern bool midi_write(const u8* data, u32 bytes) {
 
   return true;
 }
+extern void midi_write_packet(u8 cable_number, u8 *pack) {
+  if(!midi_connected) {
+    return;
+  }
+  uint8_t txBuf[4] = {
+    pack[0] >> 4,
+    pack[0],
+    pack[1],
+    pack[2]
+  };
+  txBuf[0] |= (cable_number << 4) & 0xf0;
+  while (txBusy) {
+    if(!midi_connected) {
+      txBusy = false;
+      return;
+    }
+  }
+
+  txBusy = true;
+  if (!uhi_midi_out_run((uint8_t*)txBuf, 4, &midi_tx_done)) {
+    print_dbg("\r\n midi tx endpoint error");
+  }
+}
 
 // MIDI device was plugged or unplugged
 extern void midi_change(uhc_device_t* dev, u8 plug) {
   event_t e;
 
   if (plug) { 
-    e.type = kEventMidiConnect; 
+    midi_connected = true;
+    rxBusy = false;
+    txBusy = false;
+    e.type = kEventMidiConnect;
   } else {
+    midi_connected = false;
     e.type = kEventMidiDisconnect;
   }
 
