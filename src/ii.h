@@ -53,6 +53,7 @@
 #define II_KR_CV		8
 #define II_KR_MUTE		9
 #define II_KR_TOG		10
+#define II_KR_CLK       11
 #define II_MP_ADDR		0xAA
 #define II_MP_PRESET	0
 #define II_MP_RESET 	1
