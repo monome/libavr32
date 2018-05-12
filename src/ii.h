@@ -169,4 +169,4 @@
 #define WS_REC  1
 #define WS_PLAY 2
 #define WS_LOOP 3
-#define WS_CUE  4     
+#define WS_CUE  4
