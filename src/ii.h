@@ -20,6 +20,10 @@
 #define ER301               0x30 // conflicts with meadowphysics!
 #define ER301_2             0x31
 #define ER301_3             0x32
+#define FADER               0x34
+#define TETRAPAD            0x35
+#define TETRAPAD_2          0x36
+#define TETRAPAD_3          0x37
 #define MATRIXARCHATE       0x38
 #define MATRIXARCHATE_2     0x39
 #define MATRIXARCHATE_3     0x3A
@@ -28,7 +32,25 @@
 
 #define ES                  0x50
 
-#define FADER               0x60
+#define TELEXO              0x60
+#define TELEXO_0            0x60
+#define TELEXO_1            0x61
+#define TELEXO_2            0x62
+#define TELEXO_3            0x63
+#define TELEXO_4            0x64
+#define TELEXO_5            0x65
+#define TELEXO_6            0x66
+#define TELEXO_7            0x67
+
+#define TELEXI              0x68
+#define TELEXI_0            0x68
+#define TELEXI_1            0x69
+#define TELEXI_2            0x6A
+#define TELEXI_3            0x6B
+#define TELEXI_4            0x6C
+#define TELEXI_5            0x6D
+#define TELEXI_6            0x6E
+#define TELEXI_7            0x6F
 
 #define JF_ADDR             0x70
 #define WS_ADDR             0x71
