@@ -17,9 +17,9 @@
 #define II_CY_ADDR          0x2E
 
 #define MP                  0x30
-#define ER301               0x30 // conflicts with meadowphysics!
-#define ER301_2             0x31
-#define ER301_3             0x32
+#define ER301_1             0x31
+#define ER301_2             0x32
+#define ER301_3             0x33
 #define FADER               0x34
 #define TETRAPAD            0x35
 #define TETRAPAD_2          0x36
