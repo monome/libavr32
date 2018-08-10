@@ -412,6 +412,11 @@ void font_string_region_clip_right(region* reg, const char* str, u8 xoff, u8 yof
 
 // clipping variant with hilight
 void font_string_region_clip_hi(region* reg, const char* str, u8 xoff, u8 yoff, u8 fg, u8 bg, u8 hi) {
+    font_string_region_clip_hid(reg, str, xoff, yoff, fg, bg, hi, 1);
+}
+
+// clipping variant with hilight
+void font_string_region_clip_hid(region* reg, const char* str, u8 xoff, u8 yoff, u8 fg, u8 bg, u8 hi, u8 hid) {
   u8* buf = reg->data + xoff + (u32)(reg->w) * (u32)yoff;
   u8* max = reg->data + reg->len;
   u32 xmax = reg->w - 7; 
@@ -420,9 +425,9 @@ void font_string_region_clip_hi(region* reg, const char* str, u8 xoff, u8 yoff, 
   while(buf < max) {
     // break on end of string
     if(*str == 0) { break; } 
-    if(i == hi) bg++;   
+    if(i == hi) bg += hid;   
     dx = font_glyph(*str, buf, reg->w, fg, bg) + 1;
-    if(i == hi) bg--;   
+    if(i == hi) bg -= hid;   
     buf += dx;
     xoff += dx;
     ++str;
