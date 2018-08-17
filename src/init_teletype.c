@@ -151,6 +151,13 @@ extern void init_gpio(void) {
 	gpio_enable_gpio_pin(B10);
 	gpio_enable_gpio_pin(B11);
 
+  // loopback for version detection (on new version B00 and B01 are bridged)
+	gpio_enable_gpio_pin(B00);
+	gpio_enable_gpio_pin(B01);
+  gpio_enable_pin_pull_up(B01);
+  gpio_configure_pin(B00, GPIO_DIR_OUTPUT);
+  gpio_set_pin_low(B00);
+
   // turn on pull-ups for SDA/SCL
   // gpio_enable_pin_pull_up(A09);
   // gpio_enable_pin_pull_up(A10);
@@ -165,7 +172,6 @@ extern void init_gpio(void) {
 
 
 extern void init_spi (void) {
-
 	sysclk_enable_pba_module(SYSCLK_SPI);
 
 	static const gpio_map_t SPI_GPIO_MAP = {
@@ -218,7 +224,7 @@ extern void init_spi (void) {
 
   // add OLED chip register
 	spiOptions.reg          = OLED_SPI_NPCS;
-	spiOptions.baudrate     = 40000000;
+	spiOptions.baudrate     = 20000000;
 	spiOptions.bits         = 8;
 	spiOptions.spi_mode     = 3;
 	spiOptions.spck_delay   = 0;
@@ -232,3 +238,8 @@ extern void init_spi (void) {
 extern u64 get_ticks(void) {
 	return tcTicks;
 }
+
+extern u8 get_revision(void) {
+  return gpio_get_pin_value(B01) == 0;
+}
+

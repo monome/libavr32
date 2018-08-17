@@ -1,3 +1,11 @@
+// NOTE:
+// the original aleph/teletype screen went EOL. p/n NHD-2.7-12864UCY3
+// replacement screen is p/n NHD-2.7-12864WDY3 which uses a slightly different controller
+// hence the need for slightly different command configs. (also discovered the new one requires
+// 20mhz.)
+// revision detection is automatic. teletype has a bridge from B00 to B01, see init_teletype.c
+// for get_revision()
+
 // ASF
 #include "board.h"
 #include "delay.h"
@@ -9,6 +17,7 @@
 // libavr32
 #include "font.h"
 #include "screen.h"
+#include "init_teletype.h"
 #include "interrupts.h"
 
 //-----------------------------
@@ -22,6 +31,13 @@ static u32 i, j;
 static u8* pScr; // movable pointer to screen buf
 static u32 nb; // count of destination bytes
 
+// revision
+static u8 rev;
+
+// functions per revision
+static void screen_set_rect_1(u8 x, u8 y, u8 w, u8 h);
+static void screen_set_rect_2(u8 x, u8 y, u8 w, u8 h);
+
 static void write_command(U8 c);
 static void write_command(U8 c) {
   u8 irq_flags = irqs_pause();
@@ -33,10 +49,29 @@ static void write_command(U8 c) {
   irqs_resume(irq_flags);
 }
 
+static void write_data(u8 d);
+static void write_data(u8 d) {
+  u8 irq_flags = irqs_pause();
+  spi_selectChip(OLED_SPI, OLED_SPI_NPCS);
+  // pull register select low to write a command
+  gpio_set_gpio_pin(OLED_DC_PIN);
+  spi_write(OLED_SPI, d);
+  spi_unselectChip(OLED_SPI, OLED_SPI_NPCS);
+  irqs_resume(irq_flags);
+}
+
+// set_rect pointer
+void (*_screen_set_rect)(u8 x, u8 y, u8 w, u8 h);
+
 // set the current drawing area of the physical screen (hopefully)
 static void screen_set_rect(u8 x, u8 y, u8 w, u8 h);
 void screen_set_rect(u8 x, u8 y, u8 w, u8 h) {
- // set column address
+  _screen_set_rect(x, y, w, h);
+}
+
+// set_rect (original)
+void screen_set_rect_1(u8 x, u8 y, u8 w, u8 h) {
+  // set column address
   write_command(0x15);		// command
   write_command(x);	// column start
   write_command((x+w-1));	// column end
@@ -46,81 +81,45 @@ void screen_set_rect(u8 x, u8 y, u8 w, u8 h) {
   write_command(y+h-1);	// column end
 }
 
-//------------------
-// al functions
-void init_oled(void) {
-  Disable_global_interrupt();
-  // flip the reset pin
-  gpio_set_gpio_pin(OLED_RES_PIN);
-  delay_ms(1);
-  gpio_clr_gpio_pin(OLED_RES_PIN);
-  delay_ms(1);
-  gpio_set_gpio_pin(OLED_RES_PIN);
-  delay_ms(10);
+// set_rect (new)
+void screen_set_rect_2(u8 x, u8 y, u8 w, u8 h) {
+  x = x + 28; // new revision column starts at 28
+  u8 irq_flags = irqs_pause();
 
-  //// initialize OLED
-  write_command(0xAE);	// off
-  write_command(0xB3);	// clock rate
-  write_command(0x91);
-  write_command(0xA8);	// multiplex
-  write_command(0x3F);
-  write_command(0x86);	// full current range
-  write_command(0x81);	// contrast to full
-  write_command(0x7F);
-  write_command(0xB2);	// frame freq
-  write_command(0x51);
-  write_command(0xA8);	// multiplex
-  write_command(0x3F);
-  write_command(0xBC);	// precharge
-  write_command(0x10);
-  write_command(0xBE);	// voltage
-  write_command(0x1C);
-  write_command(0xAD);	// dcdc
-  write_command(0x02);
-  write_command(0xA0);	// remap
-  write_command(0x50);	// 0b01010000
-			// a[6] : enable COM split odd/even
-			// a[4] : enable COM re-map
-  write_command(0xA1);	// start
-  write_command(0x0);
-  write_command(0xA2);	// offset
-  write_command(0x4C);
-  write_command(0xB1);	// set phase
-  write_command(0x55);
-  write_command(0xB4);	// precharge
-  write_command(0x02);
-  write_command(0xB0);	// precharge
-  write_command(0x28);
-  write_command(0xBF);	// vsl
-  write_command(0x0F);
-  write_command(0xA4);	// normal display
-  write_command(0xB8);	// greyscale table
-  write_command(0x01);
-  write_command(0x11);
-  write_command(0x22);
-  write_command(0x32);
-  write_command(0x43);
-  write_command(0x54);
-  write_command(0x65);
-  write_command(0x76);	
-		
-  // set update box (to full screen)
-  write_command(0x15);
-  write_command(0);
-  write_command(63);
-  write_command(0x75);
-  write_command(0);
-  write_command(63); // ???
-
-  screen_clear();
+  // set column address
+  gpio_clr_gpio_pin(OLED_DC_PIN);
+  spi_selectChip(OLED_SPI, OLED_SPI_NPCS);
+  spi_write(OLED_SPI, 0x15);
+  spi_unselectChip(OLED_SPI, OLED_SPI_NPCS);
   
-  write_command(0xAF);	// on
-  delay_ms(10) ;
-  //  cpu_irq_enable();
-  Enable_global_interrupt();
+  gpio_set_gpio_pin(OLED_DC_PIN);
+  spi_selectChip(OLED_SPI, OLED_SPI_NPCS);
+  spi_write(OLED_SPI, x);
+  spi_write(OLED_SPI, x+w-1);
+  spi_unselectChip(OLED_SPI, OLED_SPI_NPCS);
+
+  // set row address
+  gpio_clr_gpio_pin(OLED_DC_PIN);
+  spi_selectChip(OLED_SPI, OLED_SPI_NPCS);
+  spi_write(OLED_SPI, 0x75);
+  spi_unselectChip(OLED_SPI, OLED_SPI_NPCS);
+
+  gpio_set_gpio_pin(OLED_DC_PIN);
+  spi_selectChip(OLED_SPI, OLED_SPI_NPCS);
+  spi_write(OLED_SPI, y);
+  spi_write(OLED_SPI, y+h-1);
+  spi_unselectChip(OLED_SPI, OLED_SPI_NPCS);
+
+  irqs_resume(irq_flags);
 }
 
+void (*_writeScreenBuffer)(u8 x, u8 y, u8 w, u8 h);
+
 static void writeScreenBuffer(u8 x, u8 y, u8 w, u8 h) {
+  _writeScreenBuffer(x,y,w,h);
+}
+
+static void writeScreenBuffer1(u8 x, u8 y, u8 w, u8 h) {
   // set drawing region
   screen_set_rect(x, y, w, h);
 
@@ -138,6 +137,151 @@ static void writeScreenBuffer(u8 x, u8 y, u8 w, u8 h) {
 
   irqs_resume(irq_flags);
 }
+
+static void writeScreenBuffer2(u8 x, u8 y, u8 w, u8 h) {
+  // set drawing region
+  screen_set_rect(x, y, w, h);
+
+  u8 irq_flags = irqs_pause();
+
+  // select chip for data
+  gpio_clr_gpio_pin(OLED_DC_PIN);
+  spi_selectChip(OLED_SPI, OLED_SPI_NPCS);
+  spi_write(OLED_SPI, 0x5C); // start pixel data write to GDDRAM
+  spi_unselectChip(OLED_SPI, OLED_SPI_NPCS);
+
+  // register select high for data
+  gpio_set_gpio_pin(OLED_DC_PIN);
+  spi_selectChip(OLED_SPI, OLED_SPI_NPCS);
+  // send data
+  u8 a, b;
+  for(i=0; i<w*h; i++) {
+    a = screenBuf[i] & 0x0F;
+    b = screenBuf[i] & 0xF0;
+    spi_write(OLED_SPI, (a << 4) | a);
+    spi_write(OLED_SPI, b | (b >> 4));
+  }
+  spi_unselectChip(OLED_SPI, OLED_SPI_NPCS);
+
+  irqs_resume(irq_flags);
+}
+
+
+//------------------
+
+void init_oled(void) {
+  // check rev, set function pointers
+  rev = get_revision();
+  // FIXME: set rev to 0 #IFALEPH
+  if(rev) {
+    _screen_set_rect = &screen_set_rect_2;
+    _writeScreenBuffer = &writeScreenBuffer2;
+  } else {
+    _screen_set_rect = &screen_set_rect_1;
+    _writeScreenBuffer = &writeScreenBuffer1;
+  }
+
+  Disable_global_interrupt();
+  // flip the reset pin
+  gpio_set_gpio_pin(OLED_RES_PIN);
+  delay_ms(1);
+  gpio_clr_gpio_pin(OLED_RES_PIN);
+  delay_ms(1);
+  gpio_set_gpio_pin(OLED_RES_PIN);
+  delay_ms(10);
+
+  if(rev) { // NEW rev
+    //// initialize OLED
+    write_command(0xAE);	// off
+    write_command(0xB3);	// clock rate
+    write_data(0x91);
+    write_command(0xCA);	// mux ratio
+    write_data(0x3F);
+    write_command(0xA2);  // set offset
+    write_data(0);
+    write_command(0xAB);  // internal vdd reg
+    write_data(0x01);
+    write_command(0xA0);	// remap
+    write_data(0x16);
+    write_data(0x11);
+    write_command(0xC7);  // master contrast current
+    write_data(0x0f);
+    write_command(0xC1);  // set contrast current
+    write_data(0x9F);
+    write_command(0xB1);	// phase length
+    write_data(0xF2);
+    write_command(0xBB);  // set pre-charge voltage
+    write_data(0x1F);
+    write_command(0xB4);  // set vsl
+    write_data(0xA0);
+    write_data(0xFD);
+    write_command(0xBE);  // set VCOMH
+    write_data(0x04);
+    write_command(0xA6);  // set normal display
+} else { // ORIG rev
+    //// initialize OLED
+    write_command(0xAE);	// off
+    write_command(0xB3);	// clock rate
+    write_command(0x91);
+    write_command(0xA8);	// multiplex
+    write_command(0x3F);
+    write_command(0x86);	// full current range
+    write_command(0x81);	// contrast to full
+    write_command(0x7F);
+    write_command(0xB2);	// frame freq
+    write_command(0x51);
+    write_command(0xA8);	// multiplex
+    write_command(0x3F);
+    write_command(0xBC);	// precharge
+    write_command(0x10);
+    write_command(0xBE);	// voltage
+    write_command(0x1C);
+    write_command(0xAD);	// dcdc
+    write_command(0x02);
+    write_command(0xA0);	// remap
+    write_command(0x50);	// 0b01010000
+			  // a[6] : enable COM split odd/even
+			  // a[4] : enable COM re-map
+    write_command(0xA1);	// start
+    write_command(0x0);
+    write_command(0xA2);	// offset
+    write_command(0x4C);
+    write_command(0xB1);	// set phase
+    write_command(0x55);
+    write_command(0xB4);	// precharge
+    write_command(0x02);
+    write_command(0xB0);	// precharge
+    write_command(0x28);
+    write_command(0xBF);	// vsl
+    write_command(0x0F);
+    write_command(0xA4);	// normal display
+    write_command(0xB8);	// greyscale table
+    write_command(0x01);
+    write_command(0x11);
+    write_command(0x22);
+    write_command(0x32);
+    write_command(0x43);
+    write_command(0x54);
+    write_command(0x65);
+    write_command(0x76);
+    // set update box (to full screen)
+    write_command(0x15);
+    write_command(0);
+    write_command(63);
+    write_command(0x75);
+    write_command(0);
+    write_command(63); // ???
+  }
+
+  screen_clear();
+  
+  write_command(0xAF);	// on
+  delay_ms(10) ;
+  //  cpu_irq_enable();
+  Enable_global_interrupt();
+  print_dbg("\r\n === init_oled DONE");
+}
+
 
 // draw data given target rect
 // assume x-offset and width are both even!
@@ -238,7 +382,7 @@ void screen_draw_region_offset(u8 x, u8 y, u8 w, u8 h, u32 len, u8* data, u32 of
 }
 
 
- // clear OLED RAM and local screenbuffer
+// clear OLED RAM and local screenbuffer
 void screen_clear(void) {
   u8 irq_flags = irqs_pause();
   spi_selectChip(OLED_SPI, OLED_SPI_NPCS);
