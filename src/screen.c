@@ -171,8 +171,12 @@ static void writeScreenBuffer2(u8 x, u8 y, u8 w, u8 h) {
 
 void init_oled(void) {
   // check rev, set function pointers
-  rev = get_revision();
-  // FIXME: set rev to 0 #IFALEPH
+  #ifdef MOD_ALEPH 
+  rev = 0;
+  #else
+  rev = get_revision(); 
+  #endif
+
   if(rev) {
     _screen_set_rect = &screen_set_rect_2;
     _writeScreenBuffer = &writeScreenBuffer2;
