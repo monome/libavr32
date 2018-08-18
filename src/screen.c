@@ -166,7 +166,46 @@ static void writeScreenBuffer2(u8 x, u8 y, u8 w, u8 h) {
   irqs_resume(irq_flags);
 }
 
+void (* _screen_clear)(void);
+// clear OLED RAM and local screenbuffer
+void screen_clear(void) {
+  _screen_clear();
+}
 
+// clear OLED RAM and local screenbuffer
+static void screen_clear1(void) {
+  u8 irq_flags = irqs_pause();
+  spi_selectChip(OLED_SPI, OLED_SPI_NPCS);
+  // pull register select high to write data
+  gpio_set_gpio_pin(OLED_DC_PIN);
+  for(i=0; i<GRAM_BYTES; i++) { 
+    screenBuf[i] = 0;
+    spi_write(OLED_SPI, 0);
+  }
+  spi_unselectChip(OLED_SPI, OLED_SPI_NPCS);
+  irqs_resume(irq_flags);
+}
+// clear OLED RAM and local screenbuffer
+static void screen_clear2(void) {
+  u8 irq_flags = irqs_pause();
+  // select chip for data
+  gpio_clr_gpio_pin(OLED_DC_PIN);
+  spi_selectChip(OLED_SPI, OLED_SPI_NPCS);
+  spi_write(OLED_SPI, 0x5C); // start pixel data write to GDDRAM
+  spi_unselectChip(OLED_SPI, OLED_SPI_NPCS);
+
+  for(i=0; i<GRAM_BYTES; i++) { screenBuf[i] = 0; }
+  
+  spi_selectChip(OLED_SPI, OLED_SPI_NPCS);
+  // pull register select high to write data
+  gpio_set_gpio_pin(OLED_DC_PIN);
+  for(i=0;i<8192;i++) { 
+    spi_write(OLED_SPI, 0);
+    spi_write(OLED_SPI, 0);
+  }
+  spi_unselectChip(OLED_SPI, OLED_SPI_NPCS);
+  irqs_resume(irq_flags);
+}
 //------------------
 
 void init_oled(void) {
@@ -180,9 +219,11 @@ void init_oled(void) {
   if(rev) {
     _screen_set_rect = &screen_set_rect_2;
     _writeScreenBuffer = &writeScreenBuffer2;
+    _screen_clear = &screen_clear2;
   } else {
     _screen_set_rect = &screen_set_rect_1;
     _writeScreenBuffer = &writeScreenBuffer1;
+    _screen_clear = &screen_clear1;
   }
 
   Disable_global_interrupt();
@@ -268,14 +309,9 @@ void init_oled(void) {
     write_command(0x54);
     write_command(0x65);
     write_command(0x76);
-    // set update box (to full screen)
-    write_command(0x15);
-    write_command(0);
-    write_command(63);
-    write_command(0x75);
-    write_command(0);
-    write_command(63); // ???
   }
+
+  screen_set_rect(0,0,128,64);
 
   screen_clear();
   
@@ -283,7 +319,6 @@ void init_oled(void) {
   delay_ms(10) ;
   //  cpu_irq_enable();
   Enable_global_interrupt();
-  print_dbg("\r\n === init_oled DONE");
 }
 
 
@@ -383,19 +418,5 @@ void screen_draw_region_offset(u8 x, u8 y, u8 w, u8 h, u32 len, u8* data, u32 of
   #endif
   
   writeScreenBuffer(x, y, w, h);
-}
+} 
 
-
-// clear OLED RAM and local screenbuffer
-void screen_clear(void) {
-  u8 irq_flags = irqs_pause();
-  spi_selectChip(OLED_SPI, OLED_SPI_NPCS);
-  // pull register select high to write data
-  gpio_set_gpio_pin(OLED_DC_PIN);
-  for(i=0; i<GRAM_BYTES; i++) { 
-    screenBuf[i] = 0;
-    spi_write(OLED_SPI, 0);
-  }
-  spi_unselectChip(OLED_SPI, OLED_SPI_NPCS);
-  irqs_resume(irq_flags);
-}
