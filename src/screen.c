@@ -216,6 +216,9 @@ void init_oled(void) {
   rev = get_revision(); 
   #endif
 
+  print_dbg("\r\nrev ");
+  print_dbg_ulong(rev);
+
   if(rev) {
     _screen_set_rect = &screen_set_rect_2;
     _writeScreenBuffer = &writeScreenBuffer2;
