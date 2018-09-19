@@ -8,5 +8,6 @@ extern void init_gpio(void);
 extern void init_spi(void);
 
 extern u64 get_ticks(void);
+extern u8 get_revision(void);
 
 #endif
