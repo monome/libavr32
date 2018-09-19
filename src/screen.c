@@ -14,6 +14,8 @@
 //-----------------------------
 //---- variables
 
+static u8 _is_screen_flipped = 0;
+
 // screen buffer
 static u8 screenBuf[GRAM_BYTES];
 
@@ -149,34 +151,40 @@ static void writeScreenBuffer(u8 x, u8 y, u8 w, u8 h) {
   nb = w * h;
   
   #ifdef MOD_ALEPH // aleph screen is mounted upside down...
-  pScr = (u8*)screenBuf + nb - 1;  
-  x = SCREEN_ROW_BYTES - x - w;
-  y = SCREEN_COL_BYTES - y - h;
-   // copy and pack into the screen buffer
-  // 2 bytes input per 1 byte output
-  for(j=0; j<h; j++) {
-    for(i=0; i<w; i++) {
-	  *pScr = (0xf0 & ((*data) << 4) );
-      data++;
-      *pScr |= ((*data) & 0xf);
-      data++;
-      pScr--;
-    }
-  }
-  #else 
-  pScr = (u8*)screenBuf;
-   // copy and pack into the screen buffer
-  // 2 bytes input per 1 byte output
-  for(j=0; j<h; j++) {
-    for(i=0; i<w; i++) {
-      *pScr = ((*data) & 0xf);
-      data++;
-      *pScr |= (0xf0 & ((*data) << 4) );
-      data++;
-      pScr++;
-    }
-  }
+    u8 flip = 1;
+  #else
+    u8 flip = _is_screen_flipped;
   #endif
+  
+  if (flip) {
+    pScr = (u8*)screenBuf + nb - 1;  
+    x = SCREEN_ROW_BYTES - x - w;
+    y = SCREEN_COL_BYTES - y - h;
+     // copy and pack into the screen buffer
+    // 2 bytes input per 1 byte output
+    for(j=0; j<h; j++) {
+      for(i=0; i<w; i++) {
+        *pScr = (0xf0 & ((*data) << 4) );
+        data++;
+        *pScr |= ((*data) & 0xf);
+        data++;
+        pScr--;
+      }
+    }
+  } else {
+    pScr = (u8*)screenBuf;
+     // copy and pack into the screen buffer
+    // 2 bytes input per 1 byte output
+    for(j=0; j<h; j++) {
+      for(i=0; i<w; i++) {
+        *pScr = ((*data) & 0xf);
+        data++;
+        *pScr |= (0xf0 & ((*data) << 4) );
+        data++;
+        pScr++;
+      }
+    }
+  }
 
   writeScreenBuffer(x, y, w, h);
 }
@@ -198,41 +206,46 @@ void screen_draw_region_offset(u8 x, u8 y, u8 w, u8 h, u32 len, u8* data, u32 of
   w >>= 1;
   x >>= 1;
   nb = len >> 1;
-
   
   #ifdef MOD_ALEPH // aleph screen is mounted upside down...
-  pScr = (u8*)screenBuf + nb - 1;  
-  x = SCREEN_ROW_BYTES - x - w;
-  y = SCREEN_COL_BYTES - y - h;
-   // copy and pack into the screen buffer
-  // 2 bytes input per 1 byte output
-  for(j=0; j<h; j++) {
-    for(i=0; i<w; i++) {
-	  *pScr = (0xf0 & ((*data) << 4) );
-      data++;
-      if(data > dataEnd) { data = dataStart; }
-      *pScr |= ((*data) & 0xf);
-      data++;
-      if(data > dataEnd) { data = dataStart; }
-      pScr--;
-    }
-  }
-  #else 
-  pScr = (u8*)screenBuf;
-   // copy and pack into the screen buffer
-  // 2 bytes input per 1 byte output
-  for(j=0; j<h; j++) {
-    for(i=0; i<w; i++) {
-      *pScr = ((*data) & 0xf);
-      data++;
-      if(data > dataEnd) { data = dataStart; }
-      *pScr |= (0xf0 & ((*data) << 4) );
-      data++;
-      if(data > dataEnd) { data = dataStart; }
-      pScr++;
-    }
-  }
+    u8 flip = 1;
+  #else
+    u8 flip = _is_screen_flipped;
   #endif
+  
+  if (flip) {
+    pScr = (u8*)screenBuf + nb - 1;  
+    x = SCREEN_ROW_BYTES - x - w;
+    y = SCREEN_COL_BYTES - y - h;
+     // copy and pack into the screen buffer
+    // 2 bytes input per 1 byte output
+    for(j=0; j<h; j++) {
+      for(i=0; i<w; i++) {
+	    *pScr = (0xf0 & ((*data) << 4) );
+        data++;
+        if(data > dataEnd) { data = dataStart; }
+        *pScr |= ((*data) & 0xf);
+        data++;
+        if(data > dataEnd) { data = dataStart; }
+        pScr--;
+      }
+    }
+  } else {
+    pScr = (u8*)screenBuf;
+     // copy and pack into the screen buffer
+    // 2 bytes input per 1 byte output
+    for(j=0; j<h; j++) {
+      for(i=0; i<w; i++) {
+        *pScr = ((*data) & 0xf);
+        data++;
+        if(data > dataEnd) { data = dataStart; }
+        *pScr |= (0xf0 & ((*data) << 4) );
+        data++;
+        if(data > dataEnd) { data = dataStart; }
+        pScr++;
+      }
+    }
+  }
   
   writeScreenBuffer(x, y, w, h);
 }
@@ -250,4 +263,10 @@ void screen_clear(void) {
   }
   spi_unselectChip(OLED_SPI, OLED_SPI_NPCS);
   irqs_resume(irq_flags);
+}
+
+
+// set screen orientation
+extern void screen_set_direction(u8 flipped) {
+  _is_screen_flipped = flipped;
 }
