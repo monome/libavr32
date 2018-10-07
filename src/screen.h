@@ -58,4 +58,6 @@ extern void screen_clear(void);
 // show startup screen
 void screen_startup(void);
 
+// set screen orientation
+extern void screen_set_direction(u8 flipped);
 #endif // header guard
