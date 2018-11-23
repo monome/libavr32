@@ -76,6 +76,8 @@ static volatile bool twi_busy = false;
 //! IT mask.
 static volatile unsigned long twi_it_mask;
 
+static uint16_t busy_limiter;
+
 #ifndef AVR32_TWI_180_H_INCLUDED
 
 //! Pointer on TWI slave application routines
@@ -86,6 +88,8 @@ static twi_slave_fct_t twi_slave_fct;
 
 #define CONF_TWI_IRQ_LINE          AVR32_TWI_IRQ
 #define CONF_TWI_IRQ_GROUP         AVR32_TWI_IRQ_GROUP
+
+#define TWI_BUSY_COUNTER 10000
 
 
 /*! \brief TWI interrupt handler.
@@ -405,8 +409,10 @@ int twi_master_read(volatile avr32_twi_t *twi, const twi_package_t *package)
 		return TWI_INVALID_ARGUMENT;
 	}
 
-	while (twi_is_busy()) {
+	busy_limiter = TWI_BUSY_COUNTER;
+	while (busy_limiter-- > 0 && twi_is_busy()) {
 		cpu_relax();
+		if (busy_limiter == 0) return TWI_BUSY;
 	};
 
 	twi_nack = false;
@@ -448,8 +454,10 @@ int twi_master_read(volatile avr32_twi_t *twi, const twi_package_t *package)
 	twi->ier = twi_it_mask;
 
 	// get data
-	while (twi_is_busy()) {
+	busy_limiter = TWI_BUSY_COUNTER;
+	while (busy_limiter-- > 0 && twi_is_busy()) {
 		cpu_relax();
+		if (busy_limiter == 0) return TWI_BUSY;
 	}
 
 	// Disable master transfer
@@ -470,8 +478,10 @@ int twi_master_write(volatile avr32_twi_t *twi, const twi_package_t *package)
 		return TWI_INVALID_ARGUMENT;
 	}
 
-	while (twi_is_busy()) {
+	busy_limiter = TWI_BUSY_COUNTER;
+	while (busy_limiter-- > 0 && twi_is_busy()) {
 		cpu_relax();
+		if (busy_limiter == 0) return TWI_BUSY;
 	};
 
 	twi_nack = false;
@@ -511,8 +521,10 @@ int twi_master_write(volatile avr32_twi_t *twi, const twi_package_t *package)
 	twi->ier = twi_it_mask;
 
 	// send data
-	while (twi_is_busy()) {
+	busy_limiter = TWI_BUSY_COUNTER;
+	while (busy_limiter-- > 0 && twi_is_busy()) {
 		cpu_relax();
+		if (busy_limiter == 0) return TWI_BUSY;
 	}
 
 	// Disable master transfer
