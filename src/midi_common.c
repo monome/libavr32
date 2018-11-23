@@ -36,6 +36,11 @@ void midi_packet_parse(midi_behavior_t *b, u32 data) {
     val = (data &   0xff00) >> 8;
 		if (b->note_off) b->note_off(ch, num, val);
 		break;
+	case 0xA:
+		num = (data & 0xff0000) >> 16;
+		val = (data &   0xff00) >> 8;
+		if (b->aftertouch) b->aftertouch(ch, num, val);
+		break;
 	case 0xd:
 		// channel pressure
 		val = (data & 0x7f0000) >> 16;
