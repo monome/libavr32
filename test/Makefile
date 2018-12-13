@@ -46,7 +46,7 @@ INTEGRATION_DIR = integration
 CC = gcc
 LINK = $(CC)
 
-CFLAGS = -g -Wall -Wstrict-prototypes #-Wmissing-prototypes
+CFLAGS = -g -Wall -Wstrict-prototypes -DRUNNING_TESTS #-Wmissing-prototypes
 
 TARGET_EXTENSION = out
 
