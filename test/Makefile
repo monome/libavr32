@@ -4,6 +4,7 @@ PRJ_ROOT = ..
 
 INC_PATH = \
 	src                                        \
+	src/json                                   \
 	src/usb                                    \
 	src/usb/ftdi                               \
 	src/usb/hid                                \
