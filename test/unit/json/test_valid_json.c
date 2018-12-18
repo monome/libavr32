@@ -77,10 +77,106 @@ void test_all_types_round_trip(void) {
 	TEST_ASSERT_TRUE(compare_files("in.tmp", "out.tmp"));
 }
 
+void test_missing_fields_ok(void) {
+	const char s[] = "{"
+		"\"ubyte\": 123, "
+		"\"nested\": {}, "
+		"\"nested_array\": ["
+			"{"
+				"\"ubyte\": 1"
+			"}, "
+			"{}, "
+			"{"
+				"\"ubyte\": 3"
+			"}, "
+			"{}"
+		"]"
+	"}";
+	FILE* fp = write_temp_file("in.tmp", s, strlen(s));
+	set_fp(fp);
+	memset(&json_test_dest, 0, sizeof(json_test_dest_t));
+
+	json_read_result_t rd_result = json_read(
+		read_fp,
+		&json_test_dest, &json_test_docdef,
+		json_test_buf, sizeof(json_test_buf),
+		json_test_tokens, sizeof(json_test_tokens) / sizeof(json_test_tokens[0]));
+	fclose(fp);
+
+	TEST_ASSERT_EQUAL_INT(rd_result, JSON_READ_OK);
+	TEST_ASSERT_EQUAL_UINT8(123, json_test_dest.ubyte);
+	TEST_ASSERT_EQUAL_UINT8(1, json_test_dest.nested_array[0].ubyte);
+	TEST_ASSERT_EQUAL_UINT8(3, json_test_dest.nested_array[2].ubyte);
+}
+
+void test_skips_unknown_fields(void) {
+	const char s[] = "{"
+		"\"ubyte\": 234, "
+		"\"unknown\": ["
+			"{"
+				"\"one\": 1, "
+				"\"two\": 2, "
+			"}, "
+			"{"
+				"\"one\": 1, "
+				"\"two\": 2, "
+			"}"
+		"], "
+		"\"sbyte\": -123"
+	"}";
+	FILE* fp = write_temp_file("in.tmp", s, strlen(s));
+	set_fp(fp);
+	memset(&json_test_dest, 0, sizeof(json_test_dest_t));
+
+	json_read_result_t rd_result = json_read(
+		read_fp,
+		&json_test_dest, &json_test_docdef,
+		json_test_buf, sizeof(json_test_buf),
+		json_test_tokens, sizeof(json_test_tokens) / sizeof(json_test_tokens[0]));
+	fclose(fp);
+
+	TEST_ASSERT_EQUAL_INT(rd_result, JSON_READ_OK);
+	TEST_ASSERT_EQUAL_UINT8(234, json_test_dest.ubyte);
+	TEST_ASSERT_EQUAL_INT8(-123, json_test_dest.sbyte);
+}
+
+void test_truncates_array(void) {
+	const char s[] = "{"
+		"\"nested_array\": ["
+			"{\"ubyte\": 1}, "
+			"{\"ubyte\": 2}, "
+			"{\"ubyte\": 3}, "
+			"{\"ubyte\": 4}, "
+			"{\"ubyte\": 5}, "
+			"{\"ubyte\": 6}, "
+			"{\"ubyte\": 7}"
+		"]"
+	"}";
+	FILE* fp = write_temp_file("in.tmp", s, strlen(s));
+	set_fp(fp);
+	memset(&json_test_dest, 0, sizeof(json_test_dest_t));
+
+	json_read_result_t rd_result = json_read(
+		read_fp,
+		&json_test_dest, &json_test_docdef,
+		json_test_buf, sizeof(json_test_buf),
+		json_test_tokens, sizeof(json_test_tokens) / sizeof(json_test_tokens[0]));
+	fclose(fp);
+
+	TEST_ASSERT_EQUAL_INT(rd_result, JSON_READ_OK);
+	TEST_ASSERT_EQUAL_UINT8(1, json_test_dest.nested_array[0].ubyte);
+	TEST_ASSERT_EQUAL_UINT8(2, json_test_dest.nested_array[1].ubyte);
+	TEST_ASSERT_EQUAL_UINT8(3, json_test_dest.nested_array[2].ubyte);
+	TEST_ASSERT_EQUAL_UINT8(4, json_test_dest.nested_array[3].ubyte);
+}
+
 int main(void) {
 	UNITY_BEGIN();
 
 	RUN_TEST(test_all_types_round_trip);
+	RUN_TEST(test_missing_fields_ok);
+	RUN_TEST(test_skips_unknown_fields);
+	RUN_TEST(test_truncates_array);
 
 	return UNITY_END();
 }
