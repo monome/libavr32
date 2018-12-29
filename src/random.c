@@ -18,7 +18,7 @@ void random_seed(random_state_t *r, u32 seed) {
 }	
 	
 s16 random_next(random_state_t *r) {
-	r->x = r->x * r->c + r->a;
+	r->x = r->x * r->a + r->c;
   r->val = r->x;
   if (r->val < 0) {
     r->val *= -1;
