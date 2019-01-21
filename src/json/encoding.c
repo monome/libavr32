@@ -64,6 +64,8 @@ int decode_nybble(uint8_t* dst, char hex) {
 	return 0;
 }
 
+static char hexbuf[JSON_MAX_BUFFER_SIZE];
+
 int decode_hexbuf(json_copy_cb copy, char* dst, const char* src, size_t len) {
 	uint8_t upper, lower, byte;
 	for (size_t i = 0; i < len; i += 2) {
@@ -74,8 +76,10 @@ int decode_hexbuf(json_copy_cb copy, char* dst, const char* src, size_t len) {
 			return -1;
 		}
 		byte = (upper << 4) | lower;
+		hexbuf[i / 2] = byte;
 		copy((char*)dst + i / 2, (char*)&byte, sizeof(byte));
 	}
+	copy(dst, hexbuf, len);
 	return 0;
 }
 
