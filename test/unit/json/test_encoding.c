@@ -2,7 +2,7 @@
 
 #include "unity.h"
 
-#include "json/encoding.c"
+#include "json_test_common.c"
 
 void test_decimal_signed_round_trip(void) {
 	{
@@ -56,12 +56,12 @@ void test_decode_hexbuf(void) {
 	char hex_out[9] = { 0 };
 	{
 		char s[] = "00112233";
-		TEST_ASSERT_EQUAL_INT(0, decode_hexbuf(hex_out, s, strlen(s)));
+		TEST_ASSERT_EQUAL_INT(0, decode_hexbuf(copy, hex_out, s, strlen(s)));
 		TEST_ASSERT_EQUAL_STRING(hex_out, "\x00\x11\x22\x33");
 	}
 	{
 		char s[] = "AABBCCDD";
-		TEST_ASSERT_EQUAL_INT(0, decode_hexbuf(hex_out, s, strlen(s)));
+		TEST_ASSERT_EQUAL_INT(0, decode_hexbuf(copy, hex_out, s, strlen(s)));
 		TEST_ASSERT_EQUAL_STRING(hex_out, "\xAA\xBB\xCC\xDD");
 	}
 }

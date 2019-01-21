@@ -75,3 +75,7 @@ size_t read_fp(char* dst, size_t len) {
 void write_fp(const char* src, size_t len) {
 	fwrite(src, 1, len, active_fp);
 }
+
+void copy(char* dst, const char* src, size_t len) {
+	memcpy(dst, src, len);
+}

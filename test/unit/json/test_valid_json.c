@@ -41,7 +41,7 @@ void test_all_types_round_trip(void) {
 	memset(&json_test_dest, 0, sizeof(json_test_dest_t));
 
 	json_read_result_t rd_result = json_read(
-		read_fp,
+		read_fp, copy,
 		&json_test_dest, &json_test_docdef,
 		json_test_buf, sizeof(json_test_buf),
 		json_test_tokens, sizeof(json_test_tokens) / sizeof(json_test_tokens[0]));
@@ -97,7 +97,7 @@ void test_missing_fields_ok(void) {
 	memset(&json_test_dest, 0, sizeof(json_test_dest_t));
 
 	json_read_result_t rd_result = json_read(
-		read_fp,
+		read_fp, copy,
 		&json_test_dest, &json_test_docdef,
 		json_test_buf, sizeof(json_test_buf),
 		json_test_tokens, sizeof(json_test_tokens) / sizeof(json_test_tokens[0]));
@@ -129,7 +129,7 @@ void test_skips_unknown_fields(void) {
 	memset(&json_test_dest, 0, sizeof(json_test_dest_t));
 
 	json_read_result_t rd_result = json_read(
-		read_fp,
+		read_fp, copy,
 		&json_test_dest, &json_test_docdef,
 		json_test_buf, sizeof(json_test_buf),
 		json_test_tokens, sizeof(json_test_tokens) / sizeof(json_test_tokens[0]));
@@ -157,7 +157,7 @@ void test_truncates_array(void) {
 	memset(&json_test_dest, 0, sizeof(json_test_dest_t));
 
 	json_read_result_t rd_result = json_read(
-		read_fp,
+		read_fp, copy,
 		&json_test_dest, &json_test_docdef,
 		json_test_buf, sizeof(json_test_buf),
 		json_test_tokens, sizeof(json_test_tokens) / sizeof(json_test_tokens[0]));

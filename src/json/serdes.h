@@ -25,23 +25,29 @@ struct json_docdef_t;
 // callbacks for reading/writing to a stream
 typedef size_t(*json_gets_cb)(char* dst, size_t len);
 typedef void(*json_puts_cb)(const char* src, size_t len);
+typedef void(*json_copy_cb)(char* dst, const char* src, size_t len);;
 
 // these are the primary API functions
-//   nvram - pointer to the destination struct
+//   read/write - will be called to read from/write to the byte stream,
+//          should be able to handle any read up to textbuf_len
+//   copy - will be called to load data from the json stream into the
+//          destination address
+//   ram - pointer to the destination struct
 json_read_result_t json_read(json_gets_cb read,
-			     void* nvram, struct json_docdef_t* docdef,
+			     json_copy_cb copy,
+			     void* ram, struct json_docdef_t* docdef,
 			     char* textbuf, size_t textbuf_len,
 			     jsmntok_t* tokbuf, size_t tokbuf_len);
 json_write_result_t json_write(json_puts_cb write,
-			       void* nvram, struct json_docdef_t* docdef);
+			       void* ram, struct json_docdef_t* docdef);
 
 // callbacks for handling an object/array/string/...
-// ram - base address of the structure mapped to/from JSON
-// dst/src_offset - amount of offset to apply in addition to the
-//   offset from the docdef's params, for e.g. array items
+//   ram - base address of the structure mapped to/from JSON
+//   dst/src_offset - amount of offset to apply in addition to the
+//     offset from the docdef's params, for e.g. array items
 typedef json_read_result_t(*json_read_subtree_cb)(
 	jsmntok_t* token,
-	void* ram, struct json_docdef_t* docdef,
+	json_copy_cb copy, void* ram, struct json_docdef_t* docdef,
 	const char* text, size_t text_len,
 	size_t dst_offset);
 typedef json_write_result_t(*json_write_subtree_cb)(
@@ -63,15 +69,9 @@ typedef struct json_docdef_t {
 	void* params;
 } json_docdef_t;
 
-char* encode_decimal_unsigned(uint32_t val);
-char* encode_decimal_signed(int32_t val);
-int32_t decode_decimal(const char* s, int len);
-int decode_hexbuf(char* dst, const char* src, size_t len);
-char encode_nybble(uint8_t val);
-
 json_read_result_t json_read_object(
 	jsmntok_t* tok,
-	void* ram, json_docdef_t* docdef,
+	json_copy_cb copy, void* ram, json_docdef_t* docdef,
 	const char* text, size_t text_len,
 	size_t dst_offset);
 json_write_result_t json_write_object(
@@ -97,7 +97,7 @@ typedef struct {
 
 json_read_result_t json_read_array(
 	jsmntok_t* tok,
-	void* ram, json_docdef_t* docdef,
+	json_copy_cb copy, void* ram, json_docdef_t* docdef,
 	const char* text, size_t text_len,
 	size_t dst_offset);
 json_write_result_t json_write_array(
@@ -121,7 +121,7 @@ typedef struct {
 
 json_read_result_t json_read_scalar(
 	jsmntok_t* tok,
-	void* ram, json_docdef_t* docdef,
+	json_copy_cb copy, void* ram, json_docdef_t* docdef,
 	const char* text, size_t text_len, size_t dst_offset);
 json_write_result_t json_write_number(
 	json_puts_cb write,
@@ -139,7 +139,7 @@ typedef struct {
 
 json_read_result_t json_read_enum(
 	jsmntok_t* tok,
-	void* ram, json_docdef_t* docdef,
+	json_copy_cb copy, void* ram, json_docdef_t* docdef,
 	const char* text, size_t text_len, size_t dst_offset);
 json_write_result_t json_write_enum(
 	json_puts_cb write,
@@ -154,7 +154,7 @@ typedef struct {
 
 json_read_result_t json_read_buffer(
 	jsmntok_t* tok,
-	void* ram, json_docdef_t* docdef,
+	json_copy_cb copy, void* ram, json_docdef_t* docdef,
 	const char* text, size_t text_len, size_t dst_offset);
 json_write_result_t json_write_buffer(
 	json_puts_cb write,
@@ -170,7 +170,7 @@ typedef struct {
 
 json_read_result_t json_read_string(
 	jsmntok_t* tok,
-	void* ram, json_docdef_t* docdef,
+	json_copy_cb copy, void* ram, json_docdef_t* docdef,
 	const char* text, size_t text_len, size_t dst_offset);
 json_write_result_t json_write_string(
 	json_puts_cb write,
@@ -178,7 +178,7 @@ json_write_result_t json_write_string(
 	size_t src_offset);
 json_read_result_t json_match_string(
 	jsmntok_t* tok,
-	void* ram, json_docdef_t* docdef,
+	json_copy_cb copy, void* ram, json_docdef_t* docdef,
 	const char* text, size_t text_len, size_t dst_offset);
 typedef struct {
 	const char* to_match;

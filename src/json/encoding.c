@@ -60,12 +60,12 @@ int decode_nybble(uint8_t* dst, char hex) {
 	if (hex > 'F') {
 		return -1;
 	}
-	*dst = hex - 'A' + 0xA;
+        *dst = hex - 'A' + 0xA;
 	return 0;
 }
 
-int decode_hexbuf(char* dst, const char* src, size_t len) {
-	uint8_t upper, lower;
+int decode_hexbuf(json_copy_cb copy, char* dst, const char* src, size_t len) {
+	uint8_t upper, lower, byte;
 	for (size_t i = 0; i < len; i += 2) {
 		if (decode_nybble(&upper, src[i]) < 0) {
 			return -1;
@@ -73,7 +73,8 @@ int decode_hexbuf(char* dst, const char* src, size_t len) {
 		if (decode_nybble(&lower, src[i + 1]) < 0) {
 			return -1;
 		}
-		dst[i / 2] = (upper << 4) | lower;
+		byte = (upper << 4) | lower;
+		copy((char*)dst + i / 2, (char*)&byte, sizeof(byte));
 	}
 	return 0;
 }

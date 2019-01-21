@@ -3,7 +3,7 @@
 
 json_read_result_t json_read_object(
 	jsmntok_t* tok,
-	void* ram, json_docdef_t* docdef,
+	json_copy_cb copy, void* ram, json_docdef_t* docdef,
 	const char* text, size_t text_len, size_t dst_offset) {
 	json_read_object_params_t* params = (json_read_object_params_t*)docdef->params;
 	json_read_object_state_t* state = (json_read_object_state_t*)docdef->state;
@@ -53,7 +53,7 @@ json_read_result_t json_read_object(
 	case JSON_OBJECT_PARSE_PROPERTY:
 		switch(state->active_docdef->read(
 			tok,
-			ram, state->active_docdef,
+			copy, ram, state->active_docdef,
 			text, text_len, dst_offset)) {
 		case JSON_READ_INCOMPLETE:
 			return JSON_READ_INCOMPLETE;
@@ -90,7 +90,7 @@ json_write_result_t json_write_object(
 
 json_read_result_t json_read_scalar(
 	jsmntok_t* tok,
-	void* ram, json_docdef_t* docdef,
+	json_copy_cb copy, void* ram, json_docdef_t* docdef,
 	const char* text, size_t text_len, size_t dst_offset) {
 	json_read_scalar_params_t* params = (json_read_scalar_params_t*)docdef->params;
 	if (tok->type != JSMN_PRIMITIVE) {
@@ -102,15 +102,21 @@ json_read_result_t json_read_scalar(
 	void* dst = (char*)ram + params->dst_offset + dst_offset;
 	int val = decode_decimal(text + tok->start, tok->end - tok->start);
 	switch (params->dst_size) {
-	case sizeof(uint8_t):
-		*(uint8_t*)dst = val;
+	case sizeof(uint8_t): {
+		uint8_t src = val;
+		copy((char*)dst, (char*)&src, sizeof(uint8_t));
 		break;
-	case sizeof(uint16_t):
-		*(uint16_t*)dst = val;
+	}
+	case sizeof(uint16_t): {
+		uint16_t src = val;
+		copy((char*)dst, (char*)&src, sizeof(uint16_t));
 		break;
-	case sizeof(uint32_t):
-		*(uint32_t*)dst = val;
+	}
+	case sizeof(uint32_t): {
+		uint32_t src = val;
+		copy((char*)dst, (char*)&src, sizeof(uint32_t));
 		break;
+	}
 	default:
 		return JSON_READ_MALFORMED;
 	}
@@ -201,7 +207,7 @@ json_write_result_t json_write_constant_string(
 
 json_read_result_t json_match_string(
 	jsmntok_t* tok,
-	void* ram, json_docdef_t* docdef,
+	json_copy_cb copy, void* ram, json_docdef_t* docdef,
 	const char* text, size_t text_len, size_t dst_offset) {
 	json_match_string_params_t* params = (json_match_string_params_t*)docdef->params;
 	if (tok->type != JSMN_STRING) {
@@ -217,11 +223,11 @@ json_read_result_t json_match_string(
 }
 json_read_result_t json_read_enum(
 	jsmntok_t* tok,
-	void* ram, json_docdef_t* docdef,
+	json_copy_cb copy, void* ram, json_docdef_t* docdef,
 	const char* text, size_t text_len, size_t dst_offset) {
 	json_read_enum_params_t* params = (json_read_enum_params_t*)docdef->params;
 
-	int* dst = (int*)((uint8_t*)ram + params->dst_offset + dst_offset);
+	char* dst = (char*)ram + params->dst_offset + dst_offset;
 
 	if (tok->end < 0) {
 		return JSON_READ_INCOMPLETE;
@@ -229,10 +235,11 @@ json_read_result_t json_read_enum(
 	if (tok->type == JSMN_PRIMITIVE) {
 		// the only primitive that starts with n is 'null'
 		if (text[tok->start] == 'n') {
-			*dst = params->default_val;
+			copy(dst, (char*)&params->default_val, sizeof(int));
 		}
 		else {
-			*dst = decode_decimal(text + tok->start, tok->end - tok->start);
+			int decimal = decode_decimal(text + tok->start, tok->end - tok->start);
+			copy(dst, (char*)&decimal, sizeof(int));
 		}
 		return JSON_READ_OK;
 	}
@@ -240,13 +247,13 @@ json_read_result_t json_read_enum(
 		return JSON_READ_MALFORMED;
 	}
 
-	for (uint8_t i = 0; i < params->option_ct; i++) {
+	for (int i = 0; i < params->option_ct; i++) {
 		if (strncmp(params->options[i], text + tok->start, tok->end - tok->start) == 0) {
-			*dst = i;
+			copy(dst, (char*)&i, sizeof(int));
 			return JSON_READ_OK;
 		}
 	}
-	*dst = params->default_val;
+	copy(dst, (char*)&params->default_val, sizeof(int));
 	return JSON_READ_OK;
 }
 
@@ -256,20 +263,19 @@ json_write_result_t json_write_enum(
 	size_t src_offset) {
 	json_read_enum_params_t* params = (json_read_enum_params_t*)docdef->params;
 
-	int* src = (int*)((uint8_t*)ram + src_offset + params->dst_offset);
-	if (*src < 0 || *src >= params->option_ct) {
-		write("null", 4);
-		return JSON_WRITE_OK;
+	int src = *(int*)((uint8_t*)ram + src_offset + params->dst_offset);
+	if (src < 0 || src >= params->option_ct) {
+		src = params->default_val;
 	}
 	write("\"", 1);
-	write(params->options[*src], strlen(params->options[*src]));
+	write(params->options[src], strlen(params->options[src]));
 	write("\"", 1);
 	return JSON_WRITE_OK;
 }
 
 json_read_result_t json_read_array(
 	jsmntok_t* tok,
-	void* ram, json_docdef_t* docdef,
+	json_copy_cb copy, void* ram, json_docdef_t* docdef,
 	const char* text, size_t text_len, size_t dst_offset) {
 	json_read_array_params_t* params = (json_read_array_params_t*)docdef->params;
 	json_read_array_state_t* state = (json_read_array_state_t*)docdef->state;
@@ -299,8 +305,9 @@ json_read_result_t json_read_array(
 			return JSON_READ_INCOMPLETE;
 		}
 
-		switch (params->item_docdef->read(tok,
-			ram, params->item_docdef,
+		switch (params->item_docdef->read(
+			tok,
+			copy, ram, params->item_docdef,
 			text, text_len, dst_offset + state->array_ct * params->item_size))
 		{
 		case JSON_READ_MALFORMED:
@@ -337,7 +344,7 @@ json_write_result_t json_write_array(
 
 json_read_result_t json_read_buffer(
 	jsmntok_t* tok,
-	void* ram, json_docdef_t* docdef,
+	json_copy_cb copy, void* ram, json_docdef_t* docdef,
 	const char* text, size_t text_len, size_t dst_offset) {
 	json_read_buffer_params_t* params = (json_read_buffer_params_t*)docdef->params;
 	json_read_buffer_state_t* state = (json_read_buffer_state_t*)docdef->state;
@@ -361,8 +368,11 @@ json_read_result_t json_read_buffer(
 		}
 	}
 	char* dst = (char*)ram + params->dst_offset + dst_offset;
-	if (decode_hexbuf(dst + state->buf_pos,
-		text + start, len) < 0) {
+	if (decode_hexbuf(
+		copy,
+		dst + state->buf_pos,
+		text + start,
+		len) < 0) {
 		return JSON_READ_MALFORMED;
 	}
 	if (tok->end > 0) {
@@ -394,7 +404,7 @@ json_write_result_t json_write_buffer(
 
 json_read_result_t json_read_string(
 	jsmntok_t* tok,
-	void* ram, json_docdef_t* docdef,
+	json_copy_cb copy, void* ram, json_docdef_t* docdef,
 	const char* text, size_t text_len, size_t dst_offset) {
 	json_read_buffer_params_t* params = (json_read_buffer_params_t*)docdef->params;
 	json_read_buffer_state_t* state = (json_read_buffer_state_t*)docdef->state;
@@ -413,7 +423,7 @@ json_read_result_t json_read_string(
 		}
 	}
 	char* dst = (char*)ram + params->dst_offset + dst_offset;
-	strncpy(dst + state->buf_pos, text + start, len);
+	copy(dst + state->buf_pos, text + start, len);
 	if (tok->end > 0) {
 		docdef->fresh = true;
 		return JSON_READ_OK;
@@ -425,7 +435,7 @@ json_read_result_t json_read_string(
 json_read_state_t deserialize_state;
 
 json_read_result_t json_read(
-	json_gets_cb read, void* ram,
+	json_gets_cb read, json_copy_cb copy, void* ram,
 	json_docdef_t* docdef,
 	char* textbuf, size_t textbuf_len,
 	jsmntok_t* tokbuf, size_t tokbuf_len)
@@ -490,7 +500,7 @@ json_read_result_t json_read(
 
 		result = docdef->read(
 			&tokbuf[deserialize_state.curr_tok],
-			ram, docdef,
+			copy, ram, docdef,
 			textbuf, textbuf_len, 0);
 		deserialize_state.curr_tok++;
 		switch (result) {
