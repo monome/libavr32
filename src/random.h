@@ -7,8 +7,8 @@
 //----- types
 
 typedef struct {
-	s16 min, max, val;
-	u32 a, c, x;
+	s16 min, max;
+	u32 z, w;
 } random_state_t;
 
 //------------------------------
