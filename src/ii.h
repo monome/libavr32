@@ -144,6 +144,7 @@
 #define II_GRID_KEY     16
 #define II_GRID_LED     17
 #define II_ARC_ENC      24
+#define II_ARC_LED      25
 
 #define II_KR_PRESET    0
 #define II_KR_PATTERN   1
