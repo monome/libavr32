@@ -141,6 +141,10 @@
 #define II_ARP_FILL     10
 #define II_ARP_ER       11
 
+#define II_GRID_KEY     16
+#define II_GRID_LED     17
+#define II_ARC_ENC      24
+
 #define II_KR_PRESET    0
 #define II_KR_PATTERN   1
 #define II_KR_SCALE     2
