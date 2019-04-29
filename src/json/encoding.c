@@ -77,7 +77,6 @@ int decode_hexbuf(json_copy_cb copy, char* dst, const char* src, size_t len) {
 		}
 		byte = (upper << 4) | lower;
 		hexbuf[i / 2] = byte;
-		copy((char*)dst + i / 2, (char*)&byte, sizeof(byte));
 	}
 	copy(dst, hexbuf, len);
 	return 0;

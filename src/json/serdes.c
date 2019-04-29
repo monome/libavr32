@@ -1,6 +1,10 @@
 #include "json/serdes.h"
 #include "json/encoding.h"
 
+#include "print_funcs.h"
+
+#define JSON_DEBUG 0
+
 json_read_result_t json_read_object(
 	jsmntok_t* tok,
 	json_copy_cb copy, void* ram, json_docdef_t* docdef,
@@ -101,6 +105,17 @@ json_read_result_t json_read_scalar(
 	}
 	void* dst = (char*)ram + params->dst_offset + dst_offset;
 	int val = decode_decimal(text + tok->start, tok->end - tok->start);
+
+#if JSON_DEBUG
+	print_dbg("\r\n> read scalar: ");
+	for (char* p = docdef->name; *p != 0; p++)
+	{
+	  print_dbg_char(*p);
+	}
+	print_dbg(" = ");
+	print_dbg_ulong(val);
+#endif
+
 	switch (params->dst_size) {
 	case sizeof(uint8_t): {
 		uint8_t src = val;
@@ -367,7 +382,21 @@ json_read_result_t json_read_buffer(
 			return JSON_READ_INCOMPLETE;
 		}
 	}
+
 	char* dst = (char*)ram + params->dst_offset + dst_offset;
+
+#if JSON_DEBUG
+	print_dbg("\r\n> read buffer: ");
+	for (char* p = docdef->name; *p != 0; p++)
+	{
+	  print_dbg_char(*p);
+	}
+	print_dbg(" ");
+	print_dbg_hex(len);
+	print_dbg("@");
+	print_dbg_hex(dst + state->buf_pos);
+#endif
+
 	if (decode_hexbuf(
 		copy,
 		dst + state->buf_pos,
