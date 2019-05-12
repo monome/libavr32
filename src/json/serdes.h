@@ -7,8 +7,42 @@
 
 #include "json/jsmn/jsmn.h"
 
+
+
+//// docdef helper macros
+
+// e.g.
+//   .dst_size = sizeof_field(nvram_data_t, kria_state.k[0].p[0]),
+//   .dst_offset = offsetof(nvram_data_t, kria_state.k[0].p[0]),
 #define sizeof_field(s, m) (sizeof((((s*)0)->m)))
 
+// e.g.
+//    DECLARE_STATIC_ALLOC(kria_data_t, k)
+//    ...
+//    .alloc = STATIC_ALLOC(kria_data_t, k),
+//    .free = nop_free,
+#define DECLARE_STATIC_ALLOC(type, cache)          \
+  static void* static_alloc_##type(size_t size);   \
+  static void* static_alloc_##type(size_t size) {  \
+    void* ret = NULL;                              \
+    if (size == sizeof(type)) {                    \
+      ret = &cache;                                \
+    }                                              \
+    print_dbg("\r\n\r\nalloc ");		   \
+    print_dbg_hex(size);			   \
+    if (ret == NULL) {				   \
+      print_dbg(" FAILED");			   \
+    } else {					   \
+      print_dbg(" OK");			   \
+    }						   \
+    return ret;                                    \
+  }
+
+#define STATIC_ALLOC(type, cache) static_alloc_##type
+
+
+
+//// error codes
 typedef enum {
   JSON_READ_OK,         // finished reading a value
   JSON_READ_INCOMPLETE, // need more text for current value
@@ -21,14 +55,17 @@ typedef enum {
   JSON_WRITE_ERROR,
 } json_write_result_t;
 
-struct json_docdef_t;
 
-// callbacks for reading/writing to a stream
-typedef size_t(*json_gets_cb)(char* dst, size_t len);
-typedef void(*json_puts_cb)(const char* src, size_t len);
-typedef void(*json_copy_cb)(char* dst, const char* src, size_t len);;
+
+//// callbacks
+typedef size_t(*json_gets_cb)(char* dst, size_t len);                  // read from stream
+typedef void(*json_puts_cb)(const char* src, size_t len);              // write to stream
+typedef void(*json_copy_cb)(char* dst, const char* src, size_t len);;  // save src to dst
+
 typedef void*(*json_alloc_cb)(size_t size);
 typedef void(*json_free_cb)(void* ptr);
+
+struct json_docdef_t;
 
 // these are the primary API functions
 //   read/write - will be called to read from/write to the byte stream,
@@ -52,7 +89,7 @@ typedef json_read_result_t(*json_read_subtree_cb)(
 	jsmntok_t* token,
 	json_copy_cb copy, void* ram, struct json_docdef_t* docdef,
 	const char* text, size_t text_len,
-	size_t dst_offset);
+	int32_t dst_offset);
 typedef json_write_result_t(*json_write_subtree_cb)(
 	json_puts_cb write,
 	void* ram, struct json_docdef_t* docdef,
@@ -76,22 +113,31 @@ json_read_result_t json_read_object(
 	jsmntok_t* tok,
 	json_copy_cb copy, void* ram, json_docdef_t* docdef,
 	const char* text, size_t text_len,
-	size_t dst_offset);
+	int32_t dst_offset);
 
-/* json_read_result_t json_read_object_cached( */
-/* 	jsmntok_t* tok, */
-/* 	json_copy_cb copy, void* ram, json_docdef_t* docdef, */
-/* 	const char* text, size_t text_len, */
-/* 	size_t dst_offset); */
+json_read_result_t json_read_object_cached(
+	jsmntok_t* tok,
+	json_copy_cb copy, void* ram, json_docdef_t* docdef,
+	const char* text, size_t text_len,
+	int32_t dst_offset);
 
 json_write_result_t json_write_object(
 	json_puts_cb write,
 	void* ram, json_docdef_t* docdef,
 	size_t src_offset);
-/* json_write_result_t json_write_object_cached( */
-/* 	json_puts_cb write, */
-/* 	void* ram, json_docdef_t* docdef, */
-/* 	size_t src_offset); */
+
+
+
+//// JSON node handler parameters and state
+typedef struct {
+	json_docdef_t* docdefs;
+	uint8_t docdef_ct;
+        int32_t dst_offset;
+        size_t dst_size;
+        json_alloc_cb alloc;
+        json_free_cb free;
+} json_read_object_params_t;
+
 typedef enum {
 	JSON_OBJECT_MATCH_START,
 	JSON_OBJECT_SKIP_SECTION,
@@ -99,41 +145,25 @@ typedef enum {
 	JSON_OBJECT_PARSE_PROPERTY,
 } json_object_read_phase_t;
 typedef struct {
-	json_docdef_t* docdefs;
-	uint8_t docdef_ct;
-        size_t dst_offset;
-        size_t dst_size;
-        json_alloc_cb alloc;
-        json_free_cb free;
-} json_read_object_params_t;
-/* typedef struct { */
-/* 	json_docdef_t* docdefs; */
-/* 	uint8_t docdef_ct; */
-/*         size_t dst_offset; */
-/*         size_t dst_size; */
-/*         json_alloc_cb alloc; */
-/*         json_free_cb free; */
-/* } json_read_object_cached_params_t; */
-typedef struct {
 	json_object_read_phase_t object_state;
 	json_docdef_t* active_docdef;
 	uint8_t sections_handled;
 	unsigned int depth;
         void* cache;
 } json_read_object_state_t;
-/* typedef struct { */
-/* 	json_object_read_phase_t object_state; */
-/* 	json_docdef_t* active_docdef; */
-/* 	uint8_t sections_handled; */
-/* 	unsigned int depth; */
-/*         void* cache; */
-/* } json_read_object_cached_state_t; */
+
+
+typedef struct {
+	size_t array_len;
+	size_t item_size;
+	json_docdef_t* item_docdef;
+} json_read_array_params_t;
 
 json_read_result_t json_read_array(
 	jsmntok_t* tok,
 	json_copy_cb copy, void* ram, json_docdef_t* docdef,
 	const char* text, size_t text_len,
-	size_t dst_offset);
+	int32_t dst_offset);
 json_write_result_t json_write_array(
 	json_puts_cb write,
 	void* ram, json_docdef_t* docdef,
@@ -143,20 +173,22 @@ typedef enum {
 	JSON_ARRAY_MATCH_ITEMS,
 } json_array_read_phase_t;
 typedef struct {
-	size_t array_len;
-	size_t item_size;
-	json_docdef_t* item_docdef;
-} json_read_array_params_t;
-typedef struct {
         json_array_read_phase_t array_state;
 	size_t array_ct;
 	unsigned int depth;
 } json_read_array_state_t;
 
+
+typedef struct {
+	int32_t dst_offset;
+	uint8_t dst_size;
+	bool signed_val;
+} json_read_scalar_params_t;
+
 json_read_result_t json_read_scalar(
 	jsmntok_t* tok,
 	json_copy_cb copy, void* ram, json_docdef_t* docdef,
-	const char* text, size_t text_len, size_t dst_offset);
+	const char* text, size_t text_len, int32_t dst_offset);
 json_write_result_t json_write_number(
 	json_puts_cb write,
 	void* ram, json_docdef_t* docdef,
@@ -165,63 +197,69 @@ json_write_result_t json_write_bool(
 	json_puts_cb write,
 	void* ram, json_docdef_t* docdef,
 	size_t src_offset);
+
+
 typedef struct {
-	size_t dst_offset;
-	uint8_t dst_size;
-	bool signed_val;
-} json_read_scalar_params_t;
+	uint8_t option_ct;
+	const char** options;
+	int32_t dst_offset;
+	int default_val;
+} json_read_enum_params_t;
 
 json_read_result_t json_read_enum(
 	jsmntok_t* tok,
 	json_copy_cb copy, void* ram, json_docdef_t* docdef,
-	const char* text, size_t text_len, size_t dst_offset);
+	const char* text, size_t text_len, int32_t dst_offset);
 json_write_result_t json_write_enum(
 	json_puts_cb write,
 	void* ram, json_docdef_t* docdef,
 	size_t src_offset);
+
 typedef struct {
-	uint8_t option_ct;
-	const char** options;
-	size_t dst_offset;
-	int default_val;
-} json_read_enum_params_t;
+	size_t dst_size;
+	int32_t dst_offset;
+} json_read_buffer_params_t;
 
 json_read_result_t json_read_buffer(
 	jsmntok_t* tok,
 	json_copy_cb copy, void* ram, json_docdef_t* docdef,
-	const char* text, size_t text_len, size_t dst_offset);
+	const char* text, size_t text_len, int32_t dst_offset);
 json_write_result_t json_write_buffer(
 	json_puts_cb write,
 	void* ram, json_docdef_t* docdef,
 	size_t src_offset);
 typedef struct {
-	size_t dst_size;
-	size_t dst_offset;
-} json_read_buffer_params_t;
-typedef struct {
 	size_t buf_pos;
 } json_read_buffer_state_t;
 
+
+// uses read_buffer_params
 json_read_result_t json_read_string(
 	jsmntok_t* tok,
 	json_copy_cb copy, void* ram, json_docdef_t* docdef,
-	const char* text, size_t text_len, size_t dst_offset);
+	const char* text, size_t text_len, int32_t dst_offset);
 json_write_result_t json_write_string(
 	json_puts_cb write,
 	void* ram, json_docdef_t* docdef,
 	size_t src_offset);
-json_read_result_t json_match_string(
-	jsmntok_t* tok,
-	json_copy_cb copy, void* ram, json_docdef_t* docdef,
-	const char* text, size_t text_len, size_t dst_offset);
+
+
 typedef struct {
 	const char* to_match;
 } json_match_string_params_t;
+
+json_read_result_t json_match_string(
+	jsmntok_t* tok,
+	json_copy_cb copy, void* ram, json_docdef_t* docdef,
+	const char* text, size_t text_len, int32_t dst_offset);
 json_write_result_t json_write_constant_string(
 	json_puts_cb write,
 	void* ram, json_docdef_t* docdef,
 	size_t src_offset);
 
+
+// top-level parser state
+// will be initialized during json_read call
 typedef struct {
 	jsmn_parser jsmn;
 	size_t text_ct;

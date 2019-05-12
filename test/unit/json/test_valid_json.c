@@ -34,6 +34,9 @@ void test_all_types_round_trip(void) {
 				"\"ubyte\": 4"
 			"}"
 		"], "
+		"\"nested_cached\": {"
+			"\"ubyte\": 127"
+		"}, "
 		"\"longstring\": \""
 			"0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF"
 			"0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF"
@@ -65,14 +68,14 @@ void test_all_types_round_trip(void) {
 	TEST_ASSERT_EQUAL_INT16(-32767, json_test_dest.sshort);
 	TEST_ASSERT_EQUAL_UINT32(4294967295, json_test_dest.ulong);
 	TEST_ASSERT_EQUAL_INT32(-2147483647 - 1, json_test_dest.slong);
-	/* TEST_ASSERT_EQUAL_INT(true, json_test_dest.boolean); */
+	TEST_ASSERT_EQUAL_INT(true, json_test_dest.boolean);
 	TEST_ASSERT_EQUAL_INT(TEST_ENUM_TWO, json_test_dest.test_enum);
 	TEST_ASSERT_EQUAL_MEMORY(
 		"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\xA0\xB0\xC0\xD0\xE0\xF0",
 		json_test_dest.buffer,
 		16);
 	TEST_ASSERT_EQUAL_UINT8(255, json_test_dest.nested.ubyte);
-	/* TEST_ASSERT_EQUAL_UINT8(127, json_test_dest.nested_cached.ubyte); */
+	TEST_ASSERT_EQUAL_UINT8(127, json_test_dest.nested_cached.ubyte);
 	TEST_ASSERT_EQUAL_UINT8(1, json_test_dest.nested_array[0].ubyte);
 	TEST_ASSERT_EQUAL_UINT8(2, json_test_dest.nested_array[1].ubyte);
 	TEST_ASSERT_EQUAL_UINT8(3, json_test_dest.nested_array[2].ubyte);

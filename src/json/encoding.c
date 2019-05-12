@@ -2,6 +2,11 @@
 
 #include "json/encoding.h"
 
+#define JSON_DEBUG 0
+#if JSON_DEBUG
+#include "print_funcs.h"
+#endif
+
 char* encode_decimal_unsigned(uint32_t val) {
 	static char decimal_encoding_buf[12] = { 0 };
 	uint8_t i = 10;
@@ -70,14 +75,30 @@ int decode_hexbuf(json_copy_cb copy, char* dst, const char* src, size_t len) {
 	uint8_t upper, lower, byte;
 	for (size_t i = 0; i < len; i += 2) {
 		if (decode_nybble(&upper, src[i]) < 0) {
+#if JSON_DEBUG
+		  print_dbg("\r\n bad upper nybble: ");
+		  print_dbg_hex(src[i]);
+#endif
 			return -1;
 		}
 		if (decode_nybble(&lower, src[i + 1]) < 0) {
+#if JSON_DEBUG
+		  print_dbg("\r\n bad lower nybble: ");
+		  print_dbg_hex(src[i + 1]);
+#endif
 			return -1;
 		}
 		byte = (upper << 4) | lower;
 		hexbuf[i / 2] = byte;
 	}
+#if JSON_DEBUG
+	print_dbg("\r\n> copy ");
+	print_dbg_hex(len);
+	print_dbg(" @ ");
+	print_dbg_hex(hexbuf);
+	print_dbg(" -> ");
+	print_dbg_hex(dst);
+#endif
 	copy(dst, hexbuf, len);
 	return 0;
 }

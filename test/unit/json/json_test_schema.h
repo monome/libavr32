@@ -29,7 +29,7 @@ typedef struct {
 	test_enum_t test_enum;
 	uint8_t buffer[16];
 	test_nested_t nested;
-        /* test_nested_t nested_cached; */
+        test_nested_t nested_cached;
 	test_nested_t nested_array[4];
 	char longstring[sizeof(LONG_STRING) - 1];
 	char longbuffer[sizeof(LONG_STRING) / 2];
