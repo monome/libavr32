@@ -29,8 +29,10 @@ typedef struct {
 	test_enum_t test_enum;
 	uint8_t buffer[16];
 	test_nested_t nested;
+        /* test_nested_t nested_cached; */
 	test_nested_t nested_array[4];
-	char longstring[sizeof(json_test_buf) - 8];
+	char longstring[sizeof(LONG_STRING) - 1];
+	char longbuffer[sizeof(LONG_STRING) / 2];
 } json_test_dest_t;
 
 extern json_test_dest_t json_test_dest;

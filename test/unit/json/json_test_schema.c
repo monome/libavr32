@@ -169,6 +169,16 @@ json_docdef_t json_test_docdef = {
 					.dst_size = sizeof_field(json_test_dest_t, longstring),
 				}),
 			},
+			{
+				.name = "longbuffer",
+				.read = json_read_buffer,
+				.write = json_write_buffer,
+				.state = &test_json_buffer_state,
+				.params = &((json_read_buffer_params_t) {
+					.dst_offset = offsetof(json_test_dest_t, longbuffer),
+					.dst_size = sizeof_field(json_test_dest_t, longbuffer),
+				}),
+			},
 		}),
 	}),
 };

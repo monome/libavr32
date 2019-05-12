@@ -10,9 +10,10 @@
 #define sizeof_field(s, m) (sizeof((((s*)0)->m)))
 
 typedef enum {
-  JSON_READ_OK,
-  JSON_READ_INCOMPLETE,
-  JSON_READ_MALFORMED,
+  JSON_READ_OK,         // finished reading a value
+  JSON_READ_INCOMPLETE, // need more text for current value
+  JSON_READ_KEEP_GOING, // need more text, read from stream without rewinding
+  JSON_READ_MALFORMED,  // invalid json or unexpected property value type
 } json_read_result_t;
 
 typedef enum {

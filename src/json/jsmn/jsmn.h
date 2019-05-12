@@ -1,6 +1,7 @@
 ﻿#ifndef __JSMN_H_
 #define __JSMN_H_
 
+#include <stdbool.h>
 #include <stddef.h>
 
 #ifdef __cplusplus
@@ -57,6 +58,7 @@ typedef struct {
 	unsigned int toknext; /* next token to allocate */
 	unsigned int depth;
 	int toksuper; /* superior token node, e.g parent object or array */
+	bool string_open;
 } jsmn_parser;
 
 /**
