@@ -602,7 +602,7 @@ json_read_result_t json_read(
 			keep_ct = 0;
 			if (deserialize_state.jsmn.toknext > 0) {
 				last_tok = &tokbuf[deserialize_state.jsmn.toknext - 1];
-				if (result == JSON_READ_KEEP_GOING) {
+				if (result == JSON_READ_KEEP_GOING || last_tok->start == 0) {
 					// if in the middle of a string or buffer value, don't backtrack
 					keep_ct = 0;
 				} else if (last_tok->end < 0) {
@@ -613,17 +613,16 @@ json_read_result_t json_read(
 					// if the last token was complete, copy everything after it
 					keep_ct = deserialize_state.text_ct - last_tok->end;
 				}
-				strncpy(textbuf,
-					textbuf + deserialize_state.text_ct - keep_ct,
-					keep_ct);
+				if (keep_ct > 0) {
+					strncpy(textbuf,
+						textbuf + deserialize_state.text_ct - keep_ct,
+						keep_ct);
+				}
 
 				// rewind the parser state so it stays within the fixed buffers
 				deserialize_state.jsmn.pos -= deserialize_state.text_ct
 							    - (deserialize_state.jsmn.string_open ? 0 : keep_ct);
 				deserialize_state.jsmn.toknext = 0;
-				if (deserialize_state.jsmn.toksuper >= 0) {
-					deserialize_state.jsmn.toksuper -= deserialize_state.jsmn.toknext;
-				}
 			}
 
 			// read from stream and tokenize
@@ -632,21 +631,24 @@ json_read_result_t json_read(
 				return JSON_READ_MALFORMED;
 			}
 			deserialize_state.text_ct = keep_ct + bytes_read;
+
 			jsmn_err = jsmn_parse(&deserialize_state.jsmn,
 					      textbuf, deserialize_state.text_ct,
 					      tokbuf, tokbuf_len);
+			if (bytes_read == 0) {
+				// EOF while seeking token
+				if (jsmn_err == JSMN_ERROR_PART || (int)jsmn_err == 0) {
+					return JSON_READ_MALFORMED;
+				}
+			}
 			if ((int)jsmn_err == 0) {
-				// there should always be at least one token
-				return JSON_READ_MALFORMED;
+				deserialize_state.jsmn.pos = 0;
+				continue;
 			}
 			if ((int)jsmn_err < 0
 			 && jsmn_err != JSMN_ERROR_NOMEM
 			 && jsmn_err != JSMN_ERROR_PART) {
 				// unknown error code
-				return JSON_READ_MALFORMED;
-			}
-			if (jsmn_err == JSMN_ERROR_PART && bytes_read == 0) {
-				// EOF mid-token
 				return JSON_READ_MALFORMED;
 			}
 			deserialize_state.curr_tok = 0;

@@ -101,10 +101,10 @@ typedef enum {
 typedef struct {
 	json_docdef_t* docdefs;
 	uint8_t docdef_ct;
-        /* size_t dst_offset; */
-        /* size_t dst_size; */
-        /* json_alloc_cb alloc; */
-        /* json_free_cb free; */
+        size_t dst_offset;
+        size_t dst_size;
+        json_alloc_cb alloc;
+        json_free_cb free;
 } json_read_object_params_t;
 /* typedef struct { */
 /* 	json_docdef_t* docdefs; */
