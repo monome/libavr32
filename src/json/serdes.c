@@ -480,7 +480,7 @@ json_read_result_t json_read_buffer(
 		return JSON_READ_MALFORMED;
 	}
 	size_t start = tok->start > 0 ? tok->start : 0;
-	size_t input_len = (tok->end > 0 ? tok->end : text_len) - start;
+	size_t input_len = (tok->end >= 0 ? tok->end : text_len) - start;
 	if (input_len % 2 != 0) {
 		// need to start the token over so that we decode whole bytes
 		return JSON_READ_INCOMPLETE;
@@ -559,7 +559,7 @@ json_read_result_t json_read_string(
 	}
 	char* dst = (char*)ram + params->dst_offset + dst_offset;
 	copy(dst + state->buf_pos, text + start, len);
-	if (tok->end > 0) {
+	if (tok->end >= 0) {
 		docdef->fresh = true;
 		return JSON_READ_OK;
 	}
@@ -633,8 +633,8 @@ json_read_result_t json_read(
 			}
 			deserialize_state.text_ct = keep_ct + bytes_read;
 			jsmn_err = jsmn_parse(&deserialize_state.jsmn,
-						  textbuf, deserialize_state.text_ct,
-						  tokbuf, tokbuf_len);
+					      textbuf, deserialize_state.text_ct,
+					      tokbuf, tokbuf_len);
 			if ((int)jsmn_err == 0) {
 				// there should always be at least one token
 				return JSON_READ_MALFORMED;

@@ -27,6 +27,8 @@ struct json_docdef_t;
 typedef size_t(*json_gets_cb)(char* dst, size_t len);
 typedef void(*json_puts_cb)(const char* src, size_t len);
 typedef void(*json_copy_cb)(char* dst, const char* src, size_t len);;
+typedef void*(*json_alloc_cb)(size_t size);
+typedef void(*json_free_cb)(void* ptr);
 
 // these are the primary API functions
 //   read/write - will be called to read from/write to the byte stream,
@@ -75,10 +77,21 @@ json_read_result_t json_read_object(
 	json_copy_cb copy, void* ram, json_docdef_t* docdef,
 	const char* text, size_t text_len,
 	size_t dst_offset);
+
+/* json_read_result_t json_read_object_cached( */
+/* 	jsmntok_t* tok, */
+/* 	json_copy_cb copy, void* ram, json_docdef_t* docdef, */
+/* 	const char* text, size_t text_len, */
+/* 	size_t dst_offset); */
+
 json_write_result_t json_write_object(
 	json_puts_cb write,
 	void* ram, json_docdef_t* docdef,
 	size_t src_offset);
+/* json_write_result_t json_write_object_cached( */
+/* 	json_puts_cb write, */
+/* 	void* ram, json_docdef_t* docdef, */
+/* 	size_t src_offset); */
 typedef enum {
 	JSON_OBJECT_MATCH_START,
 	JSON_OBJECT_SKIP_SECTION,
@@ -88,13 +101,33 @@ typedef enum {
 typedef struct {
 	json_docdef_t* docdefs;
 	uint8_t docdef_ct;
+        /* size_t dst_offset; */
+        /* size_t dst_size; */
+        /* json_alloc_cb alloc; */
+        /* json_free_cb free; */
 } json_read_object_params_t;
+/* typedef struct { */
+/* 	json_docdef_t* docdefs; */
+/* 	uint8_t docdef_ct; */
+/*         size_t dst_offset; */
+/*         size_t dst_size; */
+/*         json_alloc_cb alloc; */
+/*         json_free_cb free; */
+/* } json_read_object_cached_params_t; */
 typedef struct {
 	json_object_read_phase_t object_state;
 	json_docdef_t* active_docdef;
 	uint8_t sections_handled;
 	unsigned int depth;
+        void* cache;
 } json_read_object_state_t;
+/* typedef struct { */
+/* 	json_object_read_phase_t object_state; */
+/* 	json_docdef_t* active_docdef; */
+/* 	uint8_t sections_handled; */
+/* 	unsigned int depth; */
+/*         void* cache; */
+/* } json_read_object_cached_state_t; */
 
 json_read_result_t json_read_array(
 	jsmntok_t* tok,

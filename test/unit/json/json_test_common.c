@@ -11,7 +11,7 @@
 #include "json/encoding.c"
 #include "json/serdes.c"
 
-char json_test_buf[256];
+char json_test_buf[64];
 jsmntok_t json_test_tokens[8];
 
 json_docdef_t* find_docdef(json_docdef_t* base, char * name) {
@@ -40,13 +40,19 @@ bool compare_files(const char* left, const char* right) {
 		l_ct = fread(cmp_buf[0], 1, sizeof(cmp_buf), l);
 		r_ct = fread(cmp_buf[1], 1, sizeof(cmp_buf), r);
 		if (l_ct == 0 && r_ct == 0) {
+			fclose(l);
+			fclose(r);
 			return true;
 		}
 		if (l_ct < 0 || r_ct < 0 || l_ct != r_ct) {
+			fclose(l);
+			fclose(r);
 			return false;
 		}
 
 		if (strncmp(cmp_buf[0], cmp_buf[1], l_ct) != 0) {
+			fclose(l);
+			fclose(r);
 			return false;
 		}
 	}
