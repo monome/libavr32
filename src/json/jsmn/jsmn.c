@@ -1,5 +1,7 @@
 #include "jsmn.h"
 
+#include "print_funcs.h"
+
 /**
  * Allocates a fresh unused token from the token pool.
  */
@@ -247,7 +249,8 @@ int jsmn_parse(jsmn_parser *parser, const char *js, size_t len,
 				}
 #endif
 				break;
-			case '\"': parse_string:
+			case '\"':
+parse_string:
 				r = jsmn_parse_string(parser, js, len, tokens, num_tokens);
 				if (r == JSMN_ERROR_PART) {
 					parser->string_open = true;

@@ -28,18 +28,15 @@
     if (size == sizeof(type)) {                    \
       ret = &cache;                                \
     }                                              \
-    print_dbg("\r\n\r\nalloc ");		   \
-    print_dbg_hex(size);			   \
     if (ret == NULL) {				   \
-      print_dbg(" FAILED");			   \
-    } else {					   \
-      print_dbg(" OK");			   \
+      print_dbg("\r\nalloc FAILED");		   \
     }						   \
     return ret;                                    \
   }
 
 #define STATIC_ALLOC(type, cache) static_alloc_##type
 
+void nop_free(void* ptr);
 
 
 //// error codes

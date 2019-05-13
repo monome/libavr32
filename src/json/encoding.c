@@ -3,13 +3,22 @@
 #include "json/encoding.h"
 
 #define JSON_DEBUG 0
-#if JSON_DEBUG
+/* #if JSON_DEBUG */
 #include "print_funcs.h"
-#endif
+/* #endif */
 
 char* encode_decimal_unsigned(uint32_t val) {
 	static char decimal_encoding_buf[12] = { 0 };
-	uint8_t i = 10;
+	uint8_t i;
+
+#if JSON_DEBUG
+	print_dbg("\r\nencode unsigned ");
+	print_dbg_hex(val);
+#endif
+	for (i = 0; i < 12; i++) {
+	  decimal_encoding_buf[i] = 0;
+	}
+	i = 10;
 	if (val == 0) {
 		decimal_encoding_buf[i--] = '0';
 	}
@@ -18,6 +27,10 @@ char* encode_decimal_unsigned(uint32_t val) {
 			decimal_encoding_buf[i] = (val % 10) + '0';
 		}
 	}
+#if JSON_DEBUG
+	print_dbg("-> ");
+	print_dbg(&decimal_encoding_buf[i + 1]);
+#endif
 	return &decimal_encoding_buf[i + 1];
 }
 
@@ -34,6 +47,14 @@ char* encode_decimal_signed(int32_t val) {
 
 int32_t decode_decimal(const char* s, int len) {
 	int32_t ret = 0;
+
+#if JSON_DEBUG
+	print_dbg("\r\ndecode scalar: ");
+	for(int i = 0; i < len; i++) {
+		print_dbg_char(s[i]);
+	}
+#endif
+
 	// also handle bool
 	if (s[0] == 't') {
 		return 1;
@@ -45,7 +66,16 @@ int32_t decode_decimal(const char* s, int len) {
 	for (int i = negative ? 1 : 0; i < len; i++) {
 		ret = ret * 10 + (s[i] - '0');
 	}
-	return negative ? -ret : ret;
+        if (negative) {
+		ret = -ret;
+	}
+
+#if JSON_DEBUG
+	print_dbg(" -> ");
+	print_dbg_hex(ret);
+#endif
+
+	return ret;
 }
 
 int decode_nybble(uint8_t* dst, char hex) {
@@ -108,4 +138,12 @@ char encode_nybble(uint8_t value) {
 		return value - 0xA + 'A';
 	}
 	return value + '0';
+}
+
+void encode_hexbuf(json_puts_cb write, const uint8_t* src, size_t len) {
+  for (size_t i = 0; i < len; i++) {
+    hexbuf[2 * i] = encode_nybble((src[i] & 0xF0) >> 4);
+    hexbuf[2 * i + 1] = encode_nybble(src[i] & 0x0F);
+  }
+  write(hexbuf, 2 * len);
 }
