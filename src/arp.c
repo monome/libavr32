@@ -306,9 +306,9 @@ static void arp_seq_build_random(arp_seq_t *s, chord_t *c) {
 	u8 count, upper, i;
 
 	count = c->note_count;
-	upper = (count > 0) ? count - 1 : 0;
+	upper = (count > 0) ? count : 0;
 
-	random_init(&r, time_now(), 0, upper);
+	random_seed(&r, time_now());
 
 	// ensure empty starts in a known state
 	for (i = 0; i < count; i++) {
@@ -318,7 +318,7 @@ static void arp_seq_build_random(arp_seq_t *s, chord_t *c) {
 	// go through each note, pick a random index within the sequence,
 	// place note at next free index...
 	for (i = 0; i < count; i++) {
-		ri = random_next(&r);
+		ri = random_next(&r) % upper;
 		while (!s->notes[ri].empty) {
 			ri++;
 			if (ri == count) ri = 0;

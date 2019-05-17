@@ -22,6 +22,9 @@
 // -- reset goes to beginning
 // -- loop loops
 // -- loop loops once per octave, note values increase by octave
+//
+u8 irqs_pause(void) { return 0; }
+void irqs_resume(u8 irq_flags) {}
 
 chord_t c;
 

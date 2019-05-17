@@ -18,13 +18,14 @@ void test_random_init_and_seed(void) {
 	u16 i;
 	random_state_t r;
 
-	random_init(&r, GOOD_SEED, -1000, 1000);
+	//random_init(&r, GOOD_SEED, -1000, 1000);
+	random_seed(&r, GOOD_SEED);
 
-	TEST_ASSERT_EQUAL_INT(-1000, r.min);
-	TEST_ASSERT_EQUAL_INT(1000, r.max);
-	TEST_ASSERT_EQUAL_INT(GOOD_SEED, r.x);
+	//TEST_ASSERT_EQUAL_INT(-1000, r.min);
+	//TEST_ASSERT_EQUAL_INT(1000, r.max);
+	TEST_ASSERT_EQUAL_INT(GOOD_SEED, r.w);
 
-	s16 values[VALUE_COUNT];
+	u32 values[VALUE_COUNT];
 
 	for (i = 0; i < VALUE_COUNT; i++) {
 		values[i] = random_next(&r);
@@ -32,7 +33,7 @@ void test_random_init_and_seed(void) {
 
 	random_seed(&r, GOOD_SEED);
 
-	TEST_ASSERT_EQUAL_INT(GOOD_SEED, r.x);
+	TEST_ASSERT_EQUAL_INT(GOOD_SEED, r.w);
 
 	// re-seeding should produce the same sequence
 	for (i = 0; i < VALUE_COUNT; i++) {
@@ -41,7 +42,8 @@ void test_random_init_and_seed(void) {
 
 	// different seeds should produce sequences
 	int differences = 0;
-	random_init(&r, BAD_SEED, -1000, 1000);
+	//random_init(&r, BAD_SEED, -1000, 1000);
+	random_seed(&r, BAD_SEED);
 	for (i = 0; i < VALUE_COUNT; i++) {
 		if (values[i] != random_next(&r)) {
 			differences++;
@@ -50,6 +52,7 @@ void test_random_init_and_seed(void) {
 	TEST_ASSERT_TRUE(differences > VALUE_COUNT / 2);
 }
 
+/*
 void test_random_range(void) {
 	u32 i;
 	s32 v;
@@ -118,13 +121,13 @@ void test_random_range(void) {
 	TEST_ASSERT_TRUE_MESSAGE(got_min, "didn't hit -100");
 	TEST_ASSERT_TRUE_MESSAGE(got_min, "didn't hit -80");
 }
-
+*/
 
 int main(void) {
 	UNITY_BEGIN();
 
 	RUN_TEST(test_random_init_and_seed);
-	RUN_TEST(test_random_range);
+	//RUN_TEST(test_random_range);
 
 	return UNITY_END();
 }
