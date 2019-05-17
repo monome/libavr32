@@ -57,12 +57,12 @@ void test_decode_hexbuf(void) {
 	{
 		char s[] = "00112233";
 		TEST_ASSERT_EQUAL_INT(0, decode_hexbuf(copy, hex_out, s, strlen(s)));
-		TEST_ASSERT_EQUAL_STRING(hex_out, "\x00\x11\x22\x33");
+		TEST_ASSERT_EQUAL_UINT8_ARRAY(hex_out, "\x00\x11\x22\x33", 4);
 	}
 	{
 		char s[] = "AABBCCDD";
 		TEST_ASSERT_EQUAL_INT(0, decode_hexbuf(copy, hex_out, s, strlen(s)));
-		TEST_ASSERT_EQUAL_STRING(hex_out, "\xAA\xBB\xCC\xDD");
+		TEST_ASSERT_EQUAL_UINT8_ARRAY(hex_out, "\xAA\xBB\xCC\xDD", 4);
 	}
 }
 

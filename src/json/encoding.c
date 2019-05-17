@@ -3,9 +3,9 @@
 #include "json/encoding.h"
 
 #define JSON_DEBUG 0
-/* #if JSON_DEBUG */
+#if JSON_DEBUG
 #include "print_funcs.h"
-/* #endif */
+#endif
 
 char* encode_decimal_unsigned(uint32_t val) {
 	static char decimal_encoding_buf[12] = { 0 };
@@ -99,37 +99,19 @@ int decode_nybble(uint8_t* dst, char hex) {
 	return 0;
 }
 
-static char hexbuf[JSON_MAX_BUFFER_SIZE];
-
 int decode_hexbuf(json_copy_cb copy, char* dst, const char* src, size_t len) {
-	uint8_t upper, lower, byte;
+	uint8_t upper, lower;
+	char byte;
 	for (size_t i = 0; i < len; i += 2) {
 		if (decode_nybble(&upper, src[i]) < 0) {
-#if JSON_DEBUG
-		  print_dbg("\r\n bad upper nybble: ");
-		  print_dbg_hex(src[i]);
-#endif
 			return -1;
 		}
 		if (decode_nybble(&lower, src[i + 1]) < 0) {
-#if JSON_DEBUG
-		  print_dbg("\r\n bad lower nybble: ");
-		  print_dbg_hex(src[i + 1]);
-#endif
 			return -1;
 		}
 		byte = (upper << 4) | lower;
-		hexbuf[i / 2] = byte;
+		copy(dst + i / 2, &byte, 1);
 	}
-#if JSON_DEBUG
-	print_dbg("\r\n> copy ");
-	print_dbg_hex(len);
-	print_dbg(" @ ");
-	print_dbg_hex(hexbuf);
-	print_dbg(" -> ");
-	print_dbg_hex(dst);
-#endif
-	copy(dst, hexbuf, len);
 	return 0;
 }
 
@@ -141,9 +123,11 @@ char encode_nybble(uint8_t value) {
 }
 
 void encode_hexbuf(json_puts_cb write, const uint8_t* src, size_t len) {
-  for (size_t i = 0; i < len; i++) {
-    hexbuf[2 * i] = encode_nybble((src[i] & 0xF0) >> 4);
-    hexbuf[2 * i + 1] = encode_nybble(src[i] & 0x0F);
-  }
-  write(hexbuf, 2 * len);
+	char nybble;
+	for (size_t i = 0; i < len; i++) {
+		nybble = encode_nybble((src[i] & 0xF0) >> 4);
+		write(&nybble, 1);
+		nybble = encode_nybble(src[i] & 0x0F);
+		write(&nybble, 1);
+	}
 }

@@ -3,8 +3,6 @@
 
 #include "json/serdes.h"
 
-#define JSON_MAX_BUFFER_SIZE 256
-
 char* encode_decimal_unsigned(uint32_t val);
 char* encode_decimal_signed(int32_t val);
 int32_t decode_decimal(const char* s, int len);
