@@ -130,31 +130,6 @@ json_docdef_t json_test_docdef = {
 				}),
 			},
 			{
-				.name = "nested_cached",
-				.read = json_read_object_cached,
-				.write = json_write_object,
-				.state = &test_json_object_state[1],
-				.params = &((json_read_object_params_t) {
-					.docdef_ct = 1,
-					.docdefs = ((json_docdef_t[]) {
-						{
-							.name = "ubyte",
-							.read = json_read_scalar,
-							.write = json_write_number,
-							.params = &((json_read_scalar_params_t) {
-								.dst_size = sizeof_field(json_test_dest_t, nested.ubyte),
-								.dst_offset = offsetof(json_test_dest_t, nested.ubyte),
-								.signed_val = false,
-							}),
-						},
-					}),
-				        .dst_size = sizeof_field(json_test_dest_t, nested_cached),
-				        .dst_offset = offsetof(json_test_dest_t, nested_cached),
-				        .alloc = malloc,
-				        .free = free,
-				}),
-			},
-			{
 				.name = "nested_array",
 				.read = json_read_array,
 				.write = json_write_array,
@@ -182,6 +157,31 @@ json_docdef_t json_test_docdef = {
 							}),
 						}),
 					}),
+				}),
+			},
+			{
+				.name = "nested_cached",
+				.read = json_read_object_cached,
+				.write = json_write_object,
+				.state = &test_json_object_state[1],
+				.params = &((json_read_object_params_t) {
+					.docdef_ct = 1,
+					.docdefs = ((json_docdef_t[]) {
+						{
+							.name = "ubyte",
+							.read = json_read_scalar,
+							.write = json_write_number,
+							.params = &((json_read_scalar_params_t) {
+								.dst_size = sizeof_field(json_test_dest_t, nested_cached.ubyte),
+								.dst_offset = offsetof(json_test_dest_t, nested_cached.ubyte),
+								.signed_val = false,
+							}),
+						},
+					}),
+				        .dst_size = sizeof_field(json_test_dest_t, nested_cached),
+				        .dst_offset = offsetof(json_test_dest_t, nested_cached),
+				        .alloc = malloc,
+				        .free = free,
 				}),
 			},
 			{

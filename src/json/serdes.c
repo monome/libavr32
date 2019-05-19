@@ -33,10 +33,8 @@ json_read_result_t json_read_object(
 	switch (state->object_state) {
 	case JSON_OBJECT_MATCH_START:
 		if (tok->type != JSMN_OBJECT) {
-#ifndef RUNNING_TESTS
 			print_dbg("\r\n!! bad token type for object start: ");
 			print_dbg_hex(tok->type);
-#endif
 			return JSON_READ_MALFORMED;
 		}
 		state->depth = tok->depth + 1;
@@ -50,10 +48,8 @@ json_read_result_t json_read_object(
 		// fallthrough
 	case JSON_OBJECT_MATCH_NAME:
 		if (tok->type != JSMN_STRING) {
-#ifndef RUNNING_TESTS
 			print_dbg("\r\n!! bad token type for object name match: ");
 			print_dbg_hex(tok->type);
-#endif
 			return JSON_READ_MALFORMED;
 		}
 		if (tok->end > 0) {
@@ -82,24 +78,20 @@ json_read_result_t json_read_object(
 			state->object_state = JSON_OBJECT_MATCH_NAME;
 			return JSON_READ_INCOMPLETE;
 		default:
-#if JSON_DEBUG
-		  print_dbg("\r\n!! bad property value: ");
-		  print_dbg(state->active_docdef->name);
-#endif
+			print_dbg("\r\n!! bad property value: ");
+			print_dbg(state->active_docdef->name);
 			return JSON_READ_MALFORMED;
 		}
 	}
 	default:
-#if JSON_DEBUG
 		  print_dbg("\r\n!! bad object state: ");
 		  print_dbg_hex(state->object_state);
-#endif
 		return JSON_READ_MALFORMED;
 	}
 }
 
 static void copy_cached(char* dst, const char* src, size_t len) {
-  memcpy((void*)dst, (void*)src, len);
+	memcpy((void*)dst, (void*)src, len);
 }
 
 json_read_result_t json_read_object_cached(
@@ -118,10 +110,8 @@ json_read_result_t json_read_object_cached(
 		state->cache = NULL;
 		state->cache = params->alloc(params->dst_size);
 		if (state->cache == NULL) {
-#ifndef RUNNING_TESTS
 			print_dbg("\r\n!! allocation failed: ");
 			print_dbg_hex(state->object_state);
-#endif
 			return JSON_READ_MALFORMED;
 		}
 	}
@@ -133,17 +123,17 @@ json_read_result_t json_read_object_cached(
 			(char*)ram + params->dst_offset + dst_offset,
 			state->cache,
 			params->dst_size);
-		params->free(state->cache);
+		if (state->cache != NULL) {
+			params->free(state->cache);
+		}
 		return JSON_READ_OK;
 	}
 
 	switch (state->object_state) {
 	case JSON_OBJECT_MATCH_START:
 		if (tok->type != JSMN_OBJECT) {
-#ifndef RUNNING_TESTS
 			print_dbg("\r\n!! bad token type for object start: ");
 			print_dbg_hex(tok->type);
-#endif
 			if (state->cache != NULL) {
 				params->free(state->cache);
 			}
@@ -160,7 +150,6 @@ json_read_result_t json_read_object_cached(
 		// fallthrough
 	case JSON_OBJECT_MATCH_NAME:
 		if (tok->type != JSMN_STRING) {
-#ifndef RUNNING_TESTS
 			print_dbg("\r\n!! bad token type for object name match: ");
 			print_dbg_hex(tok->type);
 			print_dbg(" (");
@@ -168,7 +157,6 @@ json_read_result_t json_read_object_cached(
 			print_dbg(" - ");
 			print_dbg_hex(tok->end);
 			print_dbg(")");
-#endif
 			if (state->cache != NULL) {
 				params->free(state->cache);
 			}
@@ -205,7 +193,6 @@ json_read_result_t json_read_object_cached(
 			tok,
 			copy_cached, state->cache, state->active_docdef,
 			text, text_len, -params->dst_offset);
-			//dst_offset - params->dst_offset);
 		switch (prop_result) {
 		case JSON_READ_KEEP_GOING:
 #if JSON_DEBUG
@@ -219,8 +206,8 @@ json_read_result_t json_read_object_cached(
 			return JSON_READ_INCOMPLETE;
 		default:
 #if JSON_DEBUG
-		  print_dbg("\r\n!! bad property value: ");
-		  print_dbg(state->active_docdef->name);
+			print_dbg("\r\n!! bad property value: ");
+			print_dbg(state->active_docdef->name);
 #endif
 			if (state->cache != NULL) {
 				params->free(state->cache);
@@ -230,8 +217,8 @@ json_read_result_t json_read_object_cached(
 	}
 	default:
 #if JSON_DEBUG
-		  print_dbg("\r\n!! bad cached object state: ");
-		  print_dbg_hex(state->object_state);
+			print_dbg("\r\n!! bad cached object state: ");
+			print_dbg_hex(state->object_state);
 #endif
 		if (state->cache != NULL) {
 			params->free(state->cache);
@@ -266,10 +253,8 @@ json_read_result_t json_read_scalar(
 	const char* text, size_t text_len, int32_t dst_offset) {
 	json_read_scalar_params_t* params = (json_read_scalar_params_t*)docdef->params;
 	if (tok->type != JSMN_PRIMITIVE) {
-#ifndef RUNNING_TESTS
 		print_dbg("\r\n!! unexpected token type for scalar: ");
 		print_dbg_hex(tok->type);
-#endif
 		return JSON_READ_MALFORMED;
 	}
 	if (tok->end < 0) {
@@ -304,10 +289,8 @@ json_read_result_t json_read_scalar(
 		break;
 	}
 	default:
-#ifndef RUNNING_TESTS
 		print_dbg("\r\n!! unknown scalar size: ");
 		print_dbg_hex(params->dst_size);
-#endif
 		return JSON_READ_MALFORMED;
 	}
 	return JSON_READ_OK;
@@ -416,20 +399,16 @@ json_read_result_t json_match_string(
 	const char* text, size_t text_len, int32_t dst_offset) {
 	json_match_string_params_t* params = (json_match_string_params_t*)docdef->params;
 	if (tok->type != JSMN_STRING) {
-#ifndef RUNNING_TESTS
 		print_dbg("\r\n!! unexpected token type for string match: ");
 		print_dbg_hex(tok->type);
-#endif
 		return JSON_READ_MALFORMED;
 	}
 	if (tok->end < 0) {
 		return JSON_READ_INCOMPLETE;
 	}
 	if (strncmp(params->to_match, text + tok->start, tok->end - tok->start) != 0) {
-#ifndef RUNNING_TESTS
 		print_dbg("\r\n!! incorrect string match: ");
 		print_dbg(params->to_match);
-#endif
 		return JSON_READ_MALFORMED;
 	}
 	return JSON_READ_OK;
@@ -458,10 +437,8 @@ json_read_result_t json_read_enum(
 		return JSON_READ_OK;
 	}
 	if (tok->type != JSMN_STRING) {
-#ifndef RUNNING_TESTS
 		print_dbg("\r\n!! bad token type for enum: ");
 		print_dbg_hex(tok->type);
-#endif
 		return JSON_READ_MALFORMED;
 	}
 
@@ -514,10 +491,8 @@ json_read_result_t json_read_array(
 	switch (state->array_state) {
 	case JSON_ARRAY_MATCH_START:
 		if (tok->type != JSMN_ARRAY) {
-#ifndef RUNNING_TESTS
 			print_dbg("\r\n!! bad token type for array start: ");
 			print_dbg_hex(tok->type);
-#endif
 			return JSON_READ_MALFORMED;
 		}
 		state->depth = tok->depth + 1;
@@ -602,10 +577,8 @@ json_read_result_t json_read_buffer(
 		state->buf_pos = 0;
 	}
 	if (tok->type != JSMN_STRING) {
-#ifndef RUNNING_TESTS
 		print_dbg("\r\n!! bad tok type for buffer: ");
 		print_dbg_hex(tok->type);
-#endif
 		return JSON_READ_MALFORMED;
 	}
 	size_t start = tok->start > 0 ? tok->start : 0;
@@ -616,13 +589,11 @@ json_read_result_t json_read_buffer(
 	}
 	if (tok->end > 0) {
 		if (state->buf_pos + (input_len / 2) != params->dst_size) {
-#ifndef RUNNING_TESTS
 			print_dbg("\r\n!! bad buffer len: ");
 			print_dbg_hex(state->buf_pos + (input_len / 2));
 			print_dbg("(expected ");
 			print_dbg_hex(params->dst_size);
 			print_dbg(")");
-#endif
 			return JSON_READ_MALFORMED;
 		}
 	}
@@ -652,9 +623,7 @@ json_read_result_t json_read_buffer(
 		copy,
 		dst + state->buf_pos,
 		text + start, input_len) < 0) {
-#ifndef RUNNING_TESTS
 		print_dbg("\r\n!! decoding hex failed");
-#endif
 		return JSON_READ_MALFORMED;
 	}
 	state->buf_pos += input_len / 2;
@@ -700,23 +669,19 @@ json_read_result_t json_read_string(
 		state->buf_pos = 0;
 	}
 	if (tok->type != JSMN_STRING) {
-#ifndef RUNNING_TESTS
 		print_dbg("\r\n!! bad token type for string: ");
 		print_dbg_hex(tok->type);
-#endif
 		return JSON_READ_MALFORMED;
 	}
 	size_t start = tok->start > 0 ? tok->start : 0;
 	size_t len = (tok->end >= 0 ? tok->end : text_len) - start;
 	if (tok->end >= 0) {
 		if (state->buf_pos + len != params->dst_size) {
-#ifndef RUNNING_TESTS
 			print_dbg("\r\n!! bad string len: ");
 			print_dbg_hex(state->buf_pos + len);
 			print_dbg("(expected ");
 			print_dbg_hex(params->dst_size);
 			print_dbg(")");
-#endif
 			return JSON_READ_MALFORMED;
 		}
 	}
@@ -758,9 +723,7 @@ json_read_result_t json_read(
 
 	while (deserialize_state.text_ct >= 0) {
 		if (deserialize_state.jsmn.pos > textbuf_len) {
-#ifndef RUNNING_TESTS
 			print_dbg("\r\n!! tokenizer out of bounds");
-#endif
 			return JSON_READ_MALFORMED;
 		}
 
@@ -781,7 +744,7 @@ json_read_result_t json_read(
 					keep_ct = deserialize_state.text_ct - last_tok->end;
 				}
 				if (keep_ct > 0) {
-					strncpy(textbuf,
+					memmove(textbuf,
 						textbuf + deserialize_state.text_ct - keep_ct,
 						keep_ct);
 				}
@@ -852,15 +815,12 @@ json_read_result_t json_read(
 		case JSON_READ_INCOMPLETE:
 			continue;
 		case JSON_READ_OK:
-#ifndef RUNNING_TESTS
 			print_dbg("\r\n> OK! total bytes read from disk: ");
 			print_dbg_hex(total_bytes_read);
 			print_dbg("\r\n> total tokens processed: ");
 			print_dbg_hex(total_tokens_read);
-#endif
 			return JSON_READ_OK;
 		default:
-#ifndef RUNNING_TESTS
 			print_dbg("\r\n> FAILED! total bytes read from disk: ");
 			print_dbg_hex(total_bytes_read);
 			print_dbg("\r\n> total tokens processed: ");
@@ -897,7 +857,6 @@ json_read_result_t json_read(
 				print_dbg_char('^');
 			}
 			print_dbg("\r\n\r\n");
-#endif
 			return JSON_READ_MALFORMED;
 		}
 	}

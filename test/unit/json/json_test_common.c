@@ -33,12 +33,15 @@ FILE* write_temp_file(const char* name, const char* text, size_t len) {
 
 char cmp_buf[2][4096];
 bool compare_files(const char* left, const char* right) {
+	size_t l_ct, r_ct;
 	FILE* l = fopen(left, "r");
 	FILE* r = fopen(right, "r");
-	size_t l_ct, r_ct;
+	if (l == NULL || r == NULL) {
+		return false;
+	}
 	while (true) {
-		l_ct = fread(cmp_buf[0], 1, sizeof(cmp_buf), l);
-		r_ct = fread(cmp_buf[1], 1, sizeof(cmp_buf), r);
+		l_ct = fread(cmp_buf[0], 1, sizeof(cmp_buf[0]), l);
+		r_ct = fread(cmp_buf[1], 1, sizeof(cmp_buf[0]), r);
 		if (l_ct == 0 && r_ct == 0) {
 			fclose(l);
 			fclose(r);
@@ -51,6 +54,10 @@ bool compare_files(const char* left, const char* right) {
 		}
 
 		if (strncmp(cmp_buf[0], cmp_buf[1], l_ct) != 0) {
+			printf(
+				"\nfiles %s and %s differ:\n%s\n\n%s",
+				left, right,
+				cmp_buf[0], cmp_buf[1]);
 			fclose(l);
 			fclose(r);
 			return false;

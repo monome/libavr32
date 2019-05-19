@@ -3,6 +3,7 @@
 PRJ_ROOT = ..
 
 INC_PATH = \
+	test/include		                   \
 	src                                        \
 	src/json                                   \
 	src/usb                                    \
@@ -23,7 +24,6 @@ INC_PATH = \
 	asf/avr32/drivers/usart                    \
 	asf/avr32/drivers/usbb                     \
 	asf/avr32/utils                            \
-	asf/avr32/utils/debug                      \
 	asf/avr32/utils/preprocessor               \
 	asf/common/boards                          \
 	asf/common/boards/user_board               \
@@ -47,7 +47,9 @@ INTEGRATION_DIR = integration
 CC = gcc
 LINK = $(CC)
 
-CFLAGS = -g -Wall -Wstrict-prototypes -DRUNNING_TESTS #-Wmissing-prototypes
+CFLAGS = -g -Wall -Wstrict-prototypes #-Wmissing-prototypes
+VALGRIND_FLAGS = --leak-check=full \
+	         --show-leak-kinds=all
 
 TARGET_EXTENSION = out
 
@@ -71,6 +73,7 @@ test-objs = $(addprefix $(build-dir), $(addsuffix .o,$(basename $(tests))))
 test-deps = $(addprefix $(build-dir), $(addsuffix .d,$(basename $(tests))))
 test-execs = $(addprefix $(build-dir), $(addsuffix .$(TARGET_EXTENSION),$(basename $(tests))))
 test-results = $(addprefix $(build-dir), $(addsuffix .txt,$(basename $(tests))))
+leak-results = $(addprefix $(build-dir), $(addsuffix .leaks.txt,$(basename $(tests))))
 
 test-include-dir = include/
 
@@ -135,6 +138,11 @@ $(build-dir)%.txt: $(build-dir)%.$(TARGET_EXTENSION)
 	@echo $(MSG_TEST)
 	$(Q)-./$< > $@ 2>&1
 
+$(build-dir)%.leaks.txt: $(build-dir)%.$(TARGET_EXTENSION)
+	valgrind $(VALGRIND_FLAGS) ./$< > $@ 2>&1
+	@echo "\n\n\n"
+	@echo "/// leaks for $@ ///"
+	@cat $@
 
 # default target
 
@@ -144,6 +152,8 @@ test: $(test-results)
 	@echo "-----------------------\nFAILURES:\n-----------------------"
 	@echo `grep --no-filename -s FAIL $(test-results)`
 	@echo "\nDONE"
+
+leaks: $(leak-results)
 
 clean:
 	$(RM) -rf $(build-dir)
