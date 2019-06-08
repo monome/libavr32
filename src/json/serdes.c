@@ -55,6 +55,9 @@ json_read_result_t json_read_object(
 		if (tok->end > 0) {
 			for (uint8_t i = 0; i < params->docdef_ct; i++) {
 				if (strncmp(params->docdefs[i].name, text + tok->start, tok->end - tok->start) == 0) {
+					if (params->docdefs[i].skip) {
+						continue;
+					}
 					state->active_docdef = &params->docdefs[i];
 					state->active_docdef->fresh = true;
 					state->object_state = JSON_OBJECT_PARSE_PROPERTY;
@@ -165,6 +168,9 @@ json_read_result_t json_read_object_cached(
 		if (tok->end > 0) {
 			for (uint8_t i = 0; i < params->docdef_ct; i++) {
 				if (strncmp(params->docdefs[i].name, text + tok->start, tok->end - tok->start) == 0) {
+					if (params->docdefs[i].skip) {
+						continue;
+					}
 					state->active_docdef = &params->docdefs[i];
 					state->active_docdef->fresh = true;
 					state->object_state = JSON_OBJECT_PARSE_PROPERTY;
@@ -235,6 +241,10 @@ json_write_result_t json_write_object(
 
 	write("{", 1);
 	for (uint8_t i = 0; i < params->docdef_ct; i++) {
+		if (params->docdefs[i].skip) {
+			continue;
+		}
+
 		write("\"", 1);
 		write(params->docdefs[i].name, strlen(params->docdefs[i].name));
 		write("\": ", 3);
@@ -406,7 +416,7 @@ json_read_result_t json_match_string(
 	if (tok->end < 0) {
 		return JSON_READ_INCOMPLETE;
 	}
-	if (strncmp(params->to_match, text + tok->start, tok->end - tok->start) != 0) {
+	if (!params->skip && strncmp(params->to_match, text + tok->start, tok->end - tok->start) != 0) {
 		print_dbg("\r\n!! incorrect string match: ");
 		print_dbg(params->to_match);
 		return JSON_READ_MALFORMED;
@@ -868,4 +878,14 @@ json_write_result_t json_write(
 	void* ram, json_docdef_t* docdef) {
 	json_write_result_t ret = docdef->write(write, ram, docdef, 0);
 	return ret;
+}
+
+json_docdef_t* json_docdef_find_key(json_docdef_t* object_docdef, const char* name) {
+	const json_read_object_params_t* params = (json_read_object_params_t*)object_docdef->params;
+	for (int i = 0; i < params->docdef_ct; i++) {
+		if (strcmp(params->docdefs[i].name, name) == 0) {
+			return &params->docdefs[i];
+		}
+	}
+	return NULL;
 }

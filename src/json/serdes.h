@@ -102,6 +102,7 @@ typedef struct json_docdef_t {
 	json_read_subtree_cb read;
 	json_write_subtree_cb write;
 	bool fresh;
+	bool skip;
 	void* state;
 	void* params;
 } json_docdef_t;
@@ -243,6 +244,7 @@ json_write_result_t json_write_string(
 
 typedef struct {
 	const char* to_match;
+	bool skip;
 } json_match_string_params_t;
 
 json_read_result_t json_match_string(
@@ -262,3 +264,7 @@ typedef struct {
 	size_t text_ct;
 	unsigned int curr_tok;
 } json_read_state_t;
+
+
+// helpers for visiting docdefs
+json_docdef_t* json_docdef_find_key(json_docdef_t* object_docdef, const char* name);
