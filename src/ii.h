@@ -124,6 +124,7 @@
 #define II_ANSIBLE_CV_OFF   8
 #define II_ANSIBLE_CV_SET   9
 #define II_ANSIBLE_INPUT    10
+#define II_ANSIBLE_APP      15
 
 #define II_MID_SLEW     1
 #define II_MID_SHIFT    2
@@ -141,6 +142,11 @@
 #define II_ARP_FILL     10
 #define II_ARP_ER       11
 
+#define II_GRID_KEY     16
+#define II_GRID_LED     17
+#define II_ARC_ENC      24
+#define II_ARC_LED      25
+
 #define II_KR_PRESET    0
 #define II_KR_PATTERN   1
 #define II_KR_SCALE     2
@@ -153,6 +159,9 @@
 #define II_KR_MUTE      9
 #define II_KR_TMUTE     10
 #define II_KR_CLK       11
+#define II_KR_PAGE      12
+#define II_KR_CUE       13
+#define II_KR_DIR       14
 
 #define II_MP_PRESET    0
 #define II_MP_RESET     1
@@ -174,6 +183,7 @@
 #define II_CY_POS       2
 #define II_CY_REV       3
 #define II_CY_CV        4
+
 
 #define JF_TR       1
 #define JF_RMODE    2
