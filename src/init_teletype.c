@@ -111,14 +111,14 @@ void register_interrupts(void) {
   // gpio_enable_pin_interrupt( B08, GPIO_PIN_CHANGE);
   // gpio_enable_pin_interrupt( B09,  GPIO_PIN_CHANGE);
 
-  gpio_enable_pin_interrupt( A00, GPIO_RISING_EDGE);
-  gpio_enable_pin_interrupt( A01, GPIO_RISING_EDGE);
-  gpio_enable_pin_interrupt( A02, GPIO_RISING_EDGE);
-  gpio_enable_pin_interrupt( A03, GPIO_RISING_EDGE);
-  gpio_enable_pin_interrupt( A04, GPIO_RISING_EDGE);
-  gpio_enable_pin_interrupt( A05, GPIO_RISING_EDGE);
-  gpio_enable_pin_interrupt( A06, GPIO_RISING_EDGE);
-  gpio_enable_pin_interrupt( A07,	GPIO_RISING_EDGE);
+  gpio_enable_pin_interrupt( A00, GPIO_PIN_CHANGE);
+  gpio_enable_pin_interrupt( A01, GPIO_PIN_CHANGE);
+  gpio_enable_pin_interrupt( A02, GPIO_PIN_CHANGE);
+  gpio_enable_pin_interrupt( A03, GPIO_PIN_CHANGE);
+  gpio_enable_pin_interrupt( A04, GPIO_PIN_CHANGE);
+  gpio_enable_pin_interrupt( A05, GPIO_PIN_CHANGE);
+  gpio_enable_pin_interrupt( A06, GPIO_PIN_CHANGE);
+  gpio_enable_pin_interrupt( A07, GPIO_PIN_CHANGE);
 
   // PA00-A07
   INTC_register_interrupt( &irq_port0_line0, AVR32_GPIO_IRQ_0, UI_IRQ_PRIORITY);
@@ -242,4 +242,3 @@ extern u64 get_ticks(void) {
 extern u8 get_revision(void) {
   return gpio_get_pin_value(B01) == 0;
 }
-
