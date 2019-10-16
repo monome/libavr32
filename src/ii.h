@@ -21,12 +21,16 @@
 #define ER301_2             0x32
 #define ER301_3             0x33
 #define FADER               0x34
-#define TETRAPAD            0x35
-#define TETRAPAD_2          0x36
-#define TETRAPAD_3          0x37
+#define FADER_2             0x35
+#define FADER_3             0x36
+#define FADER_4             0x37
 #define MATRIXARCHATE       0x38
 #define MATRIXARCHATE_2     0x39
 #define MATRIXARCHATE_3     0x3A
+#define TETRAPAD            0x3B
+#define TETRAPAD_2          0x3C
+#define TETRAPAD_3          0x3D
+#define TETRAPAD_4          0x3E
 
 #define ORCA                0x40
 
