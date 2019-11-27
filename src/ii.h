@@ -166,6 +166,7 @@
 #define II_KR_PAGE      12
 #define II_KR_CUE       13
 #define II_KR_DIR       14
+#define II_KR_DURATION  15
 
 #define II_MP_PRESET    0
 #define II_MP_RESET     1
