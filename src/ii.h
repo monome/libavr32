@@ -34,6 +34,11 @@
 
 #define ORCA                0x40
 
+#define DISTING_EX_1        0x41
+#define DISTING_EX_2        0x42
+#define DISTING_EX_3        0x43
+#define DISTING_EX_4        0x44
+
 #define ES                  0x50
 
 #define TELEXO              0x60
