@@ -2,8 +2,8 @@ language: generic
 
 install:
   - pushd $HOME
-  - git clone https://github.com/samdoshi/avr32-toolchain-linux.git samdoshi/avr32-toolchain-linux
-  - cd samdoshi/avr32-toolchain-linux
+  - git clone https://github.com/monome/avr32-toolchain-linux.git monome/avr32-toolchain-linux
+  - cd monome/avr32-toolchain-linux
   - tar xvfz avr32-gnu-toolchain-3.4.3.820-linux.any.x86_64.tar.gz
   - mv avr32-gnu-toolchain-linux_x86_64 $HOME/avr32-tools
   - unzip avr32-headers-6.2.0.742.zip -d $HOME/avr32-tools/avr32/include
