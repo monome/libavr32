@@ -19,7 +19,7 @@ static twi_package_t packet;
 volatile process_ii_t process_ii;
 
 
-int i2c_master_tx(uint8_t addr, uint8_t *data, uint8_t length) {
+int i2c_leader_tx(uint8_t addr, uint8_t *data, uint8_t length) {
   int status;
 
   packet.chip = addr;
@@ -36,7 +36,7 @@ int i2c_master_tx(uint8_t addr, uint8_t *data, uint8_t length) {
 }
 
 
-int i2c_master_rx(uint8_t addr, uint8_t *data, uint8_t l) {
+int i2c_leader_rx(uint8_t addr, uint8_t *data, uint8_t l) {
   int status;
 
   packet.chip = addr;
@@ -53,7 +53,7 @@ int i2c_master_rx(uint8_t addr, uint8_t *data, uint8_t l) {
 
 
 
-void twi_slave_rx(uint8_t u8_value)
+void twi_follower_rx(uint8_t u8_value)
 {
   if (rx_pos[rx_buffer_index] < I2C_RX_BUF_SIZE) {
     rx_buffer[rx_buffer_index][rx_pos[rx_buffer_index]] = u8_value;
@@ -61,12 +61,12 @@ void twi_slave_rx(uint8_t u8_value)
   }
 }
 
-void twi_slave_stop(void)
+void twi_follower_stop(void)
 {
   uint8_t index = rx_buffer_index;
   // rx_buffer_index must be incremented before process_ii is called
   if (++rx_buffer_index >= RX_BUFFER_COUNT) rx_buffer_index = 0;
-  
+
   process_ii(rx_buffer[index], rx_pos[index]);
   rx_pos[index] = 0;
 }
@@ -84,7 +84,7 @@ extern void ii_tx_queue(uint8_t data) {
     print_dbg("\r\nii queue overrun");
 }
 
-uint8_t twi_slave_tx(void)
+uint8_t twi_follower_tx(void)
 {
    // print_dbg("\r\nii_tx ");
    if(tx_pos_write == tx_pos_read)

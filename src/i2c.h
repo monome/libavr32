@@ -11,12 +11,12 @@
 #define I2C_TX_BUF_SIZE 8
 #define I2C_RX_BUF_SIZE 8
 
-extern int i2c_master_tx(uint8_t addr, uint8_t *data, uint8_t l);
-extern int i2c_master_rx(uint8_t addr, uint8_t *data, uint8_t l);
+extern int i2c_leader_tx(uint8_t addr, uint8_t *data, uint8_t l);
+extern int i2c_leader_rx(uint8_t addr, uint8_t *data, uint8_t l);
 
-extern void twi_slave_rx(uint8_t u8_value);
-extern uint8_t twi_slave_tx(void);
-extern void twi_slave_stop(void);
+extern void twi_follower_rx(uint8_t u8_value);
+extern uint8_t twi_follower_tx(void);
+extern void twi_follower_stop(void);
 
 extern void ii_tx_queue(uint8_t);
 
