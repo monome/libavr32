@@ -68,7 +68,7 @@ void init_usb_host (void) {
 }
 
 // initialize i2c
-void init_i2c_master(void) {
+void init_i2c_leader(void) {
   twi_options_t opt;
 
   int status;
@@ -96,7 +96,7 @@ void init_i2c_master(void) {
   //   print_dbg("\r\ni2c init FAIL");
 }
 
-void init_i2c_slave(uint8_t addr) {
+void init_i2c_follower(uint8_t addr) {
   static const gpio_map_t TWI_GPIO_MAP =
   {
     {AVR32_TWI_SDA_0_0_PIN, AVR32_TWI_SDA_0_0_FUNCTION},
@@ -115,19 +115,19 @@ void init_i2c_slave(uint8_t addr) {
   opt.chip = addr;
 
   // initialize TWI driver with options
-  twi_slave_fct.rx = &twi_slave_rx;
-  twi_slave_fct.tx = &twi_slave_tx;
-  twi_slave_fct.stop = &twi_slave_stop;
+  twi_slave_fct.rx = &twi_follower_rx;
+  twi_slave_fct.tx = &twi_follower_tx;
+  twi_slave_fct.stop = &twi_follower_stop;
   status = twi_slave_init(&AVR32_TWI, &opt, &twi_slave_fct );
 /*  // check init result
   if (status == TWI_SUCCESS)
   {
     // display test result to user
-    print_dbg("Slave start:\tPASS\r\n");
+    print_dbg("follower start:\tPASS\r\n");
   }
   else
   {
     // display test result to user
-    print_dbg("slave start:\tFAIL\r\n");
+    print_dbg("follower start:\tFAIL\r\n");
   }*/
 }
