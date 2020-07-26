@@ -66,6 +66,11 @@
 #define WS_ADDR_2           0x72
 #define WS_ADDR_3           0x73
 #define WS_ADDR_4           0x74
+#define WS_ADDR_5           0x75
+#define WS_ADDR_6           0x76
+#define WS_ADDR_7           0x77
+#define WS_ADDR_8           0x78
+#define WS_ADDR_9           0x79
 
 // COMMANDS
 // new commands can overlap with existing ones
@@ -212,3 +217,52 @@
 #define WS_PLAY 2
 #define WS_LOOP 3
 #define WS_CUE  4
+
+#define WS_S_VEL          2
+#define WS_S_PITCH        3
+#define WS_S_VOX          4
+#define WS_S_NOTE         5
+#define WS_S_AR_MODE      7
+#define WS_S_CURVE        8
+#define WS_S_RAMP         9
+#define WS_S_FM_INDEX     10
+#define WS_S_FM_RATIO     11
+#define WS_S_LPG_TIME     12
+#define WS_S_LPG_SYMMETRY 13
+#define WS_S_PATCH        14
+#define WS_S_VOICES       15
+#define WS_S_FM_ENV       16
+
+#define WS_D_FEEDBACK   2
+#define WS_D_MIX        3
+#define WS_D_LOWPASS    4
+#define WS_D_FREEZE     5
+#define WS_D_TIME       6
+#define WS_D_LENGTH     7
+#define WS_D_POSITION   8
+#define WS_D_CUT        9
+#define WS_D_FREQ_RANGE 10
+#define WS_D_RATE       11
+#define WS_D_FREQ       12
+#define WS_D_CLK        13
+#define WS_D_CLK_RATIO  14
+#define WS_D_PLUCK      15
+#define WS_D_MOD_RATE   16
+#define WS_D_MOD_AMOUNT 17
+
+#define WS_T_RECORD        1
+#define WS_T_PLAY          2
+#define WS_T_REV           3
+#define WS_T_SPEED         4
+#define WS_T_FREQ          5
+#define WS_T_PRE_LEVEL     6
+#define WS_T_MONITOR_LEVEL 7
+#define WS_T_REC_LEVEL     8
+#define WS_T_HEAD_ORDER    9
+#define WS_T_LOOP_START    10
+#define WS_T_LOOP_END      11
+#define WS_T_LOOP_ACTIVE   12
+#define WS_T_LOOP_SCALE    13
+#define WS_T_LOOP_NEXT     14
+#define WS_T_TIMESTAMP     15
+#define WS_T_SEEK          16
