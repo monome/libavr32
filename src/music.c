@@ -1,9 +1,9 @@
-#include "types.h"
+#include "music.h"
 
 // equal temp tuning table for 1v/oct on 14bit dac with 10v range
 // for i in range(0,128):
 //     print '%.f, ' % (i * 16384.0 / 120.0)
-const uint16_t ET[128] = {
+const uint16_t ET[ET_SIZE] = {
 	0,     137,   273,   410,   546,   683,   819,   956,   1092,  1229,  1365,  1502,
 	1638,  1775,  1911,  2048,  2185,  2321,  2458,  2594,  2731,  2867,  3004,  3140,
 	3277,  3413,  3550,  3686,  3823,  3959,  4096,  4233,  4369,  4506,  4642,  4779,
