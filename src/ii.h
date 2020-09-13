@@ -62,15 +62,15 @@
 #define TELEXI_7            0x6F
 
 #define JF_ADDR             0x70
-#define WS_ADDR             0x71
-#define WS_ADDR_2           0x72
-#define WS_ADDR_3           0x73
-#define WS_ADDR_4           0x74
-#define WS_ADDR_5           0x75
-#define WS_ADDR_6           0x76
-#define WS_ADDR_7           0x77
-#define WS_ADDR_8           0x78
-#define WS_ADDR_9           0x79
+#define WS_T_ADDR           0x71
+#define WS_T_ADDR_2         0x72
+// 0x73 RESERVED
+// 0x74 RESERVED
+#define JF_ADDR_2           0x75
+#define WS_S_ADDR           0x76
+#define WS_S_ADDR_2         0x77
+#define WS_D_ADDR           0x78
+#define WS_D_ADDR_2         0x79
 
 // COMMANDS
 // new commands can overlap with existing ones
