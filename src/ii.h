@@ -2,6 +2,8 @@
 // each device must use a unique address (0x01-0x7F)
 // 0 is RESERVED for global commands
 
+#define CROW                0x01
+
 #define WW                  0x10
 #define WW_KRIA             0x10 // ww kria uses ww address
 
