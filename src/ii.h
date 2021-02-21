@@ -214,6 +214,15 @@
 #define JF_GOD      10
 #define JF_TUNE     11
 #define JF_QT       12
+#define JF_PITCH    13
+#define JF_ADDRESS  14
+#define JF_SPEED    15
+#define JF_TSC      16
+#define JF_RAMP     17
+#define JF_CURVE    18
+#define JF_FM       19
+#define JF_TIME     20
+#define JF_INTONE   21
 
 #define WS_REC  1
 #define WS_PLAY 2
