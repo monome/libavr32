@@ -38,7 +38,7 @@ static void jsmn_fill_token(jsmntok_t *token, jsmntype_t type,
 static int jsmn_parse_primitive(jsmn_parser *parser, const char *js,
 		size_t len, jsmntok_t *tokens, size_t num_tokens) {
 	jsmntok_t *token;
-	int start;
+	int start, end;
 
 	start = parser->pos;
 
@@ -50,6 +50,7 @@ static int jsmn_parse_primitive(jsmn_parser *parser, const char *js,
 #endif
 			case '\t' : case '\r' : case '\n' : case ' ' :
 			case ','  : case ']'  : case '}' :
+				end = parser->pos;
 				goto found;
 		}
 		if (js[parser->pos] < 32 || js[parser->pos] >= 127) {
@@ -57,6 +58,7 @@ static int jsmn_parse_primitive(jsmn_parser *parser, const char *js,
 			return JSMN_ERROR_INVAL;
 		}
 	}
+	end = -1;
 #ifdef JSMN_STRICT
 	/* In strict mode primitive must be followed by a comma/object/array */
 	parser->pos = start;
@@ -73,7 +75,7 @@ found:
 		parser->pos = start;
 		return JSMN_ERROR_NOMEM;
 	}
-	jsmn_fill_token(token, JSMN_PRIMITIVE, start, parser->pos);
+	jsmn_fill_token(token, JSMN_PRIMITIVE, start, end);
 #ifdef JSMN_PARENT_LINKS
 	token->parent = parser->toksuper;
 #endif
