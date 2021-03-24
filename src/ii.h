@@ -128,6 +128,7 @@
 #define ES_STOP         0x57
 #define ES_TRIPLE       0x58
 #define ES_MAGIC        0x59
+#define ES_CV           0x5A
 
 #define II_GET              128
 #define II_ANSIBLE_TR       1
