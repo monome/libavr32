@@ -2,7 +2,10 @@
 // each device must use a unique address (0x01-0x7F)
 // 0 is RESERVED for global commands
 
-#define CROW                0x01
+#define CROW_ADDR_0         0x01
+#define CROW_ADDR_1         0x02
+#define CROW_ADDR_2         0x03
+#define CROW_ADDR_3         0x04
 
 #define WW                  0x10
 #define WW_KRIA             0x10 // ww kria uses ww address
@@ -278,3 +281,20 @@
 #define WS_T_LOOP_NEXT     14
 #define WS_T_TIMESTAMP     15
 #define WS_T_SEEK          16
+
+#define CROW_VOLTS  1
+#define CROW_SLEW   2
+#define CROW_CALL1  4
+#define CROW_CALL2  5
+#define CROW_CALL3  6
+#define CROW_CALL4  7
+#define CROW_RESET  8
+#define CROW_PULSE  9
+#define CROW_AR     10
+#define CROW_LFO    11
+#define CROW_IN     (II_GET + 3)
+#define CROW_OUT    (II_GET + 4)
+#define CROW_QUERY0 (II_GET + 5)
+#define CROW_QUERY1 (II_GET + 6)
+#define CROW_QUERY2 (II_GET + 7)
+#define CROW_QUERY3 (II_GET + 8)
