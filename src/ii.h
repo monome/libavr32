@@ -2,6 +2,7 @@
 // each device must use a unique address (0x01-0x7F)
 // 0 is RESERVED for global commands
 
+#define CROW                0x01 // alias of CROW_ADDR_0 for legacy usage
 #define CROW_ADDR_0         0x01
 #define CROW_ADDR_1         0x02
 #define CROW_ADDR_2         0x03
