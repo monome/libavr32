@@ -282,6 +282,7 @@
 #define WS_T_LOOP_NEXT     14
 #define WS_T_TIMESTAMP     15
 #define WS_T_SEEK          16
+#define WS_T_CLEARTAPE     18
 
 #define CROW_VOLTS  1
 #define CROW_SLEW   2
