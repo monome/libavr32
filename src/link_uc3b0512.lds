@@ -278,6 +278,8 @@ SECTIONS
   {
     *(.flash_nvram)
   } >FLASH AT>FLASH :FLASH_NVRAM
+  /* Ensure nvdata storage hasn't been relocated due to program size overflow */
+  ASSERT(ADDR(.flash_nvram) >= (LOADADDR(.data) + SIZEOF(.data)), ".data overflowed into .nvram!")
   .userpage       : { *(.userpage .userpage.*) } >USERPAGE AT>USERPAGE :USERPAGE
   /DISCARD/ : { *(.note.GNU-stack) }
 }
