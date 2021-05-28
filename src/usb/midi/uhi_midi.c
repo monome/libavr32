@@ -26,9 +26,6 @@
 
 // looks like we need to get class-specific endpoint descriptors,
 //  to ask them about virtual cable index and stuff like that??
-
-#define UHI_FTDI_TIMEOUT 20000
-//...
 #define MIDI_EP_DESC_REQ_TYPE ( (USB_REQ_DIR_IN) | (USB_REQ_TYPE_STANDARD) | (USB_REQ_RECIP_DEVICE) )
 
 

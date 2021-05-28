@@ -75,7 +75,8 @@
 
 #define UHI_CDC_CHANGE(dev,b_plug) cdc_change(dev, b_plug)
 
-
+#define UHI_CDC_LOW_RATE 1
+    
 #include "uhi_ftdi.h"
 #include "uhi_hid.h"
 #include "uhi_midi.h"

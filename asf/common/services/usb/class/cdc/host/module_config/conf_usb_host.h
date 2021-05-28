@@ -49,6 +49,8 @@
 
 #include "compiler.h"
 
+#error using CDC module config from ASF
+
 /**
  * USB Host Configuration
  * @{
