@@ -49,6 +49,7 @@ void cdc_change(uhc_device_t* dev, uint8_t plug) {
 
     
     bool success = uhi_cdc_open(CDC_COM_PORT, &cfg);
+    
     if (success) {    
 	print_dbg("\r\ncdc connected");
     } else {
@@ -82,10 +83,16 @@ void cdc_tx(void)
 
  void cdc_rx(void)
  {
-    while (uhi_cdc_is_rx_ready(0)) {
-       int value = uhi_cdc_getc(0);
-       print_dbg_ulong(value);
-       print_dbg_char(' ');
-    }
+     #if 1
+     iram_size_t nb = uhi_cdc_get_nb_received(CDC_COM_PORT);
+     if (nb > 0) {
+	 print_dbg("\r\nrx bytes ready: ");
+	 print_dbg_ulong(nb);
+	 for (int i=0; i<nb; ++i) {
+	     int value = uhi_cdc_getc(CDC_COM_PORT);
+	 }
+     }
+     #endif
+
  }
 
