@@ -26,7 +26,6 @@ void cdc_rx(void);
 void cdc_change(uhc_device_t* dev, uint8_t plug) {
   print_dbg("\r\ncdc plug ");
 
- 
   
   if(plug) {
     // USB Device CDC connected
@@ -56,6 +55,17 @@ void cdc_change(uhc_device_t* dev, uint8_t plug) {
     
     if (success) {    
       print_dbg("\r\ncdc connected");
+
+      print_dbg("\r\n  dwDTERate: ");
+      print_dbg_ulong(LE32_TO_CPU(cfg.dwDTERate));
+      print_dbg("\r\n  bCharFormat: ");
+      print_dbg_ulong(cfg.bCharFormat);
+      print_dbg("\r\  nbParityType: ");
+      print_dbg_ulong(cfg.bParityType);
+      print_dbg("\r\n  bDataBits: ");
+      print_dbg_ulong(cfg.bDataBits);
+
+      
     } else {
 	    print_dbg("\r\ncdc failed to connect");
     }
@@ -68,7 +78,7 @@ void cdc_change(uhc_device_t* dev, uint8_t plug) {
 
 void cdc_rx_notify(void)
 {
-  print_dbg("\r\ncdc_rx_notify");
+  //print_dbg("\r\ncdc_rx_notify");
   if (flag_cdc_available) {
   //cdc_tx();
     cdc_rx();
@@ -91,7 +101,9 @@ void cdc_rx(void)
   if (nb > 0) {
     uhi_cdc_read_buf(CDC_COM_PORT, (void*)rxBuf, nb);
     if (nb == 64) { 
-      /// FIXME: why is this always happening? 
+      /// FIXME: why is this always happening?
+      /// TODO: next debug step would be to save a copy of the full 64B buffer,
+	/// and check for differences
       gpio_clr_gpio_pin(B00);
       gpio_clr_gpio_pin(B01);
     } else { 
