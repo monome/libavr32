@@ -9,12 +9,28 @@
 
 #include "gpio.h"
 
-// libavr32
-//#include "events.h"
-
 
 #define CDC_COM_PORT 0
 
+void cdc_tx_test() {
+    static uint8_t x = 0;
+    static uint8_t y = 0;
+    static uint8_t z = 1;
+
+    print_dbg("\r\n tx test...");
+
+    uhi_cdc_putc(CDC_COM_PORT, 0x08); // led/level/set
+    uhi_cdc_putc(CDC_COM_PORT, x);
+    uhi_cdc_putc(CDC_COM_PORT, y);
+    uhi_cdc_putc(CDC_COM_PORT, z);
+    
+    if (++z > 14) { z = 1; }
+    if (++x > 7) {
+	if (++y > 7) { y = 0; }
+	x = 0;
+    }
+}
+    
 static volatile bool flag_cdc_available = false;
 
 static volatile uint8_t rxBuf[64];
@@ -106,6 +122,7 @@ void cdc_rx(void)
 	/// (it could include real data)
       gpio_clr_gpio_pin(B00);
       gpio_clr_gpio_pin(B01);
+				 
     } else { 
       print_dbg("\r\ncdc rx:\r\n");
       for (int i=0; i<nb; ++i) {
@@ -113,6 +130,9 @@ void cdc_rx(void)
         print_dbg_hex(value);
 	print_dbg(" ");
       }
+
+      cdc_tx_test();
+      
       gpio_set_gpio_pin(B00);
       gpio_set_gpio_pin(B01);
     }
