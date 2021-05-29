@@ -49,6 +49,7 @@
 #include "uhd.h"
 #include "uhc.h"
 #include "uhi_cdc.h"
+
 #include <string.h>
 
 #ifdef USB_HOST_HUB_SUPPORT
