@@ -30,7 +30,7 @@
 
 #define  CDC_CLASS_DEVICE     0x02	//!< USB Communication Device Class
 #define  CDC_CLASS_DATA       0x0A	//!< CDC Data Class Interface
-#define UHI_CDCM_TIMEOUT 20
+#define UHI_MCDC_TIMEOUT 20
 
 //----- data types
 // device data structure
@@ -214,7 +214,7 @@ bool uhi_cdc_in_run(uint8_t * buf, iram_size_t buf_size,
     uhd_callback_trans_t callback) {
   return uhd_ep_run(uhi_cdc_dev.dev->address,
       uhi_cdc_dev.ep_in, false, buf, buf_size,
-      UHI_CDCM_TIMEOUT, callback);
+      UHI_MCDC_TIMEOUT, callback);
 }
 
 // run the output endpoint (bulk)
@@ -222,7 +222,7 @@ bool uhi_cdc_out_run(uint8_t * buf, iram_size_t buf_size,
     uhd_callback_trans_t callback) {
   return uhd_ep_run(uhi_cdc_dev.dev->address,
       uhi_cdc_dev.ep_out, true, buf, buf_size,
-      UHI_CDCM_TIMEOUT, callback);
+      UHI_MCDC_TIMEOUT, callback);
 }
 
 //----------------

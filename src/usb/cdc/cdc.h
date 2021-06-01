@@ -8,6 +8,7 @@
 #define UHI_CDC_RX_NOTIFY() cdc_rx_notify()
 
 void cdc_change(uhc_device_t* dev, uint8_t plug);
-void cdc_rx_notify(void);
+void cdc_read(void);
+bool cdc_connected(void);
 
 #endif
