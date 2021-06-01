@@ -59,6 +59,7 @@ static volatile uint8_t ctlReadBusy = 0;
 
 //------- static funcs
 
+/*
 // send control request
 static uint8_t send_ctl_request(uint8_t reqtype, uint8_t reqnum,
     uint8_t* data, uint16_t size,
@@ -69,6 +70,7 @@ static void ctl_req_end(
     usb_add_t add,
     uhd_trans_status_t status,
     uint16_t payload_trans);
+*/
 
 //----- external (UHC) functions
 uhc_enum_status_t uhi_cdc_install(uhc_device_t* dev) {
@@ -101,8 +103,8 @@ uhc_enum_status_t uhi_cdc_install(uhc_device_t* dev) {
     switch (ptr_iface->bDescriptorType) {
 
       case USB_DT_INTERFACE:
-        print_dbg("\r\nINTERFACE: ");
-        print_dbg_ulong(ptr_iface->bInterfaceClass);
+        //print_dbg("\r\nINTERFACE: ");
+        //print_dbg_ulong(ptr_iface->bInterfaceClass);
         //if ((ptr_iface->bInterfaceClass == CDC_CLASS_DEVICE) ) {
         if ((ptr_iface->bInterfaceClass == CDC_CLASS_DATA) ) {
             //&& (ptr_iface->bInterfaceProtocol == FTDI_PROTOCOL) ) {
@@ -116,7 +118,7 @@ uhc_enum_status_t uhi_cdc_install(uhc_device_t* dev) {
         break;
 
       case USB_DT_ENDPOINT:
-        print_dbg("\r\nENDPOINT:");
+        //print_dbg("\r\nENDPOINT:");
         if (!b_iface_supported) {
           break;
         }
@@ -142,7 +144,7 @@ uhc_enum_status_t uhi_cdc_install(uhc_device_t* dev) {
         }
         break;
       default:
-        print_dbg("\r\n...");
+        //print_dbg("\r\n...");
         break;
     }
     Assert(conf_desc_lgt>=ptr_iface->bLength);
@@ -155,7 +157,7 @@ uhc_enum_status_t uhi_cdc_install(uhc_device_t* dev) {
     print_dbg("\r\n completed device install");
     return UHC_ENUM_SUCCESS;
   }
-  print_dbg("\r\n enumeration failed");
+  //print_dbg("\r\n enumeration failed");
   return UHC_ENUM_UNSUPPORTED; // No interface supported
 }
 
@@ -227,7 +229,7 @@ bool uhi_cdc_out_run(uint8_t * buf, iram_size_t buf_size,
 
 //----------------
 //---- static functions definitions
-
+#if 0
 // send control request
 static uint8_t send_ctl_request(uint8_t reqtype, uint8_t reqnum,
     uint8_t* data, uint16_t size,
@@ -267,9 +269,6 @@ static void ctl_req_end(
 
 // read eeprom
 uint8_t cdc_get_strings(char** pManufacturer, char** pProduct, char** pSerial) {
-  return 0;
-}
-#if 0
   // get manufacturer string
   ctlReadBusy = 1;
   //  print_dbg("\r\n sending ctl request for manufacturer string, index : ");

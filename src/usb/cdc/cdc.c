@@ -10,6 +10,7 @@
 
 // libavr32
 #include "events.h"
+#include "monome.h"
 
 #define CDC_RX_BUF_SIZE 64
 
@@ -18,59 +19,50 @@ static uint8_t rxBuf[CDC_RX_BUF_SIZE];
 static uint32_t rxBytes = 0;
 static uint8_t rxBusy = 0;
 static uint8_t txBusy = 0;
-//static event_t e;
+static uint8_t connected = 0;
+static event_t e;
 
-static bool connected = false;
-
-
-bool cdc_connected(void) {
-  return connected;
-}
+extern uint8_t* cdc_rx_buf() { return rxBuf; }
+extern volatile uint8_t cdc_rx_bytes() { return rxBytes; }
+extern volatile uint8_t cdc_rx_busy() { return rxBusy; }
+extern volatile uint8_t cdc_tx_busy() { return txBusy; }
+extern uint8_t cdc_connected(void) { return connected; }
 
 void cdc_tx(void);
 void cdc_rx(void);
 
 void cdc_change(uhc_device_t* dev, uint8_t plug) {
   if(plug) {
-    connected = true;
     print_dbg("\r\ncdc connected");
+    connected = true;
+    e.type = kEventFtdiConnect;
   } else {
+    print_dbg("\r\ncdc disconnected");
     connected = false;
-    print_dbg("\r\ncdc disconnected ");
+    e.type = kEventFtdiDisconnect;
   }
+  event_post(&e);
 }
 
 static void cdc_rx_done(usb_add_t add,
                          usb_ep_t ep,
                          uhd_trans_status_t stat,
                          iram_size_t nb) {
-  //rxBytes = nb - FTDI_STATUS_BYTES;
   rxBytes = nb;
 
-  /* if (stat != UHD_TRANS_NOERROR) { */
-  /*   print_dbg("\r\n ftdi rx transfer callback error. status: 0x"); */
-  /*   print_dbg_hex((u32)stat); */
-  /*   print_dbg(" ; bytes transferred: "); */
-  /*   print_dbg_ulong(nb); */
-  /*   print_dbg(" ; status bytes: 0x"); */
-  /*   print_dbg_hex(rxBuf[0]); */
-  /*   print_dbg(" 0x"); */
-  /*   print_dbg_hex(rxBuf[1]); */
-  /* } */
-  /* else */
-
-  // FIXME: if the buffer is full, it's a false receive
+    // FIXME: if the buffer is full, it's a false receive
   if (rxBytes != CDC_RX_BUF_SIZE) {
-    // check for monome events
-    //    if(monome_read_serial != NULL) {
+    if(monome_read_serial != NULL) {
+      (*monome_read_serial)();
+    }
+
+    /*
     for(int i=0;i<rxBytes;i++) {
       print_dbg_ulong(rxBuf[i]);
       print_dbg(" ");
     }
-    //(*monome_read_serial)();
-    //}
-    ///... TODO: other protocols
     print_dbg("\r\n");
+    */
   }
 
   rxBusy = false;
@@ -100,7 +92,6 @@ void cdc_write(uint8_t* data, uint32_t bytes) {
     }
   }
 }
-
 
 void cdc_read(void) {
   if (rxBusy == false) {
