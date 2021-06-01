@@ -23,13 +23,14 @@ void cdc_change(uhc_device_t* dev, uint8_t plug) {
     // USB Device CDC connected
     flag_cdc_available = true;
     // Open and configure USB CDC ports
-    usb_cdc_line_coding_t cfg = {
+/*    usb_cdc_line_coding_t cfg = {
       .dwDTERate   = CPU_TO_LE32(115200),
       .bCharFormat = CDC_STOP_BITS_1,
       .bParityType = CDC_PAR_NONE,
       .bDataBits   = 8,
     };
-    uhi_cdc_open(0, &cfg);
+    uhi_cdc_open(0, &cfg);*/
+    //uhi_cdc_open(0);
 
     print_dbg("\r\ncdc connected");
 
@@ -54,16 +55,16 @@ void cdc_tx(void)
   //uhi_cdc_write_buf(0, MESSAGE, sizeof(MESSAGE)-1);
   //uhi_cdc_putc(0,'\n');
   // https://github.com/trentgill/gridST/blob/main/main.c#L123
-  uhi_cdc_putc(0,0x18); // set all to level
-  uhi_cdc_putc(0,0x0F); // full bright
+  //uhi_cdc_putc(0,0x18); // set all to level
+  //uhi_cdc_putc(0,0x0F); // full bright
 }
 
  void cdc_rx(void)
  {
-    while (uhi_cdc_is_rx_ready(0)) {
-       int value = uhi_cdc_getc(0);
-       print_dbg_ulong(value);
-       print_dbg_char(' ');
-    }
+    //while (uhi_cdc_is_rx_ready(0)) {
+       //int value = uhi_cdc_getc(0);
+       //print_dbg_ulong(value);
+       //print_dbg_char(' ');
+    //}
  }
 
