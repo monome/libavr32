@@ -10,5 +10,6 @@
 void cdc_change(uhc_device_t* dev, uint8_t plug);
 void cdc_read(void);
 bool cdc_connected(void);
+void cdc_write(uint8_t* data, uint32_t bytes);
 
 #endif

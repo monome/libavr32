@@ -73,8 +73,6 @@
 
 #define UHI_MSC_CHANGE(dev,b_plug) msc_change(dev, b_plug)
 
-#define UHI_CDCM_CHANGE(dev,b_plug) cdc_change(dev, b_plug)
-
 
 #include "uhi_ftdi.h"
 #include "uhi_hid.h"
