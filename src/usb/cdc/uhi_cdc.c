@@ -125,7 +125,7 @@ uhc_enum_status_t uhi_cdc_install(uhc_device_t* dev) {
           return UHC_ENUM_HARDWARE_LIMIT;
         }
 
-        print_dbg_ulong(((usb_ep_desc_t*)ptr_iface)->bmAttributes & USB_EP_TYPE_MASK);
+        //print_dbg_ulong(((usb_ep_desc_t*)ptr_iface)->bmAttributes & USB_EP_TYPE_MASK);
 
         switch(((usb_ep_desc_t*)ptr_iface)->bmAttributes & USB_EP_TYPE_MASK) {
           case USB_EP_TYPE_BULK:
@@ -160,11 +160,12 @@ uhc_enum_status_t uhi_cdc_install(uhc_device_t* dev) {
 }
 
 void uhi_cdc_enable(uhc_device_t* dev) {
+  print_dbg("\r\n-- enable");
 
-  /*
   if (uhi_cdc_dev.dev != dev) {
     return;  // No interface to enable
   }
+  /*
   /// bit mode (not bitbang? )
   /// todo: what do these mean???
   // val : ff
@@ -194,8 +195,9 @@ void uhi_cdc_enable(uhc_device_t* dev) {
       0, 49206,
       NULL);
 
-  cdc_change(dev, true);
   */
+  cdc_change(dev, true);
+  
 }
 
 void uhi_cdc_uninstall(uhc_device_t* dev) {
