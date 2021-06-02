@@ -216,8 +216,6 @@ u8 check_monome_device_desc(char* mstr, char* pstr, char* sstr) {
   u8 i;
   u8 ret;
 
-  print_dbg("\r\n >>>>> check_monome_device_desc");
-
   // set rxtx funcs
   serial_read = &ftdi_read;
   serial_write = &ftdi_write;
@@ -365,7 +363,6 @@ void monome_arc_refresh(void) {
 static inline void monome_connect_write_event(void) {
   u8* data = (u8*)(&(ev.data));
 
-  print_dbg("\r\n posting monome connection event. ");
   // print_dbg(" device type: ");
   // print_dbg_ulong(mdesc.device);
   // print_dbg(" cols : ");

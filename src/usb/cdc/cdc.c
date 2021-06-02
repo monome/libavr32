@@ -33,11 +33,11 @@ void cdc_rx(void);
 
 void cdc_change(uhc_device_t* dev, uint8_t plug) {
   if(plug) {
-    print_dbg("\r\ncdc connected");
+    //print_dbg("\r\ncdc connected");
     connected = true;
     e.type = kEventSerialConnect;
   } else {
-    print_dbg("\r\ncdc disconnected");
+    //print_dbg("\r\ncdc disconnected");
     connected = false;
     e.type = kEventSerialDisconnect;
   }
@@ -50,17 +50,17 @@ static void cdc_rx_done(usb_add_t add,
                          iram_size_t nb) {
   rxBytes = nb;
 
-    // FIXME: if the buffer is full, it's a false receive
+  // FIXME: if the buffer is full, it's a false receive
   if (rxBytes != CDC_RX_BUF_SIZE) {
     if(monome_read_serial != NULL) {
       (*monome_read_serial)();
     }
-
+    /*
     print_dbg("\r\nrx: ");
     for(int i=0;i<rxBytes;i++) {
       print_dbg_ulong(rxBuf[i]);
       print_dbg(" ");
-    }
+    }*/
   }
 
   rxBusy = false;
@@ -72,10 +72,11 @@ static void cdc_tx_done(usb_add_t add,
                          iram_size_t nb) {
   txBusy = false;
 
-  if (stat != UHD_TRANS_NOERROR) {
+  // FIXME: bunch of these at startup
+  /*if (stat != UHD_TRANS_NOERROR) {
     print_dbg("\r\ntx transfer callback error. status: 0x");
     print_dbg_hex((u32)stat);
-  }
+  }*/
 }
 
 

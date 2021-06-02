@@ -88,13 +88,6 @@ uhc_enum_status_t uhi_cdc_install(uhc_device_t* dev) {
   vid = le16_to_cpu(dev->dev_desc.idVendor);
   pid = le16_to_cpu(dev->dev_desc.idProduct);
 
-  /*if( (vid == FTDI_VID) && (pid == FTDI_PID) ) {
-    ;; // this is an FTDI device, so continue
-    } else {
-    return UHC_ENUM_UNSUPPORTED;
-    }
-   */
-
   conf_desc_lgt = le16_to_cpu(dev->conf_desc->wTotalLength);
   ptr_iface = (usb_iface_desc_t*)dev->conf_desc;
   b_iface_supported = false;
@@ -105,10 +98,8 @@ uhc_enum_status_t uhi_cdc_install(uhc_device_t* dev) {
       case USB_DT_INTERFACE:
         //print_dbg("\r\nINTERFACE: ");
         //print_dbg_ulong(ptr_iface->bInterfaceClass);
-        //if ((ptr_iface->bInterfaceClass == CDC_CLASS_DEVICE) ) {
         if ((ptr_iface->bInterfaceClass == CDC_CLASS_DATA) ) {
-            //&& (ptr_iface->bInterfaceProtocol == FTDI_PROTOCOL) ) {
-          print_dbg("\r\n class/protocol matches CDC. ");
+          //print_dbg("\r\n class/protocol matches CDC. ");
           b_iface_supported = true;
           uhi_cdc_dev.ep_in = 0;
           uhi_cdc_dev.ep_out = 0;
@@ -131,7 +122,7 @@ uhc_enum_status_t uhi_cdc_install(uhc_device_t* dev) {
 
         switch(((usb_ep_desc_t*)ptr_iface)->bmAttributes & USB_EP_TYPE_MASK) {
           case USB_EP_TYPE_BULK:
-            print_dbg("\r\n allocating bulk endpoint: ");
+            //print_dbg("\r\n allocating bulk endpoint: ");
             if (((usb_ep_desc_t*)ptr_iface)->bEndpointAddress & USB_EP_DIR_IN) {
               uhi_cdc_dev.ep_in = ((usb_ep_desc_t*)ptr_iface)->bEndpointAddress;
             } else {
@@ -154,7 +145,7 @@ uhc_enum_status_t uhi_cdc_install(uhc_device_t* dev) {
 
   if (b_iface_supported) {
     uhi_cdc_dev.dev = dev;
-    print_dbg("\r\n completed device install");
+    //print_dbg("\r\n completed device install");
     return UHC_ENUM_SUCCESS;
   }
   //print_dbg("\r\n enumeration failed");
@@ -162,44 +153,11 @@ uhc_enum_status_t uhi_cdc_install(uhc_device_t* dev) {
 }
 
 void uhi_cdc_enable(uhc_device_t* dev) {
-  print_dbg("\r\n-- enable");
-
   if (uhi_cdc_dev.dev != dev) {
     return;  // No interface to enable
   }
-  /*
-  /// bit mode (not bitbang? )
-  /// todo: what do these mean???
-  // val : ff
-  // indx : 1
-  send_ctl_request(FTDI_DEVICE_OUT_REQTYPE,
-      FTDI_REQ_BITMODE,
-      NULL, 0,
-      1, 0xff,
-      NULL);
-  /// line property
-  /// todo: what do these mean???
-  // index 1
-  // val : 8
-  send_ctl_request(FTDI_DEVICE_OUT_REQTYPE,
-      FTDI_REQ_LINE_PROPERTIES,
-      NULL, 0,
-      1, 8,
-      NULL);
-  /// baud rate
-  // rq : 3
-  // value: 26 (baudrate: 115200)
-  // value: 49206 (baudrate : 57600)
-  // index: 0
-  send_ctl_request(FTDI_DEVICE_OUT_REQTYPE,
-      FTDI_REQ_BAUDRATE,
-      NULL, 0,
-      0, 49206,
-      NULL);
 
-  */
   cdc_change(dev, true);
-  
 }
 
 void uhi_cdc_uninstall(uhc_device_t* dev) {
@@ -227,136 +185,3 @@ bool uhi_cdc_out_run(uint8_t * buf, iram_size_t buf_size,
       UHI_MCDC_TIMEOUT, callback);
 }
 
-//----------------
-//---- static functions definitions
-#if 0
-// send control request
-static uint8_t send_ctl_request(uint8_t reqtype, uint8_t reqnum,
-    uint8_t* data, uint16_t size,
-    uint16_t index, uint16_t val,
-    uhd_callback_setup_end_t callbackEnd) {
-  usb_setup_req_t req;
-
-  /* if (uhi_ftdi_dev.dev != dev) { */
-  /*   return;  // No interface to enable */
-  /* } */
-
-  req.bmRequestType = reqtype;
-  req.bRequest = reqnum;
-  req.wValue = (val);
-  req.wIndex = (index);
-  req.wLength = (size);
-  return uhd_setup_request(
-      uhi_cdc_dev.dev->address,
-      &req,
-      data,
-      size,
-      NULL,
-      callbackEnd
-      );
-}
-
-// to be called when control read is complete
-static void ctl_req_end(
-    usb_add_t add,
-    uhd_trans_status_t status,
-    uint16_t payload_trans) {
-  // last transfer ok?
-  //  print_dbg("\r\n ctl request end, status: ");
-  //  print_dbg_hex((u32)status);
-  ctlReadBusy = 0;
-}
-
-// read eeprom
-uint8_t cdc_get_strings(char** pManufacturer, char** pProduct, char** pSerial) {
-  // get manufacturer string
-  ctlReadBusy = 1;
-  //  print_dbg("\r\n sending ctl request for manufacturer string, index : ");
-  //  print_dbg_hex(uhi_ftdi_dev.dev->dev_desc.iManufacturer);
-  if(!(send_ctl_request(
-          /* req type*/
-          FTDI_STRING_DESC_REQ_TYPE,
-          /* req num */
-          USB_REQ_GET_DESCRIPTOR,
-          /* data */
-          (u8*)manufacturer_string,
-          /* size */
-          FTDI_STRING_MAX_LEN,
-          //			0x2000,
-          /*idx*/
-          FTDI_STRING_DESC_LANGID,
-          /*val*/
-          // high byte is 3 for string descriptor (yay, magic!)
-          (USB_DT_STRING << 8) | uhi_cdc_dev.dev->dev_desc.iManufacturer,
-          // end-transfer callback
-          &ctl_req_end )
-
-      )) {
-    // print_dbg("\r\n control request for string descriptor failed");
-    return 0;
-  }
-  // wait for transfer end
-  while(ctlReadBusy) { ;; }
-
-  // get product string
-  ctlReadBusy = 1;
-  //  print_dbg("\r\n sending ctl request for product string, index : ");
-  //  print_dbg_ulong( uhi_ftdi_dev.dev->dev_desc.iProduct);
-  if(!(send_ctl_request(
-          /* req type*/
-          FTDI_STRING_DESC_REQ_TYPE,
-          /* req num */
-          USB_REQ_GET_DESCRIPTOR,
-          /* data */
-          (u8*)product_string,
-          /* size */
-          FTDI_STRING_MAX_LEN,
-          /*idx*/
-          FTDI_STRING_DESC_LANGID,
-          /*val*/
-          // ??
-          (USB_DT_STRING << 8) | uhi_cdc_dev.dev->dev_desc.iProduct,
-          // end-transfer callback
-          &ctl_req_end )
-
-      )) {
-    // print_dbg("\r\n control request for string descriptor failed");
-    return 0;
-  }
-  // wait for transfer end
-  while(ctlReadBusy) { ;; }
-
-  // get serial string
-  ctlReadBusy = 1;
-  // print_dbg("\r\n sending ctl request for serial string : ");
-  if(!(send_ctl_request(
-          /* req type*/
-          FTDI_STRING_DESC_REQ_TYPE,
-          /* req num */
-          USB_REQ_GET_DESCRIPTOR,
-          /* data */
-          (u8*)serial_string,
-          /* size */
-          FTDI_STRING_MAX_LEN,
-          /*idx*/
-          FTDI_STRING_DESC_LANGID,
-          /*val*/
-          (USB_DT_STRING << 8) | uhi_cdc_dev.dev->dev_desc.iSerialNumber,
-          // end-transfer callback
-          &ctl_req_end )
-
-      )) {
-    // print_dbg("\r\n control request for string descriptor failed");
-    return 0;
-  }
-  // wait for transfer end
-  while(ctlReadBusy) { ;; }
-
-  //  print_dbg("\r\n requested all string descriptors.");
-  *pManufacturer = manufacturer_string + FTDI_STRING_DESC_OFFSET;
-  *pProduct = product_string + FTDI_STRING_DESC_OFFSET;
-  *pSerial = serial_string + FTDI_STRING_DESC_OFFSET;
-
-  return 1;
-}
-#endif
