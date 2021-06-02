@@ -35,11 +35,11 @@ void cdc_change(uhc_device_t* dev, uint8_t plug) {
   if(plug) {
     print_dbg("\r\ncdc connected");
     connected = true;
-    e.type = kEventFtdiConnect;
+    e.type = kEventSerialConnect;
   } else {
     print_dbg("\r\ncdc disconnected");
     connected = false;
-    e.type = kEventFtdiDisconnect;
+    e.type = kEventSerialDisconnect;
   }
   event_post(&e);
 }
@@ -56,13 +56,11 @@ static void cdc_rx_done(usb_add_t add,
       (*monome_read_serial)();
     }
 
-    /*
+    print_dbg("\r\nrx: ");
     for(int i=0;i<rxBytes;i++) {
       print_dbg_ulong(rxBuf[i]);
       print_dbg(" ");
     }
-    print_dbg("\r\n");
-    */
   }
 
   rxBusy = false;

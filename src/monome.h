@@ -119,7 +119,7 @@ extern void init_monome(void);
 // check monome device  from FTDI string descriptors
 extern u8 check_monome_device_desc(char* mstr, char* pstr, char* sstr);
 // setup mext direct (for cdc)
-extern u8 monome_setup_mext(void);
+extern void monome_setup_mext(void);
 
 // check dirty flags and refresh leds
 extern void monome_grid_refresh(void);

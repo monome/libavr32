@@ -216,6 +216,8 @@ u8 check_monome_device_desc(char* mstr, char* pstr, char* sstr) {
   u8 i;
   u8 ret;
 
+  print_dbg("\r\n >>>>> check_monome_device_desc");
+
   // set rxtx funcs
   serial_read = &ftdi_read;
   serial_write = &ftdi_write;
@@ -295,20 +297,6 @@ u8 check_monome_device_desc(char* mstr, char* pstr, char* sstr) {
   return 0;
 }
 
-// setup mext direct (for cdc)
-u8 monome_setup_mext() {
-  // set rxtx funcs
-  serial_read = &cdc_read;
-  serial_write = &cdc_write;
-  tx_busy = &cdc_tx_busy;
-  rx_busy = &cdc_rx_busy;
-  rx_buf = &cdc_rx_buf;
-  rx_bytes = &cdc_rx_bytes;
-  serial_connected = &cdc_connected;
-
-return setup_mext();
-}
-
 // check dirty flags and refresh leds
 void monome_grid_refresh(void) {
   // may need to wait after each quad until tx transfer is complete
@@ -377,7 +365,7 @@ void monome_arc_refresh(void) {
 static inline void monome_connect_write_event(void) {
   u8* data = (u8*)(&(ev.data));
 
-  // print_dbg("\r\n posting monome connection event. ");
+  print_dbg("\r\n posting monome connection event. ");
   // print_dbg(" device type: ");
   // print_dbg_ulong(mdesc.device);
   // print_dbg(" cols : ");
@@ -567,7 +555,7 @@ static u8 setup_mext(void) {
   u8 w = 0;
   u8 busy;
 
-  // print_dbg("\r\n setup mext device");
+  print_dbg("\r\n setup mext device");
   mdesc.protocol = eProtocolMext;
 
   mdesc.vari = 1;
@@ -606,15 +594,15 @@ static u8 setup_mext(void) {
 
     if(rxBytes != 6 ){
       print_dbg("e");
-  /*
-      print_dbg("\r\n got unexpected byte count in response to mext setup request; \r\n");
-      prx = rx_buf();
+      /*
+         print_dbg("\r\n got unexpected byte count in response to mext setup request; \r\n");
+         prx = rx_buf();
 
-      for(;rxBytes != 0; rxBytes--) {
-        print_dbg_ulong(*(++prx));
-        print_dbg(" ");
-      }
-  */
+         for(;rxBytes != 0; rxBytes--) {
+         print_dbg_ulong(*(++prx));
+         print_dbg(" ");
+         }
+       */
 
       // return 0;
     }
@@ -671,7 +659,7 @@ static u8 setup_mext(void) {
   rxBytes = rx_bytes();
   prx = rx_buf();
   if(*(prx+2) == 'k')
-      mdesc.vari = 0;
+    mdesc.vari = 0;
   // print_dbg("\r\ndone waiting. bytes read: ");
   // print_dbg_ulong(rxBytes);
   // print_dbg("\r\ndata: ");
@@ -680,14 +668,10 @@ static u8 setup_mext(void) {
   //     print_dbg_char(*(++prx));
   //   }
 
-
-
-
-
   set_funcs();
   monome_connect_write_event();
   //  monomeConnect = 1;
-  // print_dbg("\r\n connected monome device, mext protocol");
+  print_dbg("\r\n connected monome device, mext protocol");
   //  test_draw();
   return 1;
 }
@@ -723,10 +707,10 @@ static void read_serial_40h(void) {
     // press event
     if ((prx[0] & 0xf0) == 0) {
       monome_grid_key_write_event(
-        ((prx[1] & 0xf0) >> 4),
-        prx[1] & 0xf,
-        ((prx[0] & 0xf) != 0)
-      );
+          ((prx[1] & 0xf0) >> 4),
+          prx[1] & 0xf,
+          ((prx[0] & 0xf) != 0)
+          );
     }
 
     i += 2;
@@ -757,9 +741,9 @@ static void read_serial_series(void) {
 
     // process consecutive pairs of bytes
     monome_grid_key_write_event( ((prx[1] & 0xf0) >> 4) ,
-				 prx[1] & 0xf,
-				 ((prx[0] & 0xf0) == 0)
-				 );
+        prx[1] & 0xf,
+        ((prx[0] & 0xf0) == 0)
+        );
     i += 2;
     prx += 2;
   }
@@ -780,32 +764,32 @@ static void read_serial_mext(void) {
       com = (u8)(*(prx++));
       nbp++;
       switch(com) {
-      case 0x20: // grid key up
-      	monome_grid_key_write_event( *prx, *(prx+1), 0);
-      	nbp += 2;
-      	prx += 2;
-      	break;
-      case 0x21: // grid key down
-      	monome_grid_key_write_event( *prx, *(prx+1), 1);
-      	nbp += 2;
-      	prx += 2;
-      	break;
-    	case 0x50: // ring delta
-      	monome_ring_enc_write_event( *prx, *(prx+1));
-      	nbp += 2;
-      	prx += 2;
-      	break;
-      case 0x51 : // ring key up
-      	monome_ring_key_write_event( *prx++, 0);
-      	prx++;
-      	break;
-      case 0x52 : // ring key down
-      	monome_ring_key_write_event( *prx++, 1);
-      	nbp++;
-      	break;
-      	/// TODO: more commands...
-            default:
-      	return;
+        case 0x20: // grid key up
+          monome_grid_key_write_event( *prx, *(prx+1), 0);
+          nbp += 2;
+          prx += 2;
+          break;
+        case 0x21: // grid key down
+          monome_grid_key_write_event( *prx, *(prx+1), 1);
+          nbp += 2;
+          prx += 2;
+          break;
+        case 0x50: // ring delta
+          monome_ring_enc_write_event( *prx, *(prx+1));
+          nbp += 2;
+          prx += 2;
+          break;
+        case 0x51 : // ring key up
+          monome_ring_key_write_event( *prx++, 0);
+          prx++;
+          break;
+        case 0x52 : // ring key down
+          monome_ring_key_write_event( *prx++, 1);
+          nbp++;
+          break;
+          /// TODO: more commands...
+        default:
+          return;
       }
     }
   }
@@ -959,14 +943,14 @@ static void ring_map_mext(u8 n, u8* data) {
 }
 
 static void set_intense_series(u8 v) {
-/*
-message id:	(10) intensity
+  /*
+     message id:	(10) intensity
 bytes:		1
 format:		iiiibbbb
-			i (message id) = 10
-			b (brightness) = 0-15 (4 bits)
+i (message id) = 10
+b (brightness) = 0-15 (4 bits)
 encode:		byte 0 = ((id) << 4) | b = 160 + b
-*/
+   */
   txBuf[0] = 0xa0;
   txBuf[0] |= (v & 0x0f);
   serial_write(txBuf, 1);
@@ -975,3 +959,26 @@ encode:		byte 0 = ((id) << 4) | b = 160 + b
 static void set_intense_mext(u8 v) {
   // TODO
 }
+
+// setup mext direct (for cdc)
+void monome_setup_mext() {
+  // set rxtx funcs
+  serial_read = &cdc_read;
+  serial_write = &cdc_write;
+  tx_busy = &cdc_tx_busy;
+  rx_busy = &cdc_rx_busy;
+  rx_buf = &cdc_rx_buf;
+  rx_bytes = &cdc_rx_bytes;
+  serial_connected = &cdc_connected;
+
+  mdesc.device = eDeviceGrid;
+  mdesc.protocol = eProtocolMext;
+  mdesc.rows = 8;
+  mdesc.cols = 16;
+  mdesc.vari = 1;
+
+  set_funcs();
+  monome_connect_write_event();
+}
+
+
