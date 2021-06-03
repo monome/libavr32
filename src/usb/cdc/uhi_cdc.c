@@ -47,30 +47,10 @@ static uhi_cdc_dev_t uhi_cdc_dev = {
   .dev = NULL,
 };
 
-// manufacturer string
-char manufacturer_string[64];
-// product string
-char product_string[64];
-// serial number string
-char serial_string[64];
-
 // control read-busy flag
 static volatile uint8_t ctlReadBusy = 0;
 
 //------- static funcs
-
-/*
-// send control request
-static uint8_t send_ctl_request(uint8_t reqtype, uint8_t reqnum,
-    uint8_t* data, uint16_t size,
-    uint16_t index, uint16_t val,
-    uhd_callback_setup_end_t callbackEnd);
-// control request end
-static void ctl_req_end(
-    usb_add_t add,
-    uhd_trans_status_t status,
-    uint16_t payload_trans);
-*/
 
 //----- external (UHC) functions
 uhc_enum_status_t uhi_cdc_install(uhc_device_t* dev) {
