@@ -73,6 +73,9 @@ typedef enum {
   kEventSerial,
   // arbitrary loopback from within application
   kEventAppCustom,
+  // cdc/serial
+  kEventSerialConnect,
+  kEventSerialDisconnect,
   /// dummy/count
   kNumEventTypes,
 } etype;
