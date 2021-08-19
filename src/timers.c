@@ -187,14 +187,18 @@ void process_timers( void ) {
 
   for(i = 0; i<num; ++i) {
     --(t->ticksRemain);
-    if(t->ticksRemain == 0) {
-      t->ticksRemain = t->ticks;
-      (*(t->callback))(t->caller);   
-      //      print_dbg("\r\n triggered timer callback @ 0x");
-      //      print_dbg_hex((u32)t);
+
+    // save next, because the callback could remove t from the timer list
+    volatile softTimer_t* next = t->next;
+
+    if (t->ticksRemain == 0) {
+        t->ticksRemain = t->ticks;
+        (*(t->callback))(t->caller);
+        //      print_dbg("\r\n triggered timer callback @ 0x");
+        //      print_dbg_hex((u32)t);
     }
-    t = t->next;
-    
+    t = next;
+
     //    print_dbg("; advanced list pointer, now: 0x");
     //    print_dbg_hex((u32)t);
   }
