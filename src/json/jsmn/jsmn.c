@@ -42,6 +42,9 @@ static int jsmn_parse_primitive(jsmn_parser *parser, const char *js,
 
 	start = parser->pos;
 
+	print_dbg("jsmn parse primitive: ");
+	print_dbg_hex(parser->pos);
+	print_dbg("\r\n");
 	for (; parser->pos < len && js[parser->pos] != '\0'; parser->pos++) {
 		switch (js[parser->pos]) {
 #ifndef JSMN_STRICT
@@ -62,6 +65,7 @@ static int jsmn_parse_primitive(jsmn_parser *parser, const char *js,
 #ifdef JSMN_STRICT
 	/* In strict mode primitive must be followed by a comma/object/array */
 	parser->pos = start;
+	print_dbg("jsmn parse primitive: partial\r\n");
 	return JSMN_ERROR_PART;
 #endif
 
@@ -76,6 +80,11 @@ found:
 		return JSMN_ERROR_NOMEM;
 	}
 	jsmn_fill_token(token, JSMN_PRIMITIVE, start, end);
+	print_dbg("jsmn parse primitive: found token start=");
+	print_dbg_hex(start);
+	print_dbg(", end=");
+	print_dbg_hex(end);
+	print_dbg("\r\n");
 #ifdef JSMN_PARENT_LINKS
 	token->parent = parser->toksuper;
 #endif
@@ -167,6 +176,9 @@ int jsmn_parse(jsmn_parser *parser, const char *js, size_t len,
 	jsmntok_t *token;
 	int count = parser->toknext;
 
+	print_dbg("jsmn parser pos: ");
+	print_dbg_hex(parser->pos);
+	print_dbg("\r\n");
 	for (; parser->pos < len && js[parser->pos] != '\0'; parser->pos++) {
 		char c;
 

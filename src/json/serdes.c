@@ -1,7 +1,7 @@
 #include "json/serdes.h"
 #include "json/encoding.h"
 
-#define JSON_DEBUG 0
+#define JSON_DEBUG 1
 #include "print_funcs.h"
 
 
@@ -760,8 +760,14 @@ json_read_result_t json_read(
 				}
 
 				// rewind the parser state so it stays within the fixed buffers
-				deserialize_state.jsmn.pos -= deserialize_state.text_ct
-							    - (deserialize_state.jsmn.string_open ? 0 : keep_ct);
+				/* deserialize_state.jsmn.pos -= deserialize_state.text_ct */
+				/* 			    - (deserialize_state.jsmn.string_open ? 0 : keep_ct); */
+				if (result == JSON_READ_INCOMPLETE || deserialize_state.jsmn.string_open) {
+					deserialize_state.jsmn.pos -= deserialize_state.text_ct;
+				}
+				else {
+					deserialize_state.jsmn.pos -= deserialize_state.text_ct - keep_ct;
+				}
 				deserialize_state.jsmn.toknext = 0;
 			}
 
@@ -785,6 +791,7 @@ json_read_result_t json_read(
 				return JSON_READ_MALFORMED;
 			}
 			deserialize_state.text_ct = keep_ct + bytes_read;
+
 
 			jsmn_err = jsmn_parse(&deserialize_state.jsmn,
 					      textbuf, deserialize_state.text_ct,
@@ -813,6 +820,38 @@ json_read_result_t json_read(
 		}
 
 		jsmntok_t* tok = &tokbuf[deserialize_state.curr_tok];
+#if JSON_DEBUG
+			print_dbg("\r\n> contents of read buffer:\r\n\r\n");
+
+			size_t i;
+			for (i = 0; i < textbuf_len; i++) {
+				print_dbg_char(textbuf[i]);
+			}
+			print_dbg("\r\n");
+
+			i = 0;
+			if (tok->start > 0) {
+				for (i = 0; i < tok->start; i++) {
+					print_dbg_char(' ');
+				}
+				print_dbg_char('^');
+				i++;
+			}
+			for (; i < (tok->end > 0 ? (tok->end - 1) : textbuf_len); i++) {
+				print_dbg_char('-');
+			}
+			if (tok->end >= 0) {
+				print_dbg_char('^');
+			}
+			print_dbg("\r\n");
+			print_dbg("current token: type=");
+			print_dbg_hex(tok->type);
+			print_dbg(", start=");
+			print_dbg_hex(tok->start);
+			print_dbg(", end=");
+			print_dbg_hex(tok->end);
+			print_dbg("\r\n\r\n");
+#endif
 		result = docdef->read(
 			tok,
 			copy, ram, docdef,
