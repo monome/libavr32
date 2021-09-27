@@ -8,7 +8,7 @@
 
 // HID event data is is simply a bitfield indicating which bytes have changed in the frame.
 // application handler can look up the relevant bytes in the frame data directly.
-#define HID_FRAME_MAX_BYTES 32
+#define HID_FRAME_MAX_BYTES 64
 #define HID_FRAME_IDX_MASK 31
 
 // HID device was plugged or unplugged
