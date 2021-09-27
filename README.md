@@ -190,7 +190,7 @@ In short run `avr32-size -A <module name>.elf`. All free RAM is allocated to the
 [whitewhale]: https://github.com/monome/whitewhale
 [diet-asf]: https://github.com/monome/diet-asf
 [avr32-toolchain]: https://github.com/monome/avr32-toolchain
-[atmellinux]: http://www.atmel.com/tools/atmelavrtoolchainforlinux.aspx
+[atmellinux]: https://www.microchip.com/en-us/development-tools-tools-and-software/gcc-compilers-avr-and-arm
 [homebrew]: http://brew.sh/
 [digikey]: http://www.digikey.com/product-detail/en/101-1020-BE-00100/1175-1035-ND/3064766
 [AT32UC3B0256]: http://www.atmel.com/devices/AT32UC3B0256.aspx

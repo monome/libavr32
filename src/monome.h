@@ -69,6 +69,14 @@ extern u8 *monomeLedBuffer;
   and assigned according to protocol selection.
  */
 
+extern void (*serial_read)(void);
+extern void (*serial_write)(u8*,u32);
+extern volatile u8 (*tx_busy)(void);
+extern volatile u8 (*rx_busy)(void);
+extern volatile u8 (*rx_bytes)(void);
+extern u8* (*rx_buf)(void);
+extern u8 (*serial_connected)(void);
+
 ////// read raw serial data (all devices)
 typedef void(*read_serial_t)(void);
 //// set intensity
@@ -110,6 +118,8 @@ extern refresh_t monome_refresh;
 extern void init_monome(void);
 // check monome device  from FTDI string descriptors
 extern u8 check_monome_device_desc(char* mstr, char* pstr, char* sstr);
+// setup mext direct (for cdc)
+extern void monome_setup_mext(void);
 
 // check dirty flags and refresh leds
 extern void monome_grid_refresh(void);
