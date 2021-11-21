@@ -641,9 +641,10 @@ json_read_result_t json_read_buffer(
 		docdef->fresh = true;
 #if JSON_DEBUG
 		print_dbg("\r\n> buffer ");
-		for (char* p = docdef->name; *p != 0; p++)
-		{
-			print_dbg_char(*p);
+		if (docdef->name) {
+			for (char* p = docdef->name; *p != 0; p++) {
+				print_dbg_char(*p);
+			}
 		}
 		print_dbg(" done");
 #endif
@@ -759,9 +760,18 @@ json_read_result_t json_read(
 						keep_ct);
 				}
 
-				// rewind the parser state so it stays within the fixed buffers
-				deserialize_state.jsmn.pos -= deserialize_state.text_ct
-							    - (deserialize_state.jsmn.string_open ? 0 : keep_ct);
+				// rewind the parser state so it stays within the fixed buffers.
+				// if we've already partially consumed a string or primitive,
+				// we need to account for that as well.
+				if (deserialize_state.jsmn.string_open) {
+					deserialize_state.jsmn.pos -= deserialize_state.text_ct;
+				}
+				else if (deserialize_state.jsmn.number_open) {
+					deserialize_state.jsmn.pos = 0;
+				}
+				else {
+					deserialize_state.jsmn.pos -= deserialize_state.text_ct - keep_ct;
+				}
 				deserialize_state.jsmn.toknext = 0;
 			}
 

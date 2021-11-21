@@ -41,6 +41,7 @@ static int jsmn_parse_primitive(jsmn_parser *parser, const char *js,
 	int start, end;
 
 	start = parser->pos;
+	parser->number_open = true;
 
 	for (; parser->pos < len && js[parser->pos] != '\0'; parser->pos++) {
 		switch (js[parser->pos]) {
@@ -66,6 +67,7 @@ static int jsmn_parse_primitive(jsmn_parser *parser, const char *js,
 #endif
 
 found:
+	if (end >= 0) parser->number_open = false;
 	if (tokens == NULL) {
 		parser->pos--;
 		return 0;
@@ -195,6 +197,7 @@ int jsmn_parse(jsmn_parser *parser, const char *js, size_t len,
 				parser->depth++;
 				break;
 			case '}': case ']':
+				parser->number_open = false;
 				count++;
 				if (tokens == NULL)
 					break;
@@ -271,6 +274,7 @@ parse_string:
 				parser->toksuper = parser->toknext - 1;
 				break;
 			case ',':
+				parser->number_open = false;
 				if (tokens != NULL && parser->toksuper != -1 &&
 						tokens[parser->toksuper].type != JSMN_ARRAY &&
 						tokens[parser->toksuper].type != JSMN_OBJECT) {

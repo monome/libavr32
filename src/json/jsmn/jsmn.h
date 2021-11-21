@@ -59,6 +59,7 @@ typedef struct {
 	unsigned int depth;
 	int toksuper; /* superior token node, e.g parent object or array */
 	bool string_open;
+	bool number_open;
 } jsmn_parser;
 
 /**
