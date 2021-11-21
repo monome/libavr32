@@ -20,6 +20,14 @@ static u8 frame[HID_FRAME_MAX_BYTES] = {
   0x00,   0x00,   0x00,   0x00, 
   0x00,   0x00,   0x00,   0x00, 
   0x00,   0x00,   0x00,   0x00, 
+  0x00,   0x00,   0x00,   0x00, 
+  0x00,   0x00,   0x00,   0x00, 
+  0x00,   0x00,   0x00,   0x00, 
+  0x00,   0x00,   0x00,   0x00, 
+  0x00,   0x00,   0x00,   0x00, 
+  0x00,   0x00,   0x00,   0x00, 
+  0x00,   0x00,   0x00,   0x00, 
+  0x00,   0x00,   0x00,   0x00, 
 };
 
 static u32 dirty = 0xffffffff;
@@ -76,8 +84,8 @@ const volatile u8* hid_get_frame_data(void) {
 
 const volatile u8 hid_get_frame_size(void) {
   // eh...
-  return HID_FRAME_MAX_BYTES;
-  //  return (const volatile u8)size;
+  // return HID_FRAME_MAX_BYTES;
+  return (const volatile u8)size;
 }
 
 const volatile u32 hid_get_frame_dirty(void) {
@@ -87,8 +95,9 @@ const volatile u32 hid_get_frame_dirty(void) {
 // HID device was plugged or unplugged
 extern void hid_change(uhc_device_t* dev, u8 plug) {
   event_t e;
+  e.data = (s32)dev;
   if(plug) { 
-    e.type = kEventHidConnect; 
+    e.type = kEventHidConnect;
   } else {
     e.type = kEventHidDisconnect;
   }

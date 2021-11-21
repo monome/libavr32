@@ -22,6 +22,7 @@ typedef void (*midi_control_change_t)(u8 ch, u8 num, u8 val);
 typedef void (*midi_program_change_t)(u8 ch, u8 num);
 typedef void (*midi_real_time_t)(void);
 typedef void (*midi_panic_t)(void);
+typedef void (*midi_aftertouch_t)(u8 ch, u8 num, u8 val);
 
 typedef struct {
 	midi_note_on_t          note_on;
@@ -37,6 +38,8 @@ typedef struct {
 	midi_real_time_t        seq_continue;
 
 	midi_panic_t            panic;
+
+	midi_aftertouch_t	aftertouch;
 } midi_behavior_t;
 
 typedef struct {
