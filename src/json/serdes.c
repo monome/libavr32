@@ -1,7 +1,7 @@
 #include "json/serdes.h"
 #include "json/encoding.h"
 
-#define JSON_DEBUG 1
+#define JSON_DEBUG 0
 #include "print_funcs.h"
 
 
