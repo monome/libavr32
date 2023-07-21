@@ -37,6 +37,8 @@ If you're on Linux, download the toolchain and the headers from [Atmel][atmellin
  - Atmel AVR 32-bit Toolchain 3.4.3 - Linux 64-bit (`avr32-gnu-toolchain-3.4.3.820-linux.any.x86_64.tar.gz`)
  - Atmel 32-bit Toolchain (3.4.3) 6.2.0.742 - Header Files (`avr32-headers-6.2.0.742.zip`)
 
+We've archived these files here: https://github.com/monome/avr32-toolchain-linux
+
 The headers need to be installed in the correct location.
 
 To install on Linux in `~/avr32-tools`:
