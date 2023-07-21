@@ -51,6 +51,18 @@ unzip avr32-headers-6.2.0.742.zip -d $HOME/avr32-tools/avr32/include
 
 You should also install `dfu-programmer` from your package manager.
 
+You'll also need to add the include path:
+
+```
+export C_INCLUDE_PATH=~/avr32-tools/include
+```
+
+And possibly you'll have to do this:
+
+```
+export LC_ALL="en_EN.UTF-8"
+```
+
 ### Windows
 
 Install bash: https://msdn.microsoft.com/en-us/commandline/wsl/install_guide
