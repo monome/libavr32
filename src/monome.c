@@ -959,7 +959,7 @@ static void set_intense_mext(u8 v) {
 
 // setup mext direct (for cdc)
 void monome_setup_mext() {
-	u8 w,busy;
+	u8 w;
 	u8 *prx;
 
 	// set rxtx funcs
