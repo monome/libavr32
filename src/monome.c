@@ -985,7 +985,7 @@ void monome_setup_mext() {
 	prx = rx_buf();
 	print_dbg("\r\nreceived: ");
 	print_dbg_ulong(*prx);
-	if(*prx == 5) { // SIZE
+	if(*prx == 3) { // SIZE
 		prx++;
 		mdesc.rows = *prx;
 		prx++;
