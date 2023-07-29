@@ -959,23 +959,45 @@ static void set_intense_mext(u8 v) {
 
 // setup mext direct (for cdc)
 void monome_setup_mext() {
-  // set rxtx funcs
-  serial_read = &cdc_read;
-  serial_write = &cdc_write;
-  tx_busy = &cdc_tx_busy;
-  rx_busy = &cdc_rx_busy;
-  rx_buf = &cdc_rx_buf;
-  rx_bytes = &cdc_rx_bytes;
-  serial_connected = &cdc_connected;
+	u8 w;
+	u8 *prx;
 
-  mdesc.device = eDeviceGrid;
-  mdesc.protocol = eProtocolMext;
-  mdesc.rows = 8;
-  mdesc.cols = 16;
-  mdesc.vari = 1;
+	// set rxtx funcs
+	serial_read = &cdc_read;
+	serial_write = &cdc_write;
+	tx_busy = &cdc_tx_busy;
+	rx_busy = &cdc_rx_busy;
+	rx_buf = &cdc_rx_buf;
+	rx_bytes = &cdc_rx_bytes;
+	serial_connected = &cdc_connected;
 
-  set_funcs();
-  monome_connect_write_event();
+	rxBytes = 0;
+
+	w = 5; // size request
+	serial_write(&w, 1);
+	delay_us(500);
+	serial_read();
+
+	// sane defaults
+	mdesc.rows = 8;
+	mdesc.cols = 16;
+
+	prx = rx_buf();
+	print_dbg("\r\nreceived: ");
+	print_dbg_ulong(*prx);
+	if(*prx == 3) { // SIZE
+		prx++;
+		mdesc.rows = *prx;
+		prx++;
+		mdesc.cols = *prx;
+	}
+
+	mdesc.device = eDeviceGrid;
+	mdesc.protocol = eProtocolMext;
+	mdesc.vari = 1;
+
+	set_funcs();
+	monome_connect_write_event();
 }
 
 
