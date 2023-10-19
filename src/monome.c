@@ -987,9 +987,9 @@ void monome_setup_mext() {
 	print_dbg_ulong(*prx);
 	if(*prx == 3) { // SIZE
 		prx++;
-		mdesc.rows = *prx;
-		prx++;
 		mdesc.cols = *prx;
+		prx++;
+		mdesc.rows = *prx;
 	}
 
 	mdesc.device = eDeviceGrid;
