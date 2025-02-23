@@ -979,6 +979,7 @@ void monome_setup_mext() {
 	serial_read();
 
 	// sane defaults
+	mdesc.device = eDeviceGrid;
 	mdesc.rows = 8;
 	mdesc.cols = 16;
 
@@ -992,7 +993,9 @@ void monome_setup_mext() {
 		mdesc.rows = *prx;
 	}
 
-	mdesc.device = eDeviceGrid;
+	if(mdesc.cols == 0) // it's actually an arc
+		mdesc.device = eDeviceArc;
+
 	mdesc.protocol = eProtocolMext;
 	mdesc.vari = 1;
 
