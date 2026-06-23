@@ -93,7 +93,10 @@ json_read_result_t json_read_object(
 	}
 }
 
+static size_t s_copy_cached_size = 0;
+
 static void copy_cached(char* dst, const char* src, size_t len) {
+	if (len == 0 || len > s_copy_cached_size) return;
 	memcpy((void*)dst, (void*)src, len);
 }
 
@@ -112,6 +115,7 @@ json_read_result_t json_read_object_cached(
 		state->depth = 0;
 		state->cache = NULL;
 		state->cache = params->alloc(params->dst_size);
+		s_copy_cached_size = params->dst_size;
 		if (state->cache == NULL) {
 			print_dbg("\r\n!! allocation failed: ");
 			print_dbg_hex(state->object_state);
