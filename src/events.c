@@ -18,6 +18,9 @@
 // initialise all it's entries to handler_Ignore
  void (*app_event_handlers[kNumEventTypes])(s32 data) = { handler_Ignore };
 
+// optional idle hook, assigned by the application
+void (*app_idle_handler)(void) = NULL;
+
 
 /// NOTE: if we are ever over-filling the event queue, we have problems.
 /// making the event queue bigger not likely to solve the problems.
