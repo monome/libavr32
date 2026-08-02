@@ -88,6 +88,9 @@ typedef struct {
 // global array of pointers to handlers
 extern void (*app_event_handlers[])(s32 data);
 
+// called from the main loop when the event queue is empty; NULL = no-op.
+extern void (*app_idle_handler)(void);
+
 // init event queue
 void init_events( void );
 
