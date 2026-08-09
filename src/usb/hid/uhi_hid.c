@@ -220,9 +220,14 @@ static void uhi_hid_report_reception(
 
   UNUSED(ep);
 
-  // inverted the logic here to ensure the pipe doesn't get killed on error
-  if ((status == UHD_TRANS_NOERROR) && (nb_transfered >= 4)) {
-    hid_parse_frame(uhi_hid_dev.report, uhi_hid_dev.report_size);
+  // Boot mouse is 3 bytes (buttons+X+Y); wheel mice often send 4.
+  // Use the actual transfer length — wMaxPacketSize may be 8 with padding.
+  if ((status == UHD_TRANS_NOERROR) && (nb_transfered >= 3)) {
+    uint8_t n = (uint8_t)nb_transfered;
+    if (n > uhi_hid_dev.report_size) {
+      n = uhi_hid_dev.report_size;
+    }
+    hid_parse_frame(uhi_hid_dev.report, n);
   }
 
   /*
