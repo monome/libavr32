@@ -68,13 +68,18 @@ static void cdc_tx_done(usb_add_t add,
                          usb_ep_t ep,
                          uhd_trans_status_t stat,
                          iram_size_t nb) {
-  txBusy = false;
+  event_t ev;
 
-  // FIXME: bunch of these at startup
-  /*if (stat != UHD_TRANS_NOERROR) {
-    print_dbg("\r\ntx transfer callback error. status: 0x");
-    print_dbg_hex((u32)stat);
-  }*/
+  (void)add;
+  (void)ep;
+  (void)stat;
+  (void)nb;
+  txBusy = false;
+  if (monomeFrameDirty > 0) {
+    ev.type = kEventMonomeRefresh;
+    ev.data = 0;
+    event_post(&ev);
+  }
 }
 
 

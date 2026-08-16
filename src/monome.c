@@ -297,9 +297,14 @@ u8 check_monome_device_desc(char* mstr, char* pstr, char* sstr) {
 
 // check dirty flags and refresh leds
 void monome_grid_refresh(void) {
+  u8 i;
+  u8 q;
+  static u8 cursor = 0;
+
   /*
-   * at most one USB OUT per call. spinning on tx_busy() deadlocks the
-   * event loop (heartbeat, soft power) if a transfer never completes.
+   * one USB OUT per call. spinning on tx_busy() deadlocks the event
+   * loop if a transfer never completes. cursor rotates so each dirty
+   * quadrant gets equal TX turns.
    */
   if (tx_busy == NULL || monome_grid_map == NULL) {
     return;
@@ -308,24 +313,32 @@ void monome_grid_refresh(void) {
     return;
   }
 
-  if (monomeFrameDirty & 0b0001) {
-    (*monome_grid_map)(0, 0, monomeLedBuffer);
-    monomeFrameDirty &= 0b1110;
+  for (i = 0; i < 4; i++) {
+    q = (u8)((cursor + i) & 3);
+    if ((monomeFrameDirty & (1 << q)) == 0) {
+      continue;
+    }
+    if (q == 1 && mdesc.cols <= 7) {
+      continue;
+    }
+    if (q == 2 && mdesc.rows <= 7) {
+      continue;
+    }
+    if (q == 3 && (mdesc.rows <= 7 || mdesc.cols <= 7)) {
+      continue;
+    }
+    if (q == 0) {
+      (*monome_grid_map)(0, 0, monomeLedBuffer);
+    } else if (q == 1) {
+      (*monome_grid_map)(8, 0, monomeLedBuffer + 8);
+    } else if (q == 2) {
+      (*monome_grid_map)(0, 8, monomeLedBuffer + 128);
+    } else {
+      (*monome_grid_map)(8, 8, monomeLedBuffer + 136);
+    }
+    monomeFrameDirty &= (u8) ~(1 << q);
+    cursor = (u8)((q + 1) & 3);
     return;
-  }
-  if ((monomeFrameDirty & 0b0010) && (mdesc.cols > 7)) {
-    (*monome_grid_map)(8, 0, monomeLedBuffer + 8);
-    monomeFrameDirty &= 0b1101;
-    return;
-  }
-  if ((monomeFrameDirty & 0b0100) && (mdesc.rows > 7)) {
-    (*monome_grid_map)(0, 8, monomeLedBuffer + 128);
-    monomeFrameDirty &= 0b1011;
-    return;
-  }
-  if ((monomeFrameDirty & 0b1000) && (mdesc.rows > 7) && (mdesc.cols > 7)) {
-    (*monome_grid_map)(8, 8, monomeLedBuffer + 136);
-    monomeFrameDirty &= 0b0111;
   }
 }
 
@@ -333,6 +346,9 @@ void monome_grid_refresh(void) {
 // check flags and refresh arc
 void monome_arc_refresh(void) {
   u8 i;
+  u8 r;
+  u8 n;
+  static u8 cursor = 0;
 
   if (tx_busy == NULL || monome_ring_map == NULL) {
     return;
@@ -341,12 +357,19 @@ void monome_arc_refresh(void) {
     return;
   }
 
-  for (i = 0; i < mdesc.encs; i++) {
-    if (monomeFrameDirty & (1 << i)) {
-      (*monome_ring_map)(i, monomeLedBuffer + (i << 6));
-      monomeFrameDirty &= ~(1 << i);
-      return;
+  n = mdesc.encs;
+  if (n == 0) {
+    return;
+  }
+  for (i = 0; i < n; i++) {
+    r = (u8)((cursor + i) % n);
+    if ((monomeFrameDirty & (1 << r)) == 0) {
+      continue;
     }
+    (*monome_ring_map)(r, monomeLedBuffer + (r << 6));
+    monomeFrameDirty &= (u8) ~(1 << r);
+    cursor = (u8)((r + 1) % n);
+    return;
   }
 }
 
