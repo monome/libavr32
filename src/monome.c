@@ -297,64 +297,57 @@ u8 check_monome_device_desc(char* mstr, char* pstr, char* sstr) {
 
 // check dirty flags and refresh leds
 void monome_grid_refresh(void) {
-  // may need to wait after each quad until tx transfer is complete
-  u8 busy = tx_busy();
+  /*
+   * at most one USB OUT per call. spinning on tx_busy() deadlocks the
+   * event loop (heartbeat, soft power) if a transfer never completes.
+   */
+  if (tx_busy == NULL || monome_grid_map == NULL) {
+    return;
+  }
+  if (tx_busy()) {
+    return;
+  }
 
-  // check quad 0
-  if( monomeFrameDirty & 0b0001 ) {
-    while( busy ) { busy = tx_busy(); }
+  if (monomeFrameDirty & 0b0001) {
     (*monome_grid_map)(0, 0, monomeLedBuffer);
     monomeFrameDirty &= 0b1110;
-    busy = 1;
+    return;
   }
-  // check quad 1
-  if( monomeFrameDirty & 0b0010 ) {
-    if ( mdesc.cols > 7 ) {
-      while( busy ) { busy = tx_busy(); }
-      (*monome_grid_map)(8, 0, monomeLedBuffer + 8);
-      monomeFrameDirty &= 0b1101;
-      busy = 1;
-    }
+  if ((monomeFrameDirty & 0b0010) && (mdesc.cols > 7)) {
+    (*monome_grid_map)(8, 0, monomeLedBuffer + 8);
+    monomeFrameDirty &= 0b1101;
+    return;
   }
-  // check quad 2
-  if( monomeFrameDirty &  0b0100 ) {
-    if( mdesc.rows > 7 ) {
-      while( busy ) { busy = tx_busy(); }
-      (*monome_grid_map)(0, 8, monomeLedBuffer + 128);
-      monomeFrameDirty &= 0b1011;
-      busy = 1;
-    }
+  if ((monomeFrameDirty & 0b0100) && (mdesc.rows > 7)) {
+    (*monome_grid_map)(0, 8, monomeLedBuffer + 128);
+    monomeFrameDirty &= 0b1011;
+    return;
   }
-  // check quad 3
-  if( monomeFrameDirty & 0b1000 ) {
-    if( (mdesc.rows > 7) && (mdesc.cols > 7) )  {
-      while( busy ) { busy = tx_busy(); }
-      (*monome_grid_map)(8, 8, monomeLedBuffer + 136);
-      monomeFrameDirty &= 0b0111;
-      busy = 1;
-    }
+  if ((monomeFrameDirty & 0b1000) && (mdesc.rows > 7) && (mdesc.cols > 7)) {
+    (*monome_grid_map)(8, 8, monomeLedBuffer + 136);
+    monomeFrameDirty &= 0b0111;
   }
-  while( busy ) { busy = tx_busy(); }
 }
 
 
 // check flags and refresh arc
 void monome_arc_refresh(void) {
-  // may need to wait after each quad until tx transfer is complete
-  u8 busy = tx_busy();
   u8 i;
 
-  for(i=0;i<mdesc.encs;i++) {
-    if(monomeFrameDirty & (1<<i)) {
-      // if(i==1) print_dbg("\r\nsecond");
-      while(busy) { busy = tx_busy(); }
-      (*monome_ring_map)(i, monomeLedBuffer + (i<<6));
-      monomeFrameDirty &= ~(1<<i);
-      busy = 1;
-    }
+  if (tx_busy == NULL || monome_ring_map == NULL) {
+    return;
+  }
+  if (tx_busy()) {
+    return;
   }
 
-  while( busy ) { busy = tx_busy(); }
+  for (i = 0; i < mdesc.encs; i++) {
+    if (monomeFrameDirty & (1 << i)) {
+      (*monome_ring_map)(i, monomeLedBuffer + (i << 6));
+      monomeFrameDirty &= ~(1 << i);
+      return;
+    }
+  }
 }
 
 
@@ -957,12 +950,11 @@ static void set_intense_mext(u8 v) {
   // TODO
 }
 
-// setup mext direct (for cdc)
+// setup mext direct (for cdc): wire CDC callbacks only. identity
+// (grid/arc/size) is monome_mext_identify() after ACM DTR.
 void monome_setup_mext() {
-	u8 w;
-	u8 *prx;
+	print_dbg("\r\nmonome_setup_mext (wire)");
 
-	// set rxtx funcs
 	serial_read = &cdc_read;
 	serial_write = &cdc_write;
 	tx_busy = &cdc_tx_busy;
@@ -972,35 +964,128 @@ void monome_setup_mext() {
 	serial_connected = &cdc_connected;
 
 	rxBytes = 0;
-
-	w = 5; // size request
-	serial_write(&w, 1);
-	delay_us(500);
-	serial_read();
-
-	// sane defaults
+	mdesc.protocol = eProtocolMext;
+	mdesc.vari = 1;
+	mdesc.tilt = 0;
 	mdesc.device = eDeviceGrid;
 	mdesc.rows = 8;
 	mdesc.cols = 16;
+	mdesc.encs = 0;
+}
 
-	prx = rx_buf();
-	print_dbg("\r\nreceived: ");
-	print_dbg_ulong(*prx);
-	if(*prx == 3) { // SIZE
-		prx++;
-		mdesc.cols = *prx;
-		prx++;
-		mdesc.rows = *prx;
+#define MEXT_ID_SLICE_US 100
+#define MEXT_ID_SLICES 2000 /* 200 ms */
+
+static u8 mext_wait_busy(volatile u8 (*busy)(void)) {
+	u16 n = 0;
+
+	if (busy == NULL) {
+		return 0;
+	}
+	while (busy()) {
+		if (serial_connected != NULL && !serial_connected()) {
+			return 0;
+		}
+		if (++n > MEXT_ID_SLICES) {
+			return 0;
+		}
+		delay_us(MEXT_ID_SLICE_US);
+	}
+	return 1;
+}
+
+void monome_mext_identify(void) {
+	u8 cmd = 0;
+	u8 *prx;
+	u8 n;
+	u8 type;
+	u8 count;
+	u8 ok = 0;
+
+	print_dbg("\r\nmonome_mext_identify");
+
+	if (serial_write == NULL || serial_read == NULL || rx_buf == NULL ||
+	    rx_bytes == NULL) {
+		print_dbg("\r\n identify: serial not wired");
+		set_funcs();
+		monome_connect_write_event();
+		return;
 	}
 
-	if(mdesc.cols == 0) // it's actually an arc
-		mdesc.device = eDeviceArc;
+	if (tx_busy != NULL && !mext_wait_busy(tx_busy)) {
+		print_dbg("\r\n identify: tx busy");
+	} else {
+		serial_write(&cmd, 1);
+		if (tx_busy != NULL) {
+			(void)mext_wait_busy(tx_busy);
+		}
+		serial_read();
+		if (rx_busy == NULL || mext_wait_busy(rx_busy)) {
+			n = rx_bytes();
+			print_dbg("\r\n identify rx n=");
+			print_dbg_ulong(n);
+			if (n >= 3) {
+				prx = rx_buf();
+				print_dbg(" ");
+				print_dbg_hex(prx[0]);
+				print_dbg(" ");
+				print_dbg_hex(prx[1]);
+				print_dbg(" ");
+				print_dbg_hex(prx[2]);
+				if (prx[0] == 0x00) {
+					type = prx[1];
+					count = prx[2];
+					if (type == 1) {
+						mdesc.device = eDeviceGrid;
+						mdesc.encs = 0;
+						mdesc.tilt = 1;
+						if (count == 1) {
+							mdesc.cols = 8;
+							mdesc.rows = 8;
+							ok = 1;
+						} else if (count == 2) {
+							mdesc.cols = 16;
+							mdesc.rows = 8;
+							ok = 1;
+						} else if (count == 4) {
+							mdesc.cols = 16;
+							mdesc.rows = 16;
+							ok = 1;
+						}
+					} else if (type == 5) {
+						mdesc.device = eDeviceArc;
+						mdesc.encs = count;
+						mdesc.cols = 0;
+						mdesc.rows = 0;
+						ok = 1;
+					}
+				}
+			}
+		} else {
+			print_dbg("\r\n identify: rx timeout");
+		}
+	}
 
-	mdesc.protocol = eProtocolMext;
-	mdesc.vari = 1;
+	if (!ok) {
+		print_dbg("\r\n identify: fallback 16x8 grid");
+		mdesc.device = eDeviceGrid;
+		mdesc.cols = 16;
+		mdesc.rows = 8;
+		mdesc.encs = 0;
+	} else if (mdesc.device == eDeviceGrid) {
+		print_dbg("\r\n identify: grid ");
+		print_dbg_ulong(mdesc.cols);
+		print_dbg("x");
+		print_dbg_ulong(mdesc.rows);
+	} else {
+		print_dbg("\r\n identify: arc ");
+		print_dbg_ulong(mdesc.encs);
+	}
 
 	set_funcs();
+	print_dbg("\r\nmonome set_funcs");
 	monome_connect_write_event();
+	print_dbg("\r\nmonome connect posted");
 }
 
 

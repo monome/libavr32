@@ -120,6 +120,8 @@ extern void init_monome(void);
 extern u8 check_monome_device_desc(char* mstr, char* pstr, char* sstr);
 // setup mext direct (for cdc)
 extern void monome_setup_mext(void);
+/* after ACM open: mext 0x00 query, fill mdesc, post kEventMonomeConnect */
+extern void monome_mext_identify(void);
 
 // check dirty flags and refresh leds
 extern void monome_grid_refresh(void);

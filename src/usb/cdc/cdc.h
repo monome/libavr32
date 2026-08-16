@@ -10,6 +10,9 @@
 void cdc_change(uhc_device_t* dev, uint8_t plug);
 void cdc_read(void);
 void cdc_write(uint8_t* data, uint32_t bytes);
+void cdc_abort(void);
+void cdc_clear_busy(void);
+uint8_t cdc_acm_open(void);
 
 uint8_t cdc_connected(void);
 extern uint8_t* cdc_rx_buf(void);

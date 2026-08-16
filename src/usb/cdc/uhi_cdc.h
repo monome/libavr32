@@ -27,6 +27,9 @@ extern bool uhi_cdc_in_run(uint8_t * buf, iram_size_t buf_size,
 extern bool uhi_cdc_out_run(uint8_t * buf, iram_size_t buf_size,
 		uhd_callback_trans_t callback);
 
+extern void uhi_cdc_abort(void);
+extern bool uhi_cdc_acm_open(void);
+
 // get string descriptions
 extern uint8_t cdc_get_strings(char** pManufacturer, char** pProduct, char** pSerial);
 

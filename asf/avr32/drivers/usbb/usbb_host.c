@@ -1240,7 +1240,15 @@ static void uhd_ctrl_interrupt(void)
 		// In case of low USB speed and with a high CPU frequency,
 		// a ACK from host can be always running on USB line
 		// then wait end of ACK on IN pipe.
-		while(!Is_uhd_pipe_frozen(0));
+		{
+			uint32_t freeze_guard = 0;
+			while (!Is_uhd_pipe_frozen(0)) {
+				if (++freeze_guard > 200000u) {
+					uhd_freeze_pipe(0);
+					break;
+				}
+			}
+		}
 
 		// IN packet received
 		uhd_ack_in_received(0);
@@ -1748,8 +1756,12 @@ static void uhd_pipe_interrupt_dma(uint8_t pipe)
 				// Freeze pipe in case of incomplete transfer
 				uhd_freeze_pipe(pipe);
 			} else {
-				// Wait freeze in case of ASK on going
+				uint32_t freeze_guard = 0;
 				while (!Is_uhd_pipe_frozen(pipe)) {
+					if (++freeze_guard > 200000u) {
+						uhd_freeze_pipe(pipe);
+						break;
+					}
 				}
 			}
 		}
@@ -1794,7 +1806,15 @@ static void uhd_pipe_interrupt(uint8_t pipe)
 		uhd_ep_abort_pipe(pipe, uhd_pipe_get_error(pipe));
 		return;
 	}
-	Assert(false); // Error system
+	/* unhandled pipe IRQ: ack and drop the job so we cannot livelock
+	 * in the USB ISR (asserts are compiled out on this target). */
+	uhd_freeze_pipe(pipe);
+	uhd_disable_bank_interrupt(pipe);
+	uhd_disable_out_ready_interrupt(pipe);
+	uhd_ack_out_ready(pipe);
+	uhd_ack_in_received(pipe);
+	uhd_ack_stall(pipe);
+	uhd_pipe_finish_job(pipe, UHD_TRANS_ABORTED);
 }
 
 /**
