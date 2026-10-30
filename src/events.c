@@ -32,11 +32,7 @@ void (*app_idle_handler)(void) = NULL;
 
 /// NOTE: if we are ever over-filling the event queue, we have problems.
 /// making the event queue bigger not likely to solve the problems.
-///
-/// Raised from 40 to 128: a USB-CDC monome grid (2021+) emits a burst of
-/// key-state events when it connects, and 40 slots is tight against a queue
-/// that cannot drain until the main loop runs.
-#define MAX_EVENTS   128
+#define MAX_EVENTS   40
 
 // macro for incrementing an index into a circular buffer.
 #define INCR_EVENT_INDEX( x )  { if ( ++x == MAX_EVENTS ) x = 0; }
@@ -66,19 +62,6 @@ volatile  static event_t sysEvents[ MAX_EVENTS ];
   // product never assigned cannot dispatch through a NULL pointer.
   for ( k = 0; k < kNumEventTypes; k++ ) {
     app_event_handlers[k] = handler_Ignore;
-  }
-}
-
-// flush only the event queue; does NOT touch the handler table.
-// use this when you want to discard accumulated events without clobbering
-// handlers that were already assigned.
- void events_flush( void ) {
-  int k;
-  putIdx = 0;
-  getIdx = 0;
-  for ( k = 0; k < MAX_EVENTS; k++ ) {
-    sysEvents[ k ].type = 0;
-    sysEvents[ k ].data = 0;
   }
 }
 
