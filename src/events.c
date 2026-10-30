@@ -14,9 +14,17 @@
 
  static void handler_Ignore(s32 data) { }
 
-// global array of pointers to handlers
-// initialise all it's entries to handler_Ignore
- void (*app_event_handlers[kNumEventTypes])(s32 data) = { handler_Ignore };
+// global array of pointers to handlers.
+//
+// NOTE: this used to be declared as
+//     void (*app_event_handlers[kNumEventTypes])(s32 data) = { handler_Ignore };
+// which only initialises the FIRST entry. Every other slot stayed NULL until
+// a product assigned it, so dispatching an event type that a product never
+// handled called through a NULL pointer.
+//
+// init_events() now fills every slot with handler_Ignore. The declaration is
+// left uninitialised here so it does not look like it is initialised twice.
+ void (*app_event_handlers[kNumEventTypes])(s32 data);
 
 // optional idle hook, assigned by the application
 void (*app_idle_handler)(void) = NULL;
@@ -48,6 +56,12 @@ volatile  static event_t sysEvents[ MAX_EVENTS ];
   for ( k = 0; k < MAX_EVENTS; k++ ) {
     sysEvents[ k ].type = 0;
     sysEvents[ k ].data = 0;
+  }
+
+  // fill ALL handler slots with the safe no-op, so that an event type a
+  // product never assigned cannot dispatch through a NULL pointer.
+  for ( k = 0; k < kNumEventTypes; k++ ) {
+    app_event_handlers[k] = handler_Ignore;
   }
 }
 
