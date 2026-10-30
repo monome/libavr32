@@ -14,9 +14,17 @@
 
  static void handler_Ignore(s32 data) { }
 
-// global array of pointers to handlers
-// initialise all it's entries to handler_Ignore
- void (*app_event_handlers[kNumEventTypes])(s32 data) = { handler_Ignore };
+// global array of pointers to handlers.
+//
+// NOTE: this used to be declared as
+//     void (*app_event_handlers[kNumEventTypes])(s32 data) = { handler_Ignore };
+// which only initialises the FIRST entry. Every other slot stayed NULL until
+// a product assigned it, so dispatching an event type that a product never
+// handled called through a NULL pointer.
+//
+// init_events() now fills every slot with handler_Ignore. The declaration is
+// left uninitialised here so it does not look like it is initialised twice.
+ void (*app_event_handlers[kNumEventTypes])(s32 data);
 
 // optional idle hook, assigned by the application
 void (*app_idle_handler)(void) = NULL;
@@ -24,7 +32,11 @@ void (*app_idle_handler)(void) = NULL;
 
 /// NOTE: if we are ever over-filling the event queue, we have problems.
 /// making the event queue bigger not likely to solve the problems.
-#define MAX_EVENTS   40
+///
+/// Raised from 40 to 128: a USB-CDC monome grid (2021+) emits a burst of
+/// key-state events when it connects, and 40 slots is tight against a queue
+/// that cannot drain until the main loop runs.
+#define MAX_EVENTS   128
 
 // macro for incrementing an index into a circular buffer.
 #define INCR_EVENT_INDEX( x )  { if ( ++x == MAX_EVENTS ) x = 0; }
@@ -45,6 +57,25 @@ volatile  static event_t sysEvents[ MAX_EVENTS ];
   getIdx = 0;
 
   // zero out the event records
+  for ( k = 0; k < MAX_EVENTS; k++ ) {
+    sysEvents[ k ].type = 0;
+    sysEvents[ k ].data = 0;
+  }
+
+  // fill ALL handler slots with the safe no-op, so that an event type a
+  // product never assigned cannot dispatch through a NULL pointer.
+  for ( k = 0; k < kNumEventTypes; k++ ) {
+    app_event_handlers[k] = handler_Ignore;
+  }
+}
+
+// flush only the event queue; does NOT touch the handler table.
+// use this when you want to discard accumulated events without clobbering
+// handlers that were already assigned.
+ void events_flush( void ) {
+  int k;
+  putIdx = 0;
+  getIdx = 0;
   for ( k = 0; k < MAX_EVENTS; k++ ) {
     sysEvents[ k ].type = 0;
     sysEvents[ k ].data = 0;

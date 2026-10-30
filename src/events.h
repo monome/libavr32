@@ -94,6 +94,11 @@ extern void (*app_idle_handler)(void);
 // init event queue
 void init_events( void );
 
+// flush the event queue without touching the handler table.
+// use this to discard accumulated events without clobbering handlers that
+// were already assigned.
+void events_flush( void );
+
 // check the queue for pending events
 // return 1 if found
 u8 event_next( event_t *e );
